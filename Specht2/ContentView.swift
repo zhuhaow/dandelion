@@ -9,8 +9,14 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        Button {
+            Task {
+                try! await Manager.createManager()
+            }
+        } label: {
+            Text("Create VPN")
+        }
+        .padding()
     }
 }
 
