@@ -1,0 +1,30 @@
+name: CI
+on: [push]
+
+jobs:
+  check_rust:
+    # The macos-latest tag currently refers to 10.15
+    # https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idruns-on
+    runs-on: macos-11
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            components: clippy, rustfmt
+            override: true
+      - name: cargo fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all --manifest-path core/Cargo.toml  -- --check
+      - name: cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all-features --manifest-path core/Cargo.toml -- -D warnings
+      - name: cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --manifest-path core/Cargo.toml
