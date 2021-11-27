@@ -7,9 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		36C43D4B274135D400135B6A /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 36DBED3D273D0A7100D4A0DB /* NetworkExtension.framework */; platformFilter = maccatalyst; };
-		36C43D4E274135D400135B6A /* AppProxyProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36C43D4D274135D400135B6A /* AppProxyProvider.swift */; };
-		36C43D53274135D400135B6A /* Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 36C43D4A274135D400135B6A /* Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		3605D9BB275282B300FC66B7 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 36DBED3D273D0A7100D4A0DB /* NetworkExtension.framework */; };
 		36DBECF6273CE96B00D4A0DB /* Specht2App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF5273CE96B00D4A0DB /* Specht2App.swift */; };
 		36DBECF8273CE96B00D4A0DB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF7273CE96B00D4A0DB /* ContentView.swift */; };
 		36DBECFA273CE96C00D4A0DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36DBECF9273CE96C00D4A0DB /* Assets.xcassets */; };
@@ -17,17 +15,9 @@
 		36DBED08273CE96C00D4A0DB /* Specht2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBED07273CE96C00D4A0DB /* Specht2Tests.swift */; };
 		36DBED12273CE96C00D4A0DB /* Specht2UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBED11273CE96C00D4A0DB /* Specht2UITests.swift */; };
 		36DBED14273CE96C00D4A0DB /* Specht2UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBED13273CE96C00D4A0DB /* Specht2UITestsLaunchTests.swift */; };
-		36DBED4F273D0D2600D4A0DB /* NeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBED4D273D0C9F00D4A0DB /* NeManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		36C43D51274135D400135B6A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 36DBECEA273CE96B00D4A0DB /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 36C43D49274135D400135B6A;
-			remoteInfo = Extension;
-		};
 		36DBED04273CE96C00D4A0DB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 36DBECEA273CE96B00D4A0DB /* Project object */;
@@ -51,7 +41,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				36C43D53274135D400135B6A /* Extension.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -59,10 +48,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		36C43D4A274135D400135B6A /* Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Extension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		36C43D4D274135D400135B6A /* AppProxyProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppProxyProvider.swift; sourceTree = "<group>"; };
-		36C43D4F274135D400135B6A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		36C43D50274135D400135B6A /* Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Extension.entitlements; sourceTree = "<group>"; };
 		36DBECF2273CE96B00D4A0DB /* Specht2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Specht2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36DBECF5273CE96B00D4A0DB /* Specht2App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Specht2App.swift; sourceTree = "<group>"; };
 		36DBECF7273CE96B00D4A0DB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -75,22 +60,14 @@
 		36DBED11273CE96C00D4A0DB /* Specht2UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Specht2UITests.swift; sourceTree = "<group>"; };
 		36DBED13273CE96C00D4A0DB /* Specht2UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Specht2UITestsLaunchTests.swift; sourceTree = "<group>"; };
 		36DBED3D273D0A7100D4A0DB /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
-		36DBED4D273D0C9F00D4A0DB /* NeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		36C43D47274135D400135B6A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				36C43D4B274135D400135B6A /* NetworkExtension.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		36DBECEF273CE96B00D4A0DB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3605D9BB275282B300FC66B7 /* NetworkExtension.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,23 +88,12 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		36C43D4C274135D400135B6A /* Extension */ = {
-			isa = PBXGroup;
-			children = (
-				36C43D4D274135D400135B6A /* AppProxyProvider.swift */,
-				36C43D4F274135D400135B6A /* Info.plist */,
-				36C43D50274135D400135B6A /* Extension.entitlements */,
-			);
-			path = Extension;
-			sourceTree = "<group>";
-		};
 		36DBECE9273CE96B00D4A0DB = {
 			isa = PBXGroup;
 			children = (
 				36DBECF4273CE96B00D4A0DB /* Specht2 */,
 				36DBED06273CE96C00D4A0DB /* Specht2Tests */,
 				36DBED10273CE96C00D4A0DB /* Specht2UITests */,
-				36C43D4C274135D400135B6A /* Extension */,
 				36DBED3C273D0A7100D4A0DB /* Frameworks */,
 				36DBECF3273CE96B00D4A0DB /* Products */,
 			);
@@ -139,7 +105,6 @@
 				36DBECF2273CE96B00D4A0DB /* Specht2.app */,
 				36DBED03273CE96C00D4A0DB /* Specht2Tests.xctest */,
 				36DBED0D273CE96C00D4A0DB /* Specht2UITests.xctest */,
-				36C43D4A274135D400135B6A /* Extension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -147,7 +112,6 @@
 		36DBECF4273CE96B00D4A0DB /* Specht2 */ = {
 			isa = PBXGroup;
 			children = (
-				36DBED4D273D0C9F00D4A0DB /* NeManager.swift */,
 				36DBECF5273CE96B00D4A0DB /* Specht2App.swift */,
 				36DBECF7273CE96B00D4A0DB /* ContentView.swift */,
 				36DBECF9273CE96C00D4A0DB /* Assets.xcassets */,
@@ -193,23 +157,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		36C43D49274135D400135B6A /* Extension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 36C43D54274135D400135B6A /* Build configuration list for PBXNativeTarget "Extension" */;
-			buildPhases = (
-				36C43D46274135D400135B6A /* Sources */,
-				36C43D47274135D400135B6A /* Frameworks */,
-				36C43D48274135D400135B6A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = Extension;
-			productName = Extension;
-			productReference = 36C43D4A274135D400135B6A /* Extension.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 		36DBECF1273CE96B00D4A0DB /* Specht2 */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 36DBED17273CE96C00D4A0DB /* Build configuration list for PBXNativeTarget "Specht2" */;
@@ -222,7 +169,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				36C43D52274135D400135B6A /* PBXTargetDependency */,
 			);
 			name = Specht2;
 			productName = Specht2;
@@ -275,9 +221,6 @@
 				LastSwiftUpdateCheck = 1310;
 				LastUpgradeCheck = 1310;
 				TargetAttributes = {
-					36C43D49274135D400135B6A = {
-						CreatedOnToolsVersion = 13.1;
-					};
 					36DBECF1273CE96B00D4A0DB = {
 						CreatedOnToolsVersion = 13.1;
 					};
@@ -307,19 +250,11 @@
 				36DBECF1273CE96B00D4A0DB /* Specht2 */,
 				36DBED02273CE96C00D4A0DB /* Specht2Tests */,
 				36DBED0C273CE96C00D4A0DB /* Specht2UITests */,
-				36C43D49274135D400135B6A /* Extension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		36C43D48274135D400135B6A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		36DBECF0273CE96B00D4A0DB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -346,20 +281,11 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		36C43D46274135D400135B6A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				36C43D4E274135D400135B6A /* AppProxyProvider.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		36DBECEE273CE96B00D4A0DB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				36DBECF8273CE96B00D4A0DB /* ContentView.swift in Sources */,
-				36DBED4F273D0D2600D4A0DB /* NeManager.swift in Sources */,
 				36DBECF6273CE96B00D4A0DB /* Specht2App.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -384,11 +310,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		36C43D52274135D400135B6A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 36C43D49274135D400135B6A /* Extension */;
-			targetProxy = 36C43D51274135D400135B6A /* PBXContainerItemProxy */;
-		};
 		36DBED05273CE96C00D4A0DB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 36DBECF1273CE96B00D4A0DB /* Specht2 */;
@@ -402,60 +323,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		36C43D55274135D400135B6A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Extension/Extension.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H5443445N6;
-				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Extension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Extension;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@executable_path/../../../../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.zhuhaow.Specht2.Extension;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		36C43D56274135D400135B6A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Extension/Extension.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H5443445N6;
-				ENABLE_HARDENED_RUNTIME = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Extension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Extension;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@executable_path/../../../../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.zhuhaow.Specht2.Extension;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
 		36DBED15273CE96C00D4A0DB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -574,7 +441,6 @@
 		36DBED18273CE96C00D4A0DB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Specht2/Specht2.entitlements;
@@ -602,7 +468,6 @@
 		36DBED19273CE96C00D4A0DB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Specht2/Specht2.entitlements;
@@ -726,15 +591,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		36C43D54274135D400135B6A /* Build configuration list for PBXNativeTarget "Extension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				36C43D55274135D400135B6A /* Debug */,
-				36C43D56274135D400135B6A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		36DBECED273CE96B00D4A0DB /* Build configuration list for PBXProject "Specht2" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

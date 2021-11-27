@@ -9,14 +9,6 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        Button {
-            Task {
-                try! await Manager.createManager()
-            }
-        } label: {
-            Text("Create VPN")
-        }
-        .padding()
     }
 }
 
