@@ -28,3 +28,15 @@ jobs:
         with:
           command: test
           args: --manifest-path core/Cargo.toml
+
+  check_swift:
+    runs-on: macos-11
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.0"
+          bundler-cache: true
+          working-directory: app
+      - run: bundler exec fastlane lint
+        working-directory: app
