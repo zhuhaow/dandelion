@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3605D9BB275282B300FC66B7 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 36DBED3D273D0A7100D4A0DB /* NetworkExtension.framework */; };
 		36DBECF6273CE96B00D4A0DB /* Specht2App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF5273CE96B00D4A0DB /* Specht2App.swift */; };
 		36DBECF8273CE96B00D4A0DB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF7273CE96B00D4A0DB /* ContentView.swift */; };
 		36DBECFA273CE96C00D4A0DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36DBECF9273CE96C00D4A0DB /* Assets.xcassets */; };
@@ -34,20 +33,8 @@
 		};
 /* End PBXContainerItemProxy section */
 
-/* Begin PBXCopyFilesBuildPhase section */
-		36C43D34274132E700135B6A /* Embed App Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-			);
-			name = "Embed App Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
+		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
 		36DBECF2273CE96B00D4A0DB /* Specht2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Specht2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36DBECF5273CE96B00D4A0DB /* Specht2App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Specht2App.swift; sourceTree = "<group>"; };
 		36DBECF7273CE96B00D4A0DB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -67,7 +54,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3605D9BB275282B300FC66B7 /* NetworkExtension.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -113,6 +99,7 @@
 			isa = PBXGroup;
 			children = (
 				36DBECF5273CE96B00D4A0DB /* Specht2App.swift */,
+				36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */,
 				36DBECF7273CE96B00D4A0DB /* ContentView.swift */,
 				36DBECF9273CE96C00D4A0DB /* Assets.xcassets */,
 				36DBECFE273CE96C00D4A0DB /* Specht2.entitlements */,
@@ -161,10 +148,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 36DBED17273CE96C00D4A0DB /* Build configuration list for PBXNativeTarget "Specht2" */;
 			buildPhases = (
+				36A8436027528F1C00E6201D /* ShellScript */,
 				36DBECEE273CE96B00D4A0DB /* Sources */,
 				36DBECEF273CE96B00D4A0DB /* Frameworks */,
 				36DBECF0273CE96B00D4A0DB /* Resources */,
-				36C43D34274132E700135B6A /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
@@ -279,6 +266,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		36A8436027528F1C00E6201D /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRC_ROOT)/Specht2/core.h",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\ncd \"${SRCROOT}/../core\"\ncbindgen --output \"${SRCROOT}/Specht2/core.h\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		36DBECEE273CE96B00D4A0DB /* Sources */ = {
@@ -461,6 +469,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = me.zhuhaow.Specht2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Specht2/Specht2-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -488,6 +497,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = me.zhuhaow.Specht2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Specht2/Specht2-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
