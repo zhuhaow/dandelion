@@ -4,6 +4,8 @@ storage_mode("git")
 
 type("development") # The default type, can be: appstore, adhoc, enterprise or development
 
+additional_cert_types(["developer_id_installer"])
+
 platform("macos")
 
 username("nbndco@gmail.com") # Your Apple Developer Portal username
