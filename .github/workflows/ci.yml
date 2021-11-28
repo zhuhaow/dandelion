@@ -77,6 +77,8 @@ jobs:
           bundler-cache: true
           working-directory: app
       - run: bundler exec fastlane match
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         working-directory: app
       - run: bundler exec fastlane ci_release
         working-directory: app
