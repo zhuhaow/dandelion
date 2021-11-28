@@ -87,8 +87,7 @@ impl<T: Io> Socks5Acceptor<T> {
                 let mut buf = vec![0; buf[0].into()];
 
                 io.read_exact(&mut buf).await?;
-                let domain =
-                    String::from_utf8(buf).map_err(Socks5AcceptorError::DomainError)?;
+                let domain = String::from_utf8(buf).map_err(Socks5AcceptorError::DomainError)?;
                 IpOrDomain::Domain(domain)
             }
             4 => {
