@@ -24,7 +24,7 @@ end
 lane :ci do
   setup_ci
   build
-  test
+  # We don't run test for now since the CI only supports macOS 11.6.1 while we are targeting 12.0
 end
 
 lane :ci_release do
