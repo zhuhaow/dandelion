@@ -20,3 +20,21 @@ lane :lint do
     reporter: ENV["CI"] ? "github-actions-logging" : "xcode"
   )
 end
+
+lane :ci do
+  setup_ci
+  build
+  test
+end
+
+lane :build do
+  xcbuild
+end
+
+lane :test do
+  scan
+end
+
+lane :release do
+  build_mac_app(export_method: "developer-id")
+end

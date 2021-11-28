@@ -133,3 +133,5 @@ iOSInjectionProject/
 
 # End of https://www.toptal.com/developers/gitignore/api/osx,xcode,swift
 Specht2/core.h
+Specht2/core.a
+Specht2.app

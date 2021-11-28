@@ -29,7 +29,7 @@ jobs:
           command: test
           args: --manifest-path core/Cargo.toml
 
-  check_swift:
+  lint_swift:
     runs-on: macos-11
     steps:
       - uses: actions/checkout@v2
@@ -40,3 +40,40 @@ jobs:
           working-directory: app
       - run: bundler exec fastlane lint
         working-directory: app
+
+  test_app:
+    runs-on: macos-11
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.0"
+          bundler-cache: true
+          working-directory: app
+      - run: bundler exec fastlane ci
+        working-directory: app
+
+  release:
+    runs-on: macos-11
+    needs: [check_rust, lint_swift, test_app]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.0"
+          bundler-cache: true
+          working-directory: app
+      - run: bundler exec fastlane match
+        working-directory: app
+      - run: bundler exec fastlane release
+        working-directory: app
+      - uses: papeloto/action-zip@v1
+        with:
+          files: app/Specht2/Specht2.app
+          dest: app/Specht2/Specht2.zip
+      - uses: softprops/action-gh-release@v1
+        with:
+          prerelease: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          files:
+            app/Specht2/Specht2.zip

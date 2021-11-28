@@ -12,19 +12,10 @@
 		36DBECFA273CE96C00D4A0DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36DBECF9273CE96C00D4A0DB /* Assets.xcassets */; };
 		36DBECFD273CE96C00D4A0DB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36DBECFC273CE96C00D4A0DB /* Preview Assets.xcassets */; };
 		36DBED08273CE96C00D4A0DB /* Specht2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBED07273CE96C00D4A0DB /* Specht2Tests.swift */; };
-		36DBED12273CE96C00D4A0DB /* Specht2UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBED11273CE96C00D4A0DB /* Specht2UITests.swift */; };
-		36DBED14273CE96C00D4A0DB /* Specht2UITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBED13273CE96C00D4A0DB /* Specht2UITestsLaunchTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		36DBED04273CE96C00D4A0DB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 36DBECEA273CE96B00D4A0DB /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 36DBECF1273CE96B00D4A0DB;
-			remoteInfo = Specht2;
-		};
-		36DBED0E273CE96C00D4A0DB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 36DBECEA273CE96B00D4A0DB /* Project object */;
 			proxyType = 1;
@@ -43,9 +34,6 @@
 		36DBECFE273CE96C00D4A0DB /* Specht2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Specht2.entitlements; sourceTree = "<group>"; };
 		36DBED03273CE96C00D4A0DB /* Specht2Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Specht2Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		36DBED07273CE96C00D4A0DB /* Specht2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Specht2Tests.swift; sourceTree = "<group>"; };
-		36DBED0D273CE96C00D4A0DB /* Specht2UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Specht2UITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		36DBED11273CE96C00D4A0DB /* Specht2UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Specht2UITests.swift; sourceTree = "<group>"; };
-		36DBED13273CE96C00D4A0DB /* Specht2UITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Specht2UITestsLaunchTests.swift; sourceTree = "<group>"; };
 		36DBED3D273D0A7100D4A0DB /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -64,13 +52,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		36DBED0A273CE96C00D4A0DB /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -79,7 +60,6 @@
 			children = (
 				36DBECF4273CE96B00D4A0DB /* Specht2 */,
 				36DBED06273CE96C00D4A0DB /* Specht2Tests */,
-				36DBED10273CE96C00D4A0DB /* Specht2UITests */,
 				36DBED3C273D0A7100D4A0DB /* Frameworks */,
 				36DBECF3273CE96B00D4A0DB /* Products */,
 			);
@@ -90,7 +70,6 @@
 			children = (
 				36DBECF2273CE96B00D4A0DB /* Specht2.app */,
 				36DBED03273CE96C00D4A0DB /* Specht2Tests.xctest */,
-				36DBED0D273CE96C00D4A0DB /* Specht2UITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -124,15 +103,6 @@
 			path = Specht2Tests;
 			sourceTree = "<group>";
 		};
-		36DBED10273CE96C00D4A0DB /* Specht2UITests */ = {
-			isa = PBXGroup;
-			children = (
-				36DBED11273CE96C00D4A0DB /* Specht2UITests.swift */,
-				36DBED13273CE96C00D4A0DB /* Specht2UITestsLaunchTests.swift */,
-			);
-			path = Specht2UITests;
-			sourceTree = "<group>";
-		};
 		36DBED3C273D0A7100D4A0DB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -148,7 +118,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 36DBED17273CE96C00D4A0DB /* Build configuration list for PBXNativeTarget "Specht2" */;
 			buildPhases = (
-				36A8436027528F1C00E6201D /* ShellScript */,
+				36A8436027528F1C00E6201D /* Generate binding header */,
+				36A84361275338C600E6201D /* Compile core */,
 				36DBECEE273CE96B00D4A0DB /* Sources */,
 				36DBECEF273CE96B00D4A0DB /* Frameworks */,
 				36DBECF0273CE96B00D4A0DB /* Resources */,
@@ -180,24 +151,6 @@
 			productReference = 36DBED03273CE96C00D4A0DB /* Specht2Tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		36DBED0C273CE96C00D4A0DB /* Specht2UITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 36DBED1D273CE96C00D4A0DB /* Build configuration list for PBXNativeTarget "Specht2UITests" */;
-			buildPhases = (
-				36DBED09273CE96C00D4A0DB /* Sources */,
-				36DBED0A273CE96C00D4A0DB /* Frameworks */,
-				36DBED0B273CE96C00D4A0DB /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				36DBED0F273CE96C00D4A0DB /* PBXTargetDependency */,
-			);
-			name = Specht2UITests;
-			productName = Specht2UITests;
-			productReference = 36DBED0D273CE96C00D4A0DB /* Specht2UITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -212,10 +165,6 @@
 						CreatedOnToolsVersion = 13.1;
 					};
 					36DBED02273CE96C00D4A0DB = {
-						CreatedOnToolsVersion = 13.1;
-						TestTargetID = 36DBECF1273CE96B00D4A0DB;
-					};
-					36DBED0C273CE96C00D4A0DB = {
 						CreatedOnToolsVersion = 13.1;
 						TestTargetID = 36DBECF1273CE96B00D4A0DB;
 					};
@@ -236,7 +185,6 @@
 			targets = (
 				36DBECF1273CE96B00D4A0DB /* Specht2 */,
 				36DBED02273CE96C00D4A0DB /* Specht2Tests */,
-				36DBED0C273CE96C00D4A0DB /* Specht2UITests */,
 			);
 		};
 /* End PBXProject section */
@@ -258,18 +206,12 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		36DBED0B273CE96C00D4A0DB /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		36A8436027528F1C00E6201D /* ShellScript */ = {
+		36A8436027528F1C00E6201D /* Generate binding header */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -277,14 +219,33 @@
 			);
 			inputPaths = (
 			);
+			name = "Generate binding header";
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(SRC_ROOT)/Specht2/core.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\ncd \"${SRCROOT}/../core\"\ncbindgen --output \"${SRCROOT}/Specht2/core.h\"\n";
+		};
+		36A84361275338C600E6201D /* Compile core */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Compile core";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\n\"${SRCROOT}/build_core.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -306,15 +267,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		36DBED09273CE96C00D4A0DB /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				36DBED14273CE96C00D4A0DB /* Specht2UITestsLaunchTests.swift in Sources */,
-				36DBED12273CE96C00D4A0DB /* Specht2UITests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -322,11 +274,6 @@
 			isa = PBXTargetDependency;
 			target = 36DBECF1273CE96B00D4A0DB /* Specht2 */;
 			targetProxy = 36DBED04273CE96C00D4A0DB /* PBXContainerItemProxy */;
-		};
-		36DBED0F273CE96C00D4A0DB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 36DBECF1273CE96B00D4A0DB /* Specht2 */;
-			targetProxy = 36DBED0E273CE96C00D4A0DB /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -460,6 +407,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -488,6 +436,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -552,52 +501,6 @@
 			};
 			name = Release;
 		};
-		36DBED1E273CE96C00D4A0DB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H5443445N6;
-				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.zhuhaow.Specht2UITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = Specht2;
-			};
-			name = Debug;
-		};
-		36DBED1F273CE96C00D4A0DB /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = H5443445N6;
-				GENERATE_INFOPLIST_FILE = YES;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@loader_path/../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = me.zhuhaow.Specht2UITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = Specht2;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -624,15 +527,6 @@
 			buildConfigurations = (
 				36DBED1B273CE96C00D4A0DB /* Debug */,
 				36DBED1C273CE96C00D4A0DB /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		36DBED1D273CE96C00D4A0DB /* Build configuration list for PBXNativeTarget "Specht2UITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				36DBED1E273CE96C00D4A0DB /* Debug */,
-				36DBED1F273CE96C00D4A0DB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
