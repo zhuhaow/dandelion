@@ -1,4 +1,4 @@
-git_url("https://github.com/zhuhaow/sign_identity")
+git_url("git@github.com:zhuhaow/sign_identity.git")
 
 storage_mode("git")
 
