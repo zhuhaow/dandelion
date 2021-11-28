@@ -76,15 +76,11 @@ jobs:
           ruby-version: "3.0"
           bundler-cache: true
           working-directory: app
-      - name: Set up match
-        env:
-          MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY  }}
-        run: |
-          eval "$(ssh-agent -s)"
-          ssh-add - <<< "${MATCH_DEPLOY_KEY}"
+      - uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.MATCH_DEPLOY_KEY }}
       - run: bundler exec fastlane ci_release
         env:
-          GIT_SSH_COMMAND: "ssh -o StrictHostKeyChecking=no"
           MATCH_READONLY: true
         working-directory: app
       - uses: papeloto/action-zip@v1
