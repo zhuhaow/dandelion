@@ -86,10 +86,10 @@ jobs:
         working-directory: app
       - uses: papeloto/action-zip@v1
         with:
-          files: app/Specht2/Specht2.app
-          dest: app/Specht2/Specht2.zip
+          files: app/Specht2.app
+          dest: app/Specht2.zip
       - uses: softprops/action-gh-release@v1
         with:
           prerelease: false
           files:
-            app/Specht2/Specht2.zip
+            app/Specht2.zip
