@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		36A843682753B7AA00E6201D /* core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36A843672753B79E00E6201D /* core.a */; };
 		36DBECF6273CE96B00D4A0DB /* Specht2App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF5273CE96B00D4A0DB /* Specht2App.swift */; };
 		36DBECF8273CE96B00D4A0DB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF7273CE96B00D4A0DB /* ContentView.swift */; };
 		36DBECFA273CE96C00D4A0DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36DBECF9273CE96C00D4A0DB /* Assets.xcassets */; };
@@ -26,6 +27,7 @@
 
 /* Begin PBXFileReference section */
 		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
+		36A843672753B79E00E6201D /* core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = core.a; path = Specht2/core.a; sourceTree = "<group>"; };
 		36DBECF2273CE96B00D4A0DB /* Specht2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Specht2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36DBECF5273CE96B00D4A0DB /* Specht2App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Specht2App.swift; sourceTree = "<group>"; };
 		36DBECF7273CE96B00D4A0DB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -42,6 +44,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				36A843682753B7AA00E6201D /* core.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,6 +109,7 @@
 		36DBED3C273D0A7100D4A0DB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				36A843672753B79E00E6201D /* core.a */,
 				36DBED3D273D0A7100D4A0DB /* NetworkExtension.framework */,
 			);
 			name = Frameworks;
@@ -417,6 +421,10 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Specht2",
+				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = me.zhuhaow.Specht2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -449,6 +457,10 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Specht2",
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = me.zhuhaow.Specht2;
