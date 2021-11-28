@@ -25,6 +25,11 @@ fastlane lint
 fastlane ci
 ```
 
+### ci_release
+```
+fastlane ci_release
+```
+
 ### build
 ```
 fastlane build

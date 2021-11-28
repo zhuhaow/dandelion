@@ -27,12 +27,17 @@ lane :ci do
   test
 end
 
+lane :ci_release do
+  setup_ci
+  release
+end
+
 lane :build do
   build_mac_app(skip_codesigning: true, skip_archive: true)
 end
 
 lane :test do
-  scan
+  scan(xcargs: "CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO")
 end
 
 lane :release do

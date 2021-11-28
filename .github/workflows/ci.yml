@@ -78,7 +78,7 @@ jobs:
           working-directory: app
       - run: bundler exec fastlane match
         working-directory: app
-      - run: bundler exec fastlane release
+      - run: bundler exec fastlane ci_release
         working-directory: app
       - uses: papeloto/action-zip@v1
         with:
