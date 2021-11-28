@@ -1,5 +1,5 @@
 app_identifier("me.zhuhaow.Specht2") # The bundle identifier of your app
-# apple_id("nbndco@gmail.com") # Your Apple email address
+apple_id("nbndco@gmail.com") # Your Apple email address
 
 
 # For more information about the Appfile, see:
