@@ -37,20 +37,20 @@ impl<T: Io> Socks5Acceptor<T> {
         io.read_exact(&mut buf).await?;
 
         if buf[0] != 5 {
-            return Err(Socks5AcceptorError::UnsupportedVersion)?;
+            return Err(Socks5AcceptorError::UnsupportedVersion.into());
         }
 
         if buf[1] == 0 {
-            return Err(Socks5AcceptorError::InvalidMethodCount)?;
+            return Err(Socks5AcceptorError::InvalidMethodCount.into());
         }
 
         // Read requested methods
-        let mut buf = vec![0, buf[1].into()];
+        let mut buf = vec![0, buf[1]];
         io.read_exact(&mut buf).await?;
 
         // Check if there is no auth requested since that's the only one we support
         if !buf.iter().any(|x| *x == 0) {
-            return Err(Socks5AcceptorError::UnsupportedAuthMethod)?;
+            return Err(Socks5AcceptorError::UnsupportedAuthMethod.into());
         }
 
         // Send back the method we support.
@@ -88,7 +88,7 @@ impl<T: Io> Socks5Acceptor<T> {
 
                 io.read_exact(&mut buf).await?;
                 let domain =
-                    String::from_utf8(buf).map_err(|e| Socks5AcceptorError::DomainError(e))?;
+                    String::from_utf8(buf).map_err(Socks5AcceptorError::DomainError)?;
                 IpOrDomain::Domain(domain)
             }
             4 => {
@@ -96,7 +96,7 @@ impl<T: Io> Socks5Acceptor<T> {
                 io.read_exact(&mut buf).await?;
                 IpOrDomain::Ip(IpAddr::from(buf))
             }
-            _ => return Err(Socks5AcceptorError::UnsupportedAddressType)?,
+            _ => return Err(Socks5AcceptorError::UnsupportedAddressType.into()),
         };
 
         let mut buf = [0; 2];
