@@ -28,7 +28,7 @@ lane :ci do
 end
 
 lane :build do
-  xcbuild
+  build_mac_app(skip_codesigning: true, skip_archive: true)
 end
 
 lane :test do
