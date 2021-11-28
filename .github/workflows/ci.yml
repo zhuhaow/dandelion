@@ -83,11 +83,8 @@ jobs:
         env:
           MATCH_READONLY: true
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
         working-directory: app
-      - uses: papeloto/action-zip@v1
-        with:
-          files: app/Specht2.app
-          dest: app/Specht2.zip
       - uses: softprops/action-gh-release@v1
         with:
           prerelease: false

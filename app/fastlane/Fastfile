@@ -44,6 +44,8 @@ end
 
 lane :release do
   build_mac_app(export_method: "developer-id")
+  notarize(package: "Specht2.app", asc_provider: "H5443445N6")
+  zip(path: "Specht2.app", output_path: "Specht2.zip")
 end
 
 lane :init_ci do
