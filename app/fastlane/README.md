@@ -45,6 +45,11 @@ fastlane test
 fastlane release
 ```
 
+### init_ci
+```
+fastlane init_ci
+```
+
 
 ----
 

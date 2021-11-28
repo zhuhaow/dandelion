@@ -43,3 +43,12 @@ end
 lane :release do
   build_mac_app(export_method: "developer-id")
 end
+
+lane :init_ci do
+  github_action(
+    org: "zhuhaow",
+    repo: "Specht2",
+    match_org: "zhuhaow",
+    match_repo: "sign_identity"
+  )
+end

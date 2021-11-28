@@ -76,9 +76,15 @@ jobs:
           ruby-version: "3.0"
           bundler-cache: true
           working-directory: app
-      - run: bundler exec fastlane match
+      - name: fastlane
         env:
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_DEPLOY_KEY: ${{ secrets.MATCH_DEPLOY_KEY  }}
+          GIT_SSH_COMMAND: "ssh -o StrictHostKeyChecking=no"
+          MATCH_READONLY: true
+        run: |
+          eval "$(ssh-agent -s)"
+          ssh-add - <<< "${MATCH_DEPLOY_KEY}"
+          bundle exec fastlane test
         working-directory: app
       - run: bundler exec fastlane ci_release
         working-directory: app
