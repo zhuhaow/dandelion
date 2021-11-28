@@ -29,6 +29,7 @@ end
 
 lane :ci_release do
   setup_ci
+  match(type: "development")
   match(type: "developer_id")
   release
 end
