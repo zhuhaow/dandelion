@@ -82,6 +82,7 @@ jobs:
       - run: bundler exec fastlane ci_release
         env:
           MATCH_READONLY: true
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
         working-directory: app
       - uses: papeloto/action-zip@v1
         with:
