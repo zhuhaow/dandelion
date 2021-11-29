@@ -1,13 +1,10 @@
 #![feature(trait_alias)]
 pub mod acceptor;
 pub mod connector;
+pub mod io;
 pub mod resolver;
 
 use std::net::SocketAddr;
-
-use tokio::io::{AsyncRead, AsyncWrite};
-
-pub trait Io = AsyncRead + AsyncWrite + Unpin;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
