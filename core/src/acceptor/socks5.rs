@@ -106,14 +106,22 @@ impl<T: Io> Socks5Acceptor<T> {
             IpOrDomain::Ip(ip) => Endpoint::new_from_addr(SocketAddr::new(ip, port)),
         };
 
-        Ok(Socks5MidHandshake {
-            _io: io,
-            _endpoint: endpoint,
-        })
+        Ok(Socks5MidHandshake { io, endpoint })
     }
 }
 
 pub struct Socks5MidHandshake<T: Io> {
-    _io: T,
-    _endpoint: Endpoint,
+    io: T,
+    endpoint: Endpoint,
+}
+
+impl<T: Io> Socks5MidHandshake<T> {
+    pub fn target_endpoint(&self) -> &Endpoint {
+        &self.endpoint
+    }
+
+    pub async fn finalize(mut self) -> Result<T> {
+        self.io.write_all(&[5, 0, 0, 1, 0, 0, 0, 0, 0, 0]).await?;
+        Ok(self.io)
+    }
 }
