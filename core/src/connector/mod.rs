@@ -1,31 +1,75 @@
 pub mod tcp;
 
 use crate::{io::Io, Endpoint, Result};
-use std::marker::PhantomData;
 
 #[async_trait::async_trait]
-pub trait Connector<T: Io> {
-    async fn connect(self, endpoint: &Endpoint) -> Result<T>;
+pub trait Connector: Sync + Send + 'static {
+    type Stream: Io;
+
+    async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream>;
 }
 
-pub struct ConnectorWrapper<T: Io, Conn: Connector<T> + Send> {
+struct _ConnectorWrapper<Conn: Connector> {
     connector: Conn,
-    _marker: PhantomData<T>,
 }
 
-impl<T: Io, Conn: Connector<T> + Send> ConnectorWrapper<T, Conn> {
-    pub fn new(connector: Conn) -> Self {
+#[async_trait::async_trait]
+impl<Conn: Connector> Connector for _ConnectorWrapper<Conn> {
+    type Stream = Box<dyn Io>;
+
+    async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
+        let stream = self.connector.connect(endpoint).await?;
+        Ok(Box::new(stream))
+    }
+}
+
+pub struct ConnectorWrapper {
+    connector: Box<dyn Connector<Stream = Box<dyn Io>>>,
+}
+
+impl ConnectorWrapper {
+    pub fn new<Conn: Connector>(connector: Conn) -> Self {
         Self {
-            connector,
-            _marker: PhantomData::default(),
+            connector: Box::new(_ConnectorWrapper { connector }),
         }
     }
 }
 
 #[async_trait::async_trait]
-impl<T: Io, Conn: Connector<T> + Send> Connector<Box<dyn Io>> for ConnectorWrapper<T, Conn> {
-    async fn connect(self, endpoint: &Endpoint) -> Result<Box<dyn Io>> {
-        let stream = self.connector.connect(endpoint).await?;
-        Ok(Box::new(stream))
+impl Connector for ConnectorWrapper {
+    type Stream = Box<dyn Io>;
+
+    async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
+        Ok(self.connector.connect(endpoint).await?)
+    }
+}
+
+pub trait ConnectorFactory {
+    type Product: Connector;
+
+    fn build(&self) -> Self::Product;
+}
+
+struct _ConnectorFactoryWrapper<Factory: ConnectorFactory> {
+    factory: Factory,
+}
+
+impl<Factory: ConnectorFactory> ConnectorFactory for _ConnectorFactoryWrapper<Factory> {
+    type Product = ConnectorWrapper;
+
+    fn build(&self) -> Self::Product {
+        ConnectorWrapper::new(self.factory.build())
+    }
+}
+
+pub struct ConnectorFactoryWrapper {
+    factory: Box<dyn ConnectorFactory<Product = ConnectorWrapper>>,
+}
+
+impl ConnectorFactory for ConnectorFactoryWrapper {
+    type Product = ConnectorWrapper;
+
+    fn build(&self) -> Self::Product {
+        self.factory.build()
     }
 }
