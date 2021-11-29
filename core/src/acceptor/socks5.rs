@@ -44,7 +44,7 @@ impl<T: Io> Socks5Acceptor<T> {
         }
 
         // Read requested methods
-        let mut buf = vec![0, buf[1]];
+        let mut buf = vec![0; buf[1].into()];
         io.read_exact(&mut buf).await?;
 
         // Check if there is no auth requested since that's the only one we support
