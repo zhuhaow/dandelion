@@ -44,7 +44,7 @@ impl Connector for ConnectorWrapper {
     }
 }
 
-pub trait ConnectorFactory {
+pub trait ConnectorFactory: 'static {
     type Product: Connector;
 
     fn build(&self) -> Self::Product;
@@ -64,6 +64,14 @@ impl<Factory: ConnectorFactory> ConnectorFactory for _ConnectorFactoryWrapper<Fa
 
 pub struct ConnectorFactoryWrapper {
     factory: Box<dyn ConnectorFactory<Product = ConnectorWrapper>>,
+}
+
+impl ConnectorFactoryWrapper {
+    pub fn new<Factory: ConnectorFactory>(factory: Factory) -> Self {
+        Self {
+            factory: Box::new(_ConnectorFactoryWrapper { factory }),
+        }
+    }
 }
 
 impl ConnectorFactory for ConnectorFactoryWrapper {
