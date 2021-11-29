@@ -24,7 +24,14 @@ impl Connector for TcpConnector {
     }
 }
 
+#[derive(Default)]
 pub struct TcpConnectorFactory {}
+
+impl TcpConnectorFactory {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 impl ConnectorFactory for TcpConnectorFactory {
     type Product = TcpConnector;
