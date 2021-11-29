@@ -7,7 +7,7 @@ edition = "2021"
 crate-type=["staticlib"]
 
 [dependencies]
-tokio = { version = "1.14.0", features = ["io-util", "net"] }
+tokio = { version = "1.14.0", features = ["io-util", "net", "macros", "rt"] }
 thiserror = "1.0"
 strum = { version = "0.22.0", features = ["derive"] }
 async-trait = "0.1.51"

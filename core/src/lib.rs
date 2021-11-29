@@ -3,6 +3,8 @@ pub mod acceptor;
 pub mod connector;
 pub mod io;
 pub mod resolver;
+pub mod server;
+pub mod tunnel;
 
 use std::net::SocketAddr;
 
