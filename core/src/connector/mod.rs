@@ -1,8 +1,7 @@
-use std::marker::PhantomData;
+pub mod tcp;
 
 use crate::{io::Io, Endpoint, Result};
-
-pub mod tcp;
+use std::marker::PhantomData;
 
 #[async_trait::async_trait]
 pub trait Connector<T: Io> {
