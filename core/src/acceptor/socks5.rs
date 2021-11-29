@@ -1,9 +1,8 @@
+use crate::{Endpoint, Io, Result};
 use std::{
     net::{IpAddr, SocketAddr},
     string::FromUtf8Error,
 };
-
-use crate::{Endpoint, Io, Result};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 #[derive(Debug, strum::Display)]

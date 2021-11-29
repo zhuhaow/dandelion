@@ -7,6 +7,6 @@ edition = "2021"
 crate-type=["staticlib"]
 
 [dependencies]
-tokio = { version = "1.14.0", features = ["io-util"] }
+tokio = { version = "1.14.0", features = ["io-util", "net"] }
 thiserror = "1.0"
 strum = { version = "0.22.0", features = ["derive"] }

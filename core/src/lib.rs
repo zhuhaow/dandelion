@@ -1,5 +1,7 @@
 #![feature(trait_alias)]
 pub mod acceptor;
+pub mod connector;
+pub mod resolver;
 
 use std::net::SocketAddr;
 
@@ -10,10 +12,13 @@ pub trait Io = AsyncRead + AsyncWrite + Unpin;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("socks5 acceptor error: {0}")]
-    Socks5(#[from] acceptor::socks5::Socks5AcceptorError),
+    Socks5Acceptor(#[from] acceptor::socks5::Socks5AcceptorError),
 
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),
+
+    #[error("resolver error: {0}")]
+    Resolver(#[from] resolver::ResolverError),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
