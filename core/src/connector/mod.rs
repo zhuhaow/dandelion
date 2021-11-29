@@ -1,3 +1,4 @@
+pub mod simplex;
 pub mod tcp;
 
 use crate::{io::Io, Endpoint, Result};

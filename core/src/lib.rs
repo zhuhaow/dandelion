@@ -18,6 +18,9 @@ pub enum Error {
 
     #[error("resolver error: {0}")]
     Resolver(#[from] resolver::ResolverError),
+
+    #[error("ws error: {0}")]
+    WebSocket(#[from] tokio_tungstenite::tungstenite::error::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -34,6 +37,15 @@ impl Endpoint {
 
     pub fn new_from_addr(addr: SocketAddr) -> Self {
         Endpoint::Addr(addr)
+    }
+}
+
+impl ToString for Endpoint {
+    fn to_string(&self) -> String {
+        match self {
+            Endpoint::Addr(addr) => addr.to_string(),
+            Endpoint::Domain(d, p) => format!("{}:{}", d, p),
+        }
     }
 }
 

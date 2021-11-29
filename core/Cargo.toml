@@ -12,3 +12,4 @@ thiserror = "1.0"
 strum = { version = "0.22.0", features = ["derive"] }
 async-trait = "0.1.51"
 structopt = "0.3.25"
+tokio-tungstenite = "0.16.0"
