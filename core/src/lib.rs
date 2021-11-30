@@ -21,6 +21,9 @@ pub enum Error {
 
     #[error("ws error: {0}")]
     WebSocket(#[from] tokio_tungstenite::tungstenite::error::Error),
+
+    #[error("simplex error: {0}")]
+    Simplex(#[from] connector::simplex::SimplexError),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
