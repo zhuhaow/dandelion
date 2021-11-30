@@ -22,7 +22,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --all-features --manifest-path core/Cargo.toml -- -D warnings
+          args: --all-targets --all-features --manifest-path core/Cargo.toml -- -D warnings
       - name: cargo test
         uses: actions-rs/cargo@v1
         with:
