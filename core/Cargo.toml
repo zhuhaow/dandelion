@@ -8,8 +8,8 @@ crate-type = ["staticlib", "lib"]
 
 [dependencies]
 tokio = { version = "1.14.0", features = ["io-util", "net", "macros", "rt", "rt-multi-thread"] }
-thiserror = "1.0"
-strum = { version = "0.22.0", features = ["derive"] }
+thiserror = "1.0.30"
+strum = { version = "0.23.0", features = ["derive"] }
 async-trait = "0.1.51"
 structopt = "0.3.25"
 tokio-tungstenite = "0.16.0"
