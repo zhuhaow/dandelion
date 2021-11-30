@@ -1,7 +1,7 @@
 use super::Connector;
 use crate::{
     io::Io,
-    simplex::{connect, Config},
+    simplex::{client::connect, Config},
     Endpoint, Result,
 };
 
