@@ -1,12 +1,10 @@
 use super::Connector;
-use crate::{io::Io, simplex::io::into_io, Endpoint, Result};
+use crate::{
+    io::Io,
+    simplex::{io::into_io, SimplexError},
+    Endpoint, Result,
+};
 use tokio_tungstenite::{client_async, tungstenite::handshake::client::Request};
-
-#[derive(thiserror::Error, Debug)]
-pub enum SimplexError {
-    #[error("Failed to create simplex connection header: {0}")]
-    HeaderConfigInvalid(#[from] http::Error),
-}
 
 // Simplex is a lightweight protocol that based on WebSocket with only 1 extra RTT delay.
 // I haven't implemented the server yet.

@@ -1,9 +1,6 @@
-use crate::{io::Io};
+use crate::io::Io;
 use async_compat::Compat;
-use futures::{
-    stream::{TryStreamExt},
-    SinkExt, Stream,
-};
+use futures::{stream::TryStreamExt, SinkExt, Stream};
 use std::task::Poll;
 use tokio_tungstenite::{
     tungstenite::{error::Error as WsError, Message},
