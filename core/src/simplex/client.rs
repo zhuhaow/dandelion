@@ -1,6 +1,6 @@
 use crate::{
     io::Io,
-    simplex::{io::into_io, Config, SimplexError},
+    simplex::{io::into_io, Config, SimplexError, ENDPOINT_HEADER_KEY},
     Endpoint, Result,
 };
 use http::Request;
@@ -15,7 +15,7 @@ pub async fn connect<I: Io>(
     let request = Request::builder()
         .uri(format!("{}/{}", host, config.path))
         .header(&config.secret_header.0, &config.secret_header.1)
-        .header("Simplex Connect", endpoint.to_string())
+        .header(ENDPOINT_HEADER_KEY, endpoint.to_string())
         .body(())
         .map_err(Into::<SimplexError>::into)?;
 

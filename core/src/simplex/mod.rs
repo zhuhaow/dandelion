@@ -1,12 +1,10 @@
 pub mod client;
 pub mod io;
 
-
-
-
-
 // Simplex is a lightweight protocol that based on WebSocket with only 1 extra RTT delay.
 // I haven't implemented the server yet.
+
+static ENDPOINT_HEADER_KEY: &str = "Simplex-Endpoint";
 
 #[derive(thiserror::Error, Debug)]
 pub enum SimplexError {
