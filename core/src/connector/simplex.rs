@@ -1,8 +1,9 @@
 use super::Connector;
 use crate::{
+    endpoint::Endpoint,
     io::Io,
     simplex::{client::connect, Config},
-    Endpoint, Result,
+    Result,
 };
 
 pub struct SimplexConnector<C: Connector> {

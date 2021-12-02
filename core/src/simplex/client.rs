@@ -1,7 +1,8 @@
 use crate::{
+    endpoint::Endpoint,
     io::Io,
     simplex::{io::into_io, Config, SimplexError, ENDPOINT_HEADER_KEY},
-    Endpoint, Result,
+    Result,
 };
 use http::Request;
 use tokio_tungstenite::client_async;

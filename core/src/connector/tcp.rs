@@ -1,5 +1,5 @@
 use super::{Connector, ConnectorFactory};
-use crate::{Endpoint, Result};
+use crate::{endpoint::Endpoint, Result};
 use tokio::net::TcpStream;
 
 // TODO: Implement RFC 8305

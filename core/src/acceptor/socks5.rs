@@ -1,4 +1,4 @@
-use crate::{io::Io, Endpoint, Result};
+use crate::{endpoint::Endpoint, io::Io, Result};
 use std::{
     net::{IpAddr, SocketAddr},
     string::FromUtf8Error,

@@ -1,7 +1,7 @@
 pub mod simplex;
 pub mod tcp;
 
-use crate::{io::Io, Endpoint, Result};
+use crate::{endpoint::Endpoint, io::Io, Result};
 
 #[async_trait::async_trait]
 pub trait Connector: Sync + Send + 'static {
