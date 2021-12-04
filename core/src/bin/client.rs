@@ -1,8 +1,7 @@
-use std::net::SocketAddr;
-
 use specht2_core::{
     acceptor::socks5::Socks5Acceptor, connector::tcp::TcpConnector, server::serve, Result,
 };
+use std::net::SocketAddr;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
