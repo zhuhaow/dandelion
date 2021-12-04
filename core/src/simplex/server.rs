@@ -50,7 +50,7 @@ async fn handler(
             .headers()
             .get(ENDPOINT_HEADER_KEY)
             .and_then(|ep| ep.to_str().ok())
-            .and_then(|ep| ep.try_into().ok())
+            .and_then(|ep| ep.parse().ok())
         {
             Some(ep) => ep,
             None => return Ok(create_empty_response()),

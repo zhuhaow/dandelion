@@ -1,4 +1,4 @@
-use std::net::SocketAddr;
+use std::{net::SocketAddr, str::FromStr};
 
 #[derive(Debug, Clone)]
 pub enum Endpoint {
@@ -22,11 +22,11 @@ pub enum EndpointParseError {
     InvalidPort,
 }
 
-impl TryFrom<&str> for Endpoint {
-    type Error = EndpointParseError;
+impl FromStr for Endpoint {
+    type Err = EndpointParseError;
 
-    fn try_from(value: &str) -> std::result::Result<Self, Self::Error> {
-        value.try_into().or_else(|_| {
+    fn from_str(value: &str) -> std::result::Result<Self, Self::Err> {
+        value.parse().map(Endpoint::new_from_addr).or_else(|_| {
             value
                 .rsplit_once(":")
                 .ok_or(EndpointParseError::InvalidFormat)
