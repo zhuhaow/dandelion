@@ -1,9 +1,10 @@
-use super::{Connector, ConnectorFactory};
+use super::Connector;
 use crate::{endpoint::Endpoint, Result};
 use tokio::net::TcpStream;
 
 // TODO: Implement RFC 8305
 
+#[derive(Clone, Debug, Default)]
 pub struct TcpConnector {}
 
 #[async_trait::async_trait]
@@ -21,22 +22,5 @@ impl Connector for TcpConnector {
 
         let stream = TcpStream::connect(addr).await?;
         Ok(stream)
-    }
-}
-
-#[derive(Default)]
-pub struct TcpConnectorFactory {}
-
-impl TcpConnectorFactory {
-    pub fn new() -> Self {
-        Self {}
-    }
-}
-
-impl ConnectorFactory for TcpConnectorFactory {
-    type Product = TcpConnector;
-
-    fn build(&self) -> Self::Product {
-        TcpConnector {}
     }
 }

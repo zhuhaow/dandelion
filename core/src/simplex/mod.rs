@@ -16,7 +16,7 @@ pub enum SimplexError {
     InvalidClient,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Config {
     path: String,
     secret_header: (String, String),

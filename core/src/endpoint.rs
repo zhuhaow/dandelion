@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Endpoint {
     Addr(SocketAddr),
     Domain(String, u16),

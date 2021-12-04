@@ -1,5 +1,7 @@
+use super::{Acceptor, MidHandshake};
 use crate::{endpoint::Endpoint, io::Io, Result};
 use std::{
+    marker::PhantomData,
     net::{IpAddr, SocketAddr},
     string::FromUtf8Error,
 };
@@ -17,20 +19,33 @@ pub enum Socks5AcceptorError {
 
 impl std::error::Error for Socks5AcceptorError {}
 
-pub struct Socks5Acceptor<T: Io> {
-    io: T,
+#[derive(Debug)]
+pub struct Socks5Acceptor<I: Io> {
+    _marker: PhantomData<I>,
 }
 
-impl<T: Io> Socks5Acceptor<T> {
-    pub fn new(io: T) -> Self {
-        Self { io }
+impl<I: Io> Clone for Socks5Acceptor<I> {
+    fn clone(&self) -> Self {
+        Self {
+            _marker: self._marker,
+        }
     }
 }
 
-impl<T: Io> Socks5Acceptor<T> {
-    pub async fn handshake(self) -> Result<Socks5MidHandshake<T>> {
-        let mut io = self.io;
+impl<I: Io> Default for Socks5Acceptor<I> {
+    fn default() -> Self {
+        Self {
+            _marker: Default::default(),
+        }
+    }
+}
 
+#[async_trait::async_trait]
+impl<I: Io> Acceptor for Socks5Acceptor<I> {
+    type Input = I;
+    type Output = Socks5MidHandshake<I>;
+
+    async fn handshake(self, mut io: I) -> Result<Self::Output> {
         // Read hello
         let mut buf = [0; 2];
         io.read_exact(&mut buf).await?;
@@ -115,12 +130,15 @@ pub struct Socks5MidHandshake<T: Io> {
     endpoint: Endpoint,
 }
 
-impl<T: Io> Socks5MidHandshake<T> {
-    pub fn target_endpoint(&self) -> &Endpoint {
+#[async_trait::async_trait]
+impl<T: Io> MidHandshake for Socks5MidHandshake<T> {
+    type Output = T;
+
+    fn target_endpoint(&self) -> &Endpoint {
         &self.endpoint
     }
 
-    pub async fn finalize(mut self) -> Result<T> {
+    async fn finalize(mut self) -> Result<Self::Output> {
         self.io.write_all(&[5, 0, 0, 1, 0, 0, 0, 0, 0, 0]).await?;
         Ok(self.io)
     }

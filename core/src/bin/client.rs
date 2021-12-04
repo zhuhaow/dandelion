@@ -1,4 +1,8 @@
-use specht2_core::{connector::tcp::TcpConnectorFactory, server::Server, Result};
+use std::net::SocketAddr;
+
+use specht2_core::{
+    acceptor::socks5::Socks5Acceptor, connector::tcp::TcpConnector, server::serve, Result,
+};
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -11,9 +15,11 @@ struct Opt {
 #[tokio::main]
 async fn main() -> Result<()> {
     let opt = Opt::from_args();
-    let connector_factory = TcpConnectorFactory::new();
 
-    let server = Server::new(opt.socks5_port, connector_factory).await?;
-
-    server.accept().await
+    serve(
+        SocketAddr::new("127.0.0.1".parse().unwrap(), opt.socks5_port),
+        Socks5Acceptor::default(),
+        TcpConnector::default(),
+    )
+    .await
 }

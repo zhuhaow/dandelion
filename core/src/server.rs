@@ -1,46 +1,32 @@
 use crate::{
-    acceptor::socks5::Socks5Acceptor,
-    connector::{Connector, ConnectorFactory, ConnectorFactoryWrapper},
-    tunnel::Tunnel,
+    acceptor::{Acceptor, MidHandshake},
+    connector::Connector,
+    tunnel::tunnel,
     Result,
 };
-use tokio::net::TcpListener;
+use std::net::SocketAddr;
+use tokio::net::{TcpListener, TcpStream};
 
-pub struct Server {
-    socks5_listener: TcpListener,
-    connector_factory: ConnectorFactoryWrapper,
-}
+pub async fn serve(
+    addr: SocketAddr,
+    acceptor: impl Acceptor<Input = TcpStream>,
+    connector: impl Connector,
+) -> Result<()> {
+    let listener = TcpListener::bind(addr).await?;
 
-impl Server {
-    pub async fn new<Factory: ConnectorFactory>(
-        socks5_port: u16,
-        connector_factory: Factory,
-    ) -> Result<Self> {
-        Ok(Self {
-            socks5_listener: TcpListener::bind(("127.0.0.1", socks5_port)).await?,
-            connector_factory: ConnectorFactoryWrapper::new(connector_factory),
-        })
-    }
+    loop {
+        let (stream, _addr) = listener.accept().await?;
 
-    pub async fn accept(&self) -> Result<()> {
-        self.accept_socks5().await
-    }
+        let connector = connector.clone();
+        let acceptor = acceptor.clone();
 
-    pub async fn accept_socks5(&self) -> Result<()> {
-        loop {
-            let (stream, _addr) = self.socks5_listener.accept().await?;
+        tokio::spawn(async move {
+            let handshake = acceptor.handshake(stream).await?;
+            let endpoint = handshake.target_endpoint().clone();
+            let remote = connector.connect(&endpoint).await?;
+            let local = handshake.finalize().await?;
 
-            let connector = self.connector_factory.build();
-
-            tokio::spawn(async move {
-                let handshake = Socks5Acceptor::new(stream).handshake().await?;
-                let remote = connector.connect(handshake.target_endpoint()).await?;
-                let local = handshake.finalize().await?;
-
-                let mut tunnel = Tunnel::new(Box::new(local), remote);
-
-                tunnel.process().await
-            });
-        }
+            tunnel(local, remote).await
+        });
     }
 }
