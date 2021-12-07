@@ -1,8 +1,8 @@
 use super::{Config, ENDPOINT_HEADER_KEY};
-use crate::{endpoint::Endpoint, io::Io, simplex::SimplexError, Result};
+use crate::{endpoint::Endpoint, io::Io, simplex::SimplexError, Error, Result};
 use bytes::{Buf, Bytes};
 use chrono::Utc;
-use futures::{future::BoxFuture, FutureExt, TryFutureExt};
+use futures::{Future, FutureExt};
 use hyper::{server::conn::Http, service::service_fn, Body, Request, Response};
 use hyper_tungstenite::{
     is_upgrade_request,
@@ -107,41 +107,15 @@ fn upgrade_response(request: &Request<Body>) -> Result<Response<Body>> {
         .expect("bug: failed to build response"))
 }
 
-pub struct SimplexMidHandshake {
-    done: Sender<()>,
-    endpoint: Endpoint,
-    f: BoxFuture<'static, Result<Box<dyn Io>>>,
-}
-
-impl SimplexMidHandshake {
-    fn new(
-        done: Sender<()>,
-        endpoint: Endpoint,
-        f: BoxFuture<'static, Result<Box<dyn Io>>>,
-    ) -> Self {
-        Self { done, endpoint, f }
-    }
-
-    pub async fn finalize(self) -> Result<Box<dyn Io>> {
-        // This should never error since we are not polling the other side, so
-        // the receiver should not be deallocated.
-        self.done
-            .send(())
-            .expect("bug: the done signal receiver should not be deallocated");
-        self.f.await
-    }
-
-    pub fn taget_endpoint(&self) -> &Endpoint {
-        &self.endpoint
-    }
-}
-
 struct UpgradeSignal {
     endpoint_tx: Sender<Endpoint>,
     done_rx: Receiver<()>,
 }
 
-pub async fn serve(io: impl Io, config: Config) -> Result<SimplexMidHandshake> {
+pub async fn handshake(
+    io: impl Io,
+    config: Config,
+) -> Result<(Endpoint, impl Future<Output = Result<impl Io>>)> {
     let (done_tx, done_rx) = channel();
     let (endpoint_tx, endpoint_rx) = channel();
 
@@ -155,11 +129,12 @@ pub async fn serve(io: impl Io, config: Config) -> Result<SimplexMidHandshake> {
         service_fn(move |req| {
             let config = config.clone();
             let signal = signal.clone();
+            // We need to pin the future here so the `conn` can be unpinned.
             handler(req, config, signal).boxed()
         }),
     );
 
-    let mut conn_fut = conn.without_shutdown().boxed();
+    let mut conn_fut = conn.without_shutdown();
 
     let endpoint = tokio::select! {
         _ = &mut conn_fut => {
@@ -175,20 +150,19 @@ pub async fn serve(io: impl Io, config: Config) -> Result<SimplexMidHandshake> {
         }
     };
 
-    Ok(SimplexMidHandshake::new(
-        done_tx,
-        endpoint,
-        conn_fut
-            .map_ok(|part| {
-                let io: Box<dyn Io> = Box::new(ChainReadBufAndIo {
-                    read_buf: part.read_buf,
-                    io: part.io,
-                });
-                io
-            })
-            .err_into()
-            .boxed(),
-    ))
+    Ok((endpoint, async move {
+        // This should never error since we are not polling the other side, so
+        // the receiver should not be deallocated.
+        done_tx
+            .send(())
+            .expect("bug: the done signal receiver should not be deallocated");
+        let part = conn_fut.await?;
+
+        Ok::<_, Error>(ChainReadBufAndIo {
+            read_buf: part.read_buf,
+            io: part.io,
+        })
+    }))
 }
 
 #[pin_project::pin_project]

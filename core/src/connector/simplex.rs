@@ -6,7 +6,6 @@ use crate::{
     Result,
 };
 
-#[derive(Clone)]
 pub struct SimplexConnector<C: Connector> {
     next_hop: Endpoint,
     config: Config,

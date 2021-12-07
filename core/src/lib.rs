@@ -1,11 +1,11 @@
 #![feature(trait_alias)]
 
 pub mod acceptor;
+pub mod config;
 pub mod connector;
 pub mod endpoint;
 pub mod io;
 pub mod resolver;
-pub mod server;
 pub mod simplex;
 pub mod tunnel;
 
@@ -24,6 +24,8 @@ pub enum Error {
     Simplex(#[from] simplex::SimplexError),
 
     EndpointParse(#[from] endpoint::EndpointParseError),
+
+    Ron(#[from] ron::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

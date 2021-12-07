@@ -22,3 +22,6 @@ hyper-tungstenite = "0.5.0"
 hyper = { version = "0.14.15", features = ["http1", "server"] }
 bytes = "1.1.0"
 tungstenite = "0.16.0"
+ron = "0.7.0"
+serde = { version = "1.0.130", features = ["derive"] }
+serde_with = "1.11.0"

@@ -1,55 +1,30 @@
-use super::{Acceptor, MidHandshake};
-pub use crate::simplex::server::SimplexMidHandshake;
-use crate::{
-    io::Io,
-    simplex::{server::serve, Config},
-    Result,
-};
-use std::marker::PhantomData;
+use super::{Acceptor, HandshakeResult};
+pub use crate::simplex::server::handshake;
+use crate::{io::Io, simplex::Config, Error};
+use futures::FutureExt;
 
-#[derive(Debug)]
-pub struct SimplexAcceptor<I: Io> {
+#[derive(Debug, Clone)]
+pub struct SimplexAcceptor {
     config: Config,
-    _marker: PhantomData<I>,
 }
 
-impl<I: Io> SimplexAcceptor<I> {
+impl SimplexAcceptor {
     pub fn new(config: Config) -> Self {
-        Self {
-            config,
-            _marker: Default::default(),
-        }
-    }
-}
-
-impl<I: Io> Clone for SimplexAcceptor<I> {
-    fn clone(&self) -> Self {
-        Self {
-            config: self.config.clone(),
-            _marker: self._marker,
-        }
+        Self { config }
     }
 }
 
 #[async_trait::async_trait]
-impl<I: Io> Acceptor for SimplexAcceptor<I> {
-    type Input = I;
-    type Output = SimplexMidHandshake;
-
-    async fn handshake(self, io: I) -> Result<Self::Output> {
-        serve(io, self.config).await
-    }
-}
-
-#[async_trait::async_trait]
-impl MidHandshake for SimplexMidHandshake {
-    type Output = Box<dyn Io>;
-
-    fn target_endpoint(&self) -> &crate::endpoint::Endpoint {
-        self.taget_endpoint()
-    }
-
-    async fn finalize(self) -> Result<Self::Output> {
-        self.finalize().await
+impl<I: Io> Acceptor<I> for SimplexAcceptor {
+    async fn do_handshake(&self, io: I) -> HandshakeResult {
+        let (endpoint, fut) = handshake(io, self.config.clone()).await?;
+        Ok((
+            endpoint,
+            async move {
+                let io: Box<dyn Io> = Box::new(fut.await?);
+                Ok::<_, Error>(io)
+            }
+            .boxed(),
+        ))
     }
 }
