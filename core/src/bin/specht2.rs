@@ -1,5 +1,5 @@
 use specht2_core::{
-    config::{Server, ServerConfig},
+    server::{Server, ServerConfig},
     Result,
 };
 use std::{fs::read_to_string, path::PathBuf};

@@ -1,11 +1,11 @@
 #![feature(trait_alias)]
 
 pub mod acceptor;
-pub mod config;
 pub mod connector;
 pub mod endpoint;
 pub mod io;
 pub mod resolver;
+pub mod server;
 pub mod simplex;
 pub mod tunnel;
 
