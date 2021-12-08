@@ -1,5 +1,10 @@
 use super::{Config, ENDPOINT_HEADER_KEY};
-use crate::{endpoint::Endpoint, io::Io, simplex::SimplexError, Error, Result};
+use crate::{
+    endpoint::Endpoint,
+    io::Io,
+    simplex::{io::into_io, SimplexError},
+    Error, Result,
+};
 use bytes::{Buf, Bytes};
 use chrono::Utc;
 use futures::{Future, FutureExt};
@@ -7,7 +12,9 @@ use hyper::{server::conn::Http, service::service_fn, Body, Request, Response};
 use hyper_tungstenite::{
     is_upgrade_request,
     tungstenite::{error::ProtocolError, handshake::derive_accept_key},
+    WebSocketStream,
 };
+use log::{debug, info, warn};
 use std::sync::Arc;
 use tokio::{
     io::{AsyncRead, AsyncWrite},
@@ -16,6 +23,7 @@ use tokio::{
         Mutex,
     },
 };
+use tungstenite::protocol::Role;
 
 fn create_empty_response() -> Response<Body> {
     Response::new(Body::from(format!("Now is {}", Utc::now().to_rfc3339())))
@@ -116,6 +124,8 @@ pub async fn handshake(
     io: impl Io,
     config: Config,
 ) -> Result<(Endpoint, impl Future<Output = Result<impl Io>>)> {
+    debug!("Server begin handshake with simplex protocol");
+
     let (done_tx, done_rx) = channel();
     let (endpoint_tx, endpoint_rx) = channel();
 
@@ -150,7 +160,11 @@ pub async fn handshake(
         }
     };
 
+    info!("Got connection request to {}", endpoint);
+
     Ok((endpoint, async move {
+        debug!("Finishing handshake");
+
         // This should never error since we are not polling the other side, so
         // the receiver should not be deallocated.
         done_tx
@@ -158,10 +172,19 @@ pub async fn handshake(
             .expect("bug: the done signal receiver should not be deallocated");
         let part = conn_fut.await?;
 
-        Ok::<_, Error>(ChainReadBufAndIo {
-            read_buf: part.read_buf,
-            io: part.io,
-        })
+        debug!("Handshake is done");
+
+        let ws_stream = WebSocketStream::from_raw_socket(
+            ChainReadBufAndIo {
+                read_buf: part.read_buf,
+                io: part.io,
+            },
+            Role::Server,
+            None,
+        )
+        .await;
+
+        Ok::<_, Error>(into_io(ws_stream))
     }))
 }
 
