@@ -14,7 +14,7 @@ use hyper_tungstenite::{
     tungstenite::{error::ProtocolError, handshake::derive_accept_key},
     WebSocketStream,
 };
-use log::{debug, info, warn};
+use log::{debug, info};
 use std::sync::Arc;
 use tokio::{
     io::{AsyncRead, AsyncWrite},
