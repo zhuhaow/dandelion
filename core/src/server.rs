@@ -5,6 +5,7 @@ use crate::{
     simplex::Config,
     Error, Result,
 };
+use log::{debug, info, warn};
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr};
 use std::net::SocketAddr;
@@ -71,9 +72,13 @@ impl Server {
     pub async fn serve(&self) -> Result<()> {
         // TODO: we can probably remove Acceptor and Connector and simply replace it with a lambda.
 
+        info!("Server started");
+
         let addr = self.config.acceptor.server_addr();
 
         let listener = TcpListener::bind(addr).await?;
+
+        info!("Server started listening on {}", addr);
 
         let acceptor_fn: Box<dyn Fn() -> Box<dyn Acceptor<TcpStream>>> = match self.config.acceptor
         {
@@ -117,17 +122,33 @@ impl Server {
         };
 
         loop {
-            let (stream, _addr) = listener.accept().await?;
+            let (stream, addr) = listener.accept().await?;
+            info!("Accepted a new connection from {}", addr);
+
             let acceptor = acceptor_fn();
             let connector = connector_fn();
 
             tokio::spawn(async move {
-                let (endpoint, fut) = acceptor.do_handshake(stream).await?;
-                let mut remote = connector.connect(&endpoint).await?;
-                let mut local = fut.await?;
-                copy_bidirectional(&mut local, &mut remote).await?;
+                let result = async move {
+                    debug!("Start handshake");
+                    let (endpoint, fut) = acceptor.do_handshake(stream).await?;
+                    debug!("Accepted connection request to {}", endpoint);
+                    let mut remote = connector.connect(&endpoint).await?;
+                    debug!("Connected to {}", endpoint);
+                    let mut local = fut.await?;
+                    debug!("Forwarding data");
+                    copy_bidirectional(&mut local, &mut remote).await?;
+                    debug!("Done processing connection");
 
-                Ok::<_, Error>(())
+                    Ok::<_, Error>(())
+                }
+                .await;
+
+                if let Err(err) = result {
+                    warn!("Error happened when processing a connection: {}", err)
+                } else {
+                    debug!("Successfully processed connection");
+                }
             });
         }
     }
