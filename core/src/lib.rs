@@ -9,22 +9,23 @@ pub mod server;
 pub mod simplex;
 pub mod tunnel;
 
-#[derive(strum::Display, thiserror::Error, Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum Error {
+    #[error(transparent)]
     Socks5Acceptor(#[from] acceptor::socks5::Socks5AcceptorError),
-
+    #[error(transparent)]
     Io(#[from] std::io::Error),
-
+    #[error(transparent)]
     Resolver(#[from] resolver::ResolverError),
-
+    #[error(transparent)]
     WebSocket(#[from] tungstenite::error::Error),
-
+    #[error(transparent)]
     Hyper(#[from] hyper::Error),
-
+    #[error(transparent)]
     Simplex(#[from] simplex::SimplexError),
-
+    #[error(transparent)]
     EndpointParse(#[from] endpoint::EndpointParseError),
-
+    #[error(transparent)]
     Ron(#[from] ron::Error),
 }
 
