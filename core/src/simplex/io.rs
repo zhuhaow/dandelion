@@ -61,7 +61,7 @@ impl<C: Io> futures::io::AsyncWrite for WebSocketStreamToAsyncWrite<C> {
     ) -> Poll<std::io::Result<()>> {
         let stream = self.project().stream;
 
-        let result = futures::ready!(stream.poll_flush_unpin(cx));
+        let result = futures::ready!(stream.poll_close_unpin(cx));
 
         Poll::Ready(result.map_err(ws_to_io_error))
     }
