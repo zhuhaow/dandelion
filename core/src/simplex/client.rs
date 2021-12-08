@@ -13,8 +13,15 @@ pub async fn connect<I: Io>(
     config: &Config,
     host: String,
 ) -> Result<impl Io + 'static> {
+    let uri = http::uri::Builder::new()
+        .authority(host)
+        .scheme("ws")
+        .path_and_query(&config.path)
+        .build()
+        .map_err(Into::<SimplexError>::into)?;
+
     let request = Request::builder()
-        .uri(format!("{}/{}", host, config.path))
+        .uri(uri)
         .header(&config.secret_header.0, &config.secret_header.1)
         .header(ENDPOINT_HEADER_KEY, endpoint.to_string())
         .body(())
