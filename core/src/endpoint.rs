@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use std::{net::SocketAddr, str::FromStr};
+use std::{fmt::Display, net::SocketAddr, str::FromStr};
 
 #[derive(Debug, Clone, Deserialize)]
 pub enum Endpoint {
@@ -41,11 +41,11 @@ impl FromStr for Endpoint {
     }
 }
 
-impl ToString for Endpoint {
-    fn to_string(&self) -> String {
+impl Display for Endpoint {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Endpoint::Addr(addr) => addr.to_string(),
-            Endpoint::Domain(d, p) => format!("{}:{}", d, p),
+            Endpoint::Addr(addr) => write!(f, "{}", addr),
+            Endpoint::Domain(d, p) => write!(f, "{}:{}", d, p),
         }
     }
 }
