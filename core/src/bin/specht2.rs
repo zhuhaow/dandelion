@@ -14,6 +14,11 @@ struct Opt {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    flexi_logger::Logger::try_with_env()
+        .unwrap()
+        .start()
+        .unwrap();
+
     let opt: Opt = Opt::from_args();
 
     let config: ServerConfig = ron::de::from_str(&read_to_string(opt.input)?)?;
