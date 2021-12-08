@@ -29,7 +29,7 @@ impl FromStr for Endpoint {
     fn from_str(value: &str) -> std::result::Result<Self, Self::Err> {
         value.parse().map(Endpoint::new_from_addr).or_else(|_| {
             value
-                .rsplit_once(":")
+                .rsplit_once(':')
                 .ok_or(EndpointParseError::InvalidFormat)
                 .and_then(|(host, port)| {
                     Ok(Endpoint::new_from_domain(
