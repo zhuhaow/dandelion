@@ -1,5 +1,6 @@
 pub mod simplex;
 pub mod tcp;
+pub mod tls;
 
 use crate::{endpoint::Endpoint, io::Io, Result};
 

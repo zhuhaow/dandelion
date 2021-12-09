@@ -1,6 +1,8 @@
 use crate::{
     acceptor::{simplex::SimplexAcceptor, socks5::Socks5Acceptor, Acceptor},
-    connector::{simplex::SimplexConnector, tcp::TcpConnector, BoxedConnector, Connector},
+    connector::{
+        simplex::SimplexConnector, tcp::TcpConnector, tls::TlsConector, BoxedConnector, Connector,
+    },
     endpoint::Endpoint,
     simplex::Config,
     Error, Result,
@@ -57,6 +59,7 @@ pub enum ConnectorConfig {
         path: String,
         secret_key: String,
         secret_value: String,
+        secure: bool,
     },
 }
 
@@ -104,6 +107,7 @@ impl Server {
                 ref path,
                 ref secret_key,
                 ref secret_value,
+                secure,
             } => {
                 let config = Config::new(
                     path.to_string(),
@@ -115,7 +119,11 @@ impl Server {
                     BoxedConnector::new(SimplexConnector::new(
                         endpoint.clone(),
                         config.clone(),
-                        TcpConnector {},
+                        if secure {
+                            BoxedConnector::new(TlsConector::new(TcpConnector::default()))
+                        } else {
+                            BoxedConnector::new(TcpConnector::default())
+                        },
                     ))
                 })
             }

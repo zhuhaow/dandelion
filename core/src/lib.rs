@@ -28,6 +28,8 @@ pub enum Error {
     #[error(transparent)]
     Ron(#[from] ron::Error),
     #[error(transparent)]
+    Tls(#[from] tokio_native_tls::native_tls::Error),
+    #[error(transparent)]
     Anyhow(#[from] anyhow::Error),
 }
 

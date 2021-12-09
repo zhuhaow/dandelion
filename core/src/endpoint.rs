@@ -15,6 +15,13 @@ impl Endpoint {
     pub fn new_from_addr(addr: SocketAddr) -> Self {
         Endpoint::Addr(addr)
     }
+
+    pub fn hostname(&self) -> String {
+        match self {
+            Endpoint::Addr(addr) => addr.ip().to_string(),
+            Endpoint::Domain(d, _) => d.to_owned(),
+        }
+    }
 }
 
 #[derive(strum::Display, thiserror::Error, Debug)]
