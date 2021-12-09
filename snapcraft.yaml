@@ -1,0 +1,17 @@
+name: specht2
+version: git
+summary: A light and fast proxy server
+description: |
+  specht2 is a rewrite of Specht in rust with speed in mind.
+
+base: core18
+
+parts:
+  specht2:
+    plugin: rust
+    rust-channel: nightly
+    source: core/
+
+apps:
+  specht2:
+    command: bin/specht2
