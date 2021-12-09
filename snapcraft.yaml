@@ -15,6 +15,7 @@ parts:
 apps:
   specht2:
     command: bin/specht2
+    daemon: simple
     plugs:
       - network
       - network-bind
