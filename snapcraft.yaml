@@ -15,3 +15,6 @@ parts:
 apps:
   specht2:
     command: bin/specht2
+    plugs:
+      - network
+      - network-bind
