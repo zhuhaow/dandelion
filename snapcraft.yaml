@@ -4,6 +4,7 @@ summary: A light and fast proxy server
 description: |
   specht2 is a rewrite of Specht in rust with speed in mind.
 
+grade: stable
 base: core18
 
 parts:
