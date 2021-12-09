@@ -27,6 +27,8 @@ pub enum Error {
     EndpointParse(#[from] endpoint::EndpointParseError),
     #[error(transparent)]
     Ron(#[from] ron::Error),
+    #[error(transparent)]
+    Anyhow(#[from] anyhow::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

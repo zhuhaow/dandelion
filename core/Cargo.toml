@@ -27,3 +27,4 @@ serde = { version = "1.0.130", features = ["derive"] }
 serde_with = "1.11.0"
 log = "0.4.14"
 flexi_logger = "0.20.1"
+anyhow = "1.0.51"
