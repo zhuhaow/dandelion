@@ -1,7 +1,11 @@
 use crate::{
     acceptor::{simplex::SimplexAcceptor, socks5::Socks5Acceptor, Acceptor},
     connector::{
-        simplex::SimplexConnector, tcp::TcpConnector, tls::TlsConector, BoxedConnector, Connector,
+        boxed::BoxedConnectorFactory,
+        simplex::{SimplexConnectorFactory},
+        tcp::{TcpConnectorFactory},
+        tls::{TlsConnectorFactory},
+        Connector, ConnectorFactory,
     },
     endpoint::Endpoint,
     simplex::Config,
@@ -59,8 +63,34 @@ pub enum ConnectorConfig {
         path: String,
         secret_key: String,
         secret_value: String,
-        secure: bool,
+        next: Box<ConnectorConfig>,
     },
+    Tls(Box<ConnectorConfig>),
+}
+
+impl ConnectorConfig {
+    fn get_factory(&self) -> BoxedConnectorFactory {
+        match self {
+            ConnectorConfig::Direct => BoxedConnectorFactory::new(TcpConnectorFactory {}),
+            ConnectorConfig::Simplex {
+                endpoint,
+                path,
+                secret_key,
+                secret_value,
+                next,
+            } => BoxedConnectorFactory::new(SimplexConnectorFactory::new(
+                next.get_factory(),
+                endpoint.clone(),
+                Config::new(
+                    path.to_owned(),
+                    (secret_key.to_owned(), secret_value.to_owned()),
+                ),
+            )),
+            ConnectorConfig::Tls(c) => {
+                BoxedConnectorFactory::new(TlsConnectorFactory::new(c.get_factory()))
+            }
+        }
+    }
 }
 
 pub struct Server {
@@ -100,41 +130,14 @@ impl Server {
             }
         };
 
-        let connector_fn: Box<dyn Fn() -> BoxedConnector> = match self.config.connector {
-            ConnectorConfig::Direct => Box::new(|| BoxedConnector::new(TcpConnector {})),
-            ConnectorConfig::Simplex {
-                ref endpoint,
-                ref path,
-                ref secret_key,
-                ref secret_value,
-                secure,
-            } => {
-                let config = Config::new(
-                    path.to_string(),
-                    (secret_key.to_string(), secret_value.to_string()),
-                );
-                let endpoint = endpoint.clone();
-
-                Box::new(move || {
-                    BoxedConnector::new(SimplexConnector::new(
-                        endpoint.clone(),
-                        config.clone(),
-                        if secure {
-                            BoxedConnector::new(TlsConector::new(TcpConnector::default()))
-                        } else {
-                            BoxedConnector::new(TcpConnector::default())
-                        },
-                    ))
-                })
-            }
-        };
+        let connector_factory = self.config.connector.get_factory();
 
         loop {
             let (stream, addr) = listener.accept().await?;
             info!("Accepted a new connection from {}", addr);
 
             let acceptor = acceptor_fn();
-            let connector = connector_fn();
+            let connector = connector_factory.build();
 
             tokio::spawn(async move {
                 let result = async move {
