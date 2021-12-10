@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use std::{fmt::Display, net::SocketAddr, str::FromStr};
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, PartialEq)]
 pub enum Endpoint {
     Addr(SocketAddr),
     Domain(String, u16),
