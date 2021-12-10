@@ -9,6 +9,6 @@ ServerConfig (
             path: "/test",
             secret_key: "Simplex-Secret",
             secret_value: "SimplexSecret",
-            secure: false,
+            next: Direct,
         )
 )
