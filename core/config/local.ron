@@ -1,7 +1,7 @@
 ServerConfig (
     acceptor:
         Socks5(
-            addr: "127.0.0.1:8088",
+            addr: "127.0.0.1:8086",
         ),
     connector:
         Simplex(
