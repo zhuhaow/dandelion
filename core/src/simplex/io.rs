@@ -1,6 +1,6 @@
 use crate::io::Io;
 use async_compat::Compat;
-use futures::{stream::TryStreamExt, SinkExt, Stream};
+use futures::{stream::TryStreamExt, task::AtomicWaker, SinkExt, Stream};
 use std::task::Poll;
 use tokio_tungstenite::{
     tungstenite::{error::Error as WsError, Message},
@@ -8,17 +8,39 @@ use tokio_tungstenite::{
 };
 
 pub fn into_io<C: Io>(stream: WebSocketStream<C>) -> impl Io {
-    let stream = WebSocketStreamToAsyncWrite { stream }.into_async_read();
+    let stream = WebSocketStreamToAsyncWrite::new(stream).into_async_read();
     Compat::new(stream)
 }
 
 #[pin_project::pin_project]
 pub struct WebSocketStreamToAsyncWrite<C: Io> {
     stream: WebSocketStream<C>,
+    read_closed: bool,
+    write_closed: bool,
+    waker: AtomicWaker,
+}
+
+impl<C: Io> WebSocketStreamToAsyncWrite<C> {
+    pub fn new(stream: WebSocketStream<C>) -> Self {
+        Self {
+            stream,
+            read_closed: false,
+            write_closed: false,
+            waker: AtomicWaker::default(),
+        }
+    }
 }
 
 fn ws_to_io_error(error: WsError) -> std::io::Error {
     std::io::Error::new(std::io::ErrorKind::Other, error)
+}
+
+fn eof_message() -> Message {
+    Message::Text("EOF".to_string())
+}
+
+fn is_eof(message: &Message) -> bool {
+    message == &eof_message()
 }
 
 // Here we implement futures AsyncWrite and then use Compat to support tokio's.
@@ -59,11 +81,43 @@ impl<C: Io> futures::io::AsyncWrite for WebSocketStreamToAsyncWrite<C> {
         self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> Poll<std::io::Result<()>> {
-        let stream = self.project().stream;
+        // We know now write is done.
+        //
+        // However, if we trigger close right now, the ws implementation would
+        // send a close frame and the other side would immediately stop sending
+        // any new data (other than the ones already queued).
+        //
+        // In order to avoid that, we need to implement our own way of sending
+        // EOF.
 
-        let result = futures::ready!(stream.poll_close_unpin(cx));
+        let this = self.project();
+        let stream = this.stream;
 
-        Poll::Ready(result.map_err(ws_to_io_error))
+        if !*this.write_closed {
+            // Write is not closed, so we need to send EOF first.
+            let result = futures::ready!(stream.poll_ready_unpin(cx));
+            let result = result
+                .and_then(|_| stream.start_send_unpin(eof_message()))
+                .map_err(ws_to_io_error);
+
+            if let Err(e) = result {
+                return Poll::Ready(Err(e));
+            }
+
+            // We send it successfully, mark the write as closed.
+            *this.write_closed = true;
+        }
+
+        if *this.read_closed {
+            // We can close the connection now.
+            let result = futures::ready!(stream.poll_close_unpin(cx));
+
+            Poll::Ready(result.map_err(ws_to_io_error))
+        } else {
+            // Wait for the read side to receive EOF.
+            this.waker.register(cx.waker());
+            Poll::Pending
+        }
     }
 }
 
@@ -87,10 +141,26 @@ impl<C: Io> Stream for WebSocketStreamToAsyncWrite<C> {
         self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> Poll<Option<Self::Item>> {
-        let stream = self.project().stream;
-        stream
-            .try_poll_next_unpin(cx)
-            .map_ok(MessageWrapper)
-            .map_err(ws_to_io_error)
+        let this = self.project();
+        let stream = this.stream;
+        let message = futures::ready!(stream.try_poll_next_unpin(cx));
+
+        match message {
+            Some(m) => match m {
+                Ok(m) => {
+                    if is_eof(&m) {
+                        *this.read_closed = true;
+                        if *this.write_closed {
+                            this.waker.wake();
+                        }
+                        Poll::Ready(None)
+                    } else {
+                        Poll::Ready(Some(Ok(MessageWrapper(m))))
+                    }
+                }
+                Err(err) => Poll::Ready(Some(Err(ws_to_io_error(err)))),
+            },
+            None => Poll::Ready(None),
+        }
     }
 }
