@@ -1,3 +1,5 @@
+use fdlimit::raise_fd_limit;
+use log::info;
 use specht2_core::{
     server::{Server, ServerConfig},
     Result,
@@ -22,6 +24,11 @@ async fn main() -> Result<()> {
         .unwrap()
         .start()
         .unwrap();
+
+    match raise_fd_limit() {
+        Some(limit) => info!("Raised fd limit to {}", limit),
+        None => info!("Failed to raise fd limit, this is expected on Windows, but may cause \"Too many files error\" on *nix when there is too many connections"),
+    }
 
     let opt: Opt = Opt::from_args();
 
