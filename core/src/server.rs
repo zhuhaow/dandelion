@@ -1,11 +1,8 @@
 use crate::{
     acceptor::{simplex::SimplexAcceptor, socks5::Socks5Acceptor, Acceptor},
     connector::{
-        boxed::BoxedConnectorFactory,
-        simplex::{SimplexConnectorFactory},
-        tcp::{TcpConnectorFactory},
-        tls::{TlsConnectorFactory},
-        Connector, ConnectorFactory,
+        boxed::BoxedConnectorFactory, simplex::SimplexConnectorFactory, tcp::TcpConnectorFactory,
+        tls::TlsConnectorFactory, Connector, ConnectorFactory,
     },
     endpoint::Endpoint,
     simplex::Config,
@@ -162,5 +159,24 @@ impl Server {
                 }
             });
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::ServerConfig;
+    use crate::Result;
+    use rstest::rstest;
+    use std::{env, fs::read_to_string, path::Path};
+
+    #[rstest]
+    #[case("local.ron")]
+    #[case("remote.ron")]
+    fn config_file(#[case] filename: &str) -> Result<()> {
+        let path = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("config")
+            .join(filename);
+        let _config: ServerConfig = ron::de::from_str(&read_to_string(path)?)?;
+        Ok(())
     }
 }
