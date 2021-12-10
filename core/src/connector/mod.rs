@@ -11,6 +11,12 @@ pub trait Connector: Sync + Send + 'static {
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream>;
 }
 
+pub trait ConnectorFactory {
+    type Product: Connector;
+
+    fn build(&self) -> Self::Product;
+}
+
 struct ConnectorWrapper<C: Connector> {
     connector: C,
 }

@@ -1,4 +1,4 @@
-use super::Connector;
+use super::{Connector, ConnectorFactory};
 use crate::{
     endpoint::Endpoint,
     io::Io,
@@ -36,5 +36,33 @@ impl<C: Connector> Connector for SimplexConnector<C> {
         .await?;
 
         Ok(Box::new(s))
+    }
+}
+
+pub struct SimplexConnectorFactory<F: ConnectorFactory> {
+    factory: F,
+    next_hop: Endpoint,
+    config: Config,
+}
+
+impl<F: ConnectorFactory> SimplexConnectorFactory<F> {
+    pub fn new(factory: F, next_hop: Endpoint, config: Config) -> Self {
+        Self {
+            factory,
+            next_hop,
+            config,
+        }
+    }
+}
+
+impl<F: ConnectorFactory> ConnectorFactory for SimplexConnectorFactory<F> {
+    type Product = SimplexConnector<F::Product>;
+
+    fn build(&self) -> Self::Product {
+        SimplexConnector::new(
+            self.next_hop.clone(),
+            self.config.clone(),
+            self.factory.build(),
+        )
     }
 }

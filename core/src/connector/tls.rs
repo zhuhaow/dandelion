@@ -1,4 +1,4 @@
-use super::Connector;
+use super::{Connector, ConnectorFactory};
 use crate::{endpoint::Endpoint, Result};
 use tokio_native_tls::TlsStream;
 
@@ -25,5 +25,23 @@ impl<C: Connector> Connector for TlsConector<C> {
         .connect(&endpoint.hostname(), s)
         .await?;
         Ok(s)
+    }
+}
+
+pub struct TlsConnectorFactory<F: ConnectorFactory> {
+    factory: F,
+}
+
+impl<F: ConnectorFactory> TlsConnectorFactory<F> {
+    pub fn new(factory: F) -> Self {
+        Self { factory }
+    }
+}
+
+impl<F: ConnectorFactory> ConnectorFactory for TlsConnectorFactory<F> {
+    type Product = TlsConector<F::Product>;
+
+    fn build(&self) -> Self::Product {
+        TlsConector::new(self.factory.build())
     }
 }
