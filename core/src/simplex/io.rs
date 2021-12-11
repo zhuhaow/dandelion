@@ -7,6 +7,10 @@ use tokio_tungstenite::{
     WebSocketStream,
 };
 
+lazy_static::lazy_static! {
+    static ref EOF_MESSAGE: Message = Message::Text("EOF".to_string());
+}
+
 pub fn into_io<C: Io>(stream: WebSocketStream<C>) -> impl Io {
     let stream = WebSocketStreamToAsyncWrite::new(stream).into_async_read();
     Compat::new(stream)
@@ -35,12 +39,8 @@ fn ws_to_io_error(error: WsError) -> std::io::Error {
     std::io::Error::new(std::io::ErrorKind::Other, error)
 }
 
-fn eof_message() -> Message {
-    Message::Text("EOF".to_string())
-}
-
 fn is_eof(message: &Message) -> bool {
-    message == &eof_message()
+    message == &*EOF_MESSAGE
 }
 
 // Here we implement futures AsyncWrite and then use Compat to support tokio's.
@@ -97,7 +97,7 @@ impl<C: Io> futures::io::AsyncWrite for WebSocketStreamToAsyncWrite<C> {
             // Write is not closed, so we need to send EOF first.
             let result = futures::ready!(stream.poll_ready_unpin(cx));
             let result = result
-                .and_then(|_| stream.start_send_unpin(eof_message()))
+                .and_then(|_| stream.start_send_unpin(EOF_MESSAGE.clone()))
                 .map_err(ws_to_io_error);
 
             if let Err(e) = result {

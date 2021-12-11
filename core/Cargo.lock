@@ -970,6 +970,7 @@ dependencies = [
  "http",
  "hyper",
  "hyper-tungstenite",
+ "lazy_static",
  "log",
  "pin-project",
  "ron",
