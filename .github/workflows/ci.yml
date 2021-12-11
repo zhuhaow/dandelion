@@ -3,9 +3,12 @@ on: [push]
 
 jobs:
   check_rust:
-    # The macos-latest tag currently refers to 10.15
-    # https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idruns-on
-    runs-on: macos-11
+    strategy:
+      matrix:
+        # The macos-latest tag currently refers to 10.15
+        # https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idruns-on
+        os: [macos-11, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
