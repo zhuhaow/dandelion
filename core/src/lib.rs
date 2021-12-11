@@ -31,6 +31,8 @@ pub enum Error {
     Tls(#[from] tokio_native_tls::native_tls::Error),
     #[error(transparent)]
     Anyhow(#[from] anyhow::Error),
+    #[error(transparent)]
+    Maxminddb(#[from] maxminddb::MaxMindDBError),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

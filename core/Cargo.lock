@@ -496,6 +496,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "iso3166-1"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ece62adcb2a0461fcda598d6de350e0b385dc355ac6ac3984428c8eb973eb9ac"
+
+[[package]]
 name = "itoa"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -527,6 +533,17 @@ name = "matches"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a3e378b66a060d48947b590737b30a1be76706c8dd7b8ba0f2fe3989c68a853f"
+
+[[package]]
+name = "maxminddb"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a2af4902d7569c441449f2315cb83598917b13275209529103e10c238fcf3db"
+dependencies = [
+ "log",
+ "memchr",
+ "serde",
+]
 
 [[package]]
 name = "memchr"
@@ -980,8 +997,10 @@ dependencies = [
  "hyper",
  "hyper-tungstenite",
  "ipnetwork",
+ "iso3166-1",
  "lazy_static",
  "log",
+ "maxminddb",
  "pin-project",
  "regex",
  "ron",

@@ -1,5 +1,6 @@
 pub mod all;
 pub mod domain;
+pub mod geoip;
 pub mod ip;
 
 use super::{boxed::BoxedConnector, Connector, ConnectorFactory};
