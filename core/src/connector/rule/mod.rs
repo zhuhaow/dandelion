@@ -1,5 +1,6 @@
 pub mod all;
 pub mod domain;
+pub mod ip;
 
 use super::{boxed::BoxedConnector, Connector, ConnectorFactory};
 use crate::{endpoint::Endpoint, Result};
