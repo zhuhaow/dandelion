@@ -1009,7 +1009,6 @@ dependencies = [
  "serde_with",
  "structopt",
  "strum",
- "thiserror",
  "tokio",
  "tokio-native-tls",
  "tokio-tungstenite",

@@ -9,33 +9,7 @@ pub mod server;
 pub mod simplex;
 pub mod tunnel;
 
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error(transparent)]
-    Socks5Acceptor(#[from] acceptor::socks5::Socks5AcceptorError),
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-    #[error(transparent)]
-    Resolver(#[from] resolver::ResolverError),
-    #[error(transparent)]
-    WebSocket(#[from] tungstenite::error::Error),
-    #[error(transparent)]
-    Hyper(#[from] hyper::Error),
-    #[error(transparent)]
-    Simplex(#[from] simplex::SimplexError),
-    #[error(transparent)]
-    EndpointParse(#[from] endpoint::EndpointParseError),
-    #[error(transparent)]
-    Ron(#[from] ron::Error),
-    #[error(transparent)]
-    Tls(#[from] tokio_native_tls::native_tls::Error),
-    #[error(transparent)]
-    Anyhow(#[from] anyhow::Error),
-    #[error(transparent)]
-    Maxminddb(#[from] maxminddb::MaxMindDBError),
-}
-
-pub type Result<T> = std::result::Result<T, Error>;
+pub use anyhow::Result;
 
 #[no_mangle]
 pub extern "C" fn test() {

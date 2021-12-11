@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Context};
 use serde::Deserialize;
 use std::{fmt::Display, net::SocketAddr, str::FromStr};
 
@@ -24,24 +25,20 @@ impl Endpoint {
     }
 }
 
-#[derive(strum::Display, thiserror::Error, Debug)]
-pub enum EndpointParseError {
-    InvalidFormat,
-    InvalidPort,
-}
-
 impl FromStr for Endpoint {
-    type Err = EndpointParseError;
+    type Err = anyhow::Error;
 
     fn from_str(value: &str) -> std::result::Result<Self, Self::Err> {
         value.parse().map(Endpoint::new_from_addr).or_else(|_| {
             value
                 .rsplit_once(':')
-                .ok_or(EndpointParseError::InvalidFormat)
+                .ok_or(anyhow!(
+                    "Endpoint string not valid, most likely port is missing"
+                ))
                 .and_then(|(host, port)| {
                     Ok(Endpoint::new_from_domain(
                         host,
-                        port.parse().map_err(|_| EndpointParseError::InvalidPort)?,
+                        port.parse().context("Failed to parse port for endpoint")?,
                     ))
                 })
         })

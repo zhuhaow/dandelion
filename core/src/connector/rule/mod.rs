@@ -24,7 +24,7 @@ impl Connector for RuleConnector {
             }
         }
 
-        return Err(anyhow!("No rule match the target endpoint").into());
+        return Err(anyhow!("No rule match the target endpoint"));
     }
 }
 

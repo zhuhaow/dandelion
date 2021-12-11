@@ -1,6 +1,6 @@
 use super::{Acceptor, HandshakeResult};
 pub use crate::simplex::server::handshake;
-use crate::{io::Io, simplex::Config, Error};
+use crate::{io::Io, simplex::Config};
 use futures::FutureExt;
 
 #[derive(Debug, Clone)]
@@ -22,7 +22,7 @@ impl<I: Io> Acceptor<I> for SimplexAcceptor {
             endpoint,
             async move {
                 let io: Box<dyn Io> = Box::new(fut.await?);
-                Ok::<_, Error>(io)
+                Ok(io)
             }
             .boxed(),
         ))

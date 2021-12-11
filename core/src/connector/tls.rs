@@ -1,5 +1,6 @@
 use super::{Connector, ConnectorFactory};
 use crate::{endpoint::Endpoint, Result};
+use anyhow::Context;
 use tokio_native_tls::TlsStream;
 
 #[derive(Clone, Debug)]
@@ -18,12 +19,20 @@ impl<C: Connector> Connector for TlsConector<C> {
     type Stream = TlsStream<C::Stream>;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
-        let s = self.connector.connect(endpoint).await?;
+        let s = self
+            .connector
+            .connect(endpoint)
+            .await
+            .with_context(|| format!("Failed to connect to the next hop {}", endpoint))?;
+
         let s = tokio_native_tls::TlsConnector::from(
-            tokio_native_tls::native_tls::TlsConnector::new()?,
+            tokio_native_tls::native_tls::TlsConnector::new()
+                .context("Failed to create TLS connector")?,
         )
         .connect(&endpoint.hostname(), s)
-        .await?;
+        .await
+        .with_context(|| format!("Failed to establish a secure connection to {}", endpoint))?;
+
         Ok(s)
     }
 }

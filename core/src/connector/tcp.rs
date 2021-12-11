@@ -16,7 +16,9 @@ impl Connector for TcpConnector {
             Endpoint::Domain(host, port) => tokio::net::lookup_host((host.as_str(), *port))
                 .await?
                 .next()
-                .ok_or(crate::resolver::ResolverError::NoEntry)?,
+                .ok_or_else(|| {
+                    anyhow::anyhow!("Endpoint {} is resolved with no records", endpoint)
+                })?,
         };
 
         let stream = TcpStream::connect(addr).await?;

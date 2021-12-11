@@ -1,10 +1,6 @@
 use super::{Config, ENDPOINT_HEADER_KEY};
-use crate::{
-    endpoint::Endpoint,
-    io::Io,
-    simplex::{io::into_io, SimplexError},
-    Error, Result,
-};
+use crate::{endpoint::Endpoint, io::Io, simplex::io::into_io, Result};
+use anyhow::{anyhow, bail, ensure, Context};
 use bytes::{Buf, Bytes};
 use chrono::Utc;
 use futures::{Future, FutureExt};
@@ -25,8 +21,29 @@ use tokio::{
 };
 use tungstenite::protocol::Role;
 
-fn create_empty_response() -> Response<Body> {
-    Response::new(Body::from(format!("Now is {}", Utc::now().to_rfc3339())))
+async fn hide_error_handler(
+    request: Request<Body>,
+    config: Config,
+    signal: Arc<Mutex<Option<UpgradeSignal>>>,
+) -> Result<Response<Body>> {
+    let result = handler(request, config, signal).await;
+
+    match result {
+        Ok(response) => Ok(response),
+        Err(err) => {
+            info!(
+                "Failed to process incoming simplex request.\
+                   It's most likely the client is not a \
+                   valid simplex client or the configuration is wrong. \
+                   Hiding the error for security reasons. Error: {}",
+                err
+            );
+            Ok(Response::new(Body::from(format!(
+                "Now is {}",
+                Utc::now().to_rfc3339()
+            ))))
+        }
+    }
 }
 
 async fn handler(
@@ -35,75 +52,69 @@ async fn handler(
     signal: Arc<Mutex<Option<UpgradeSignal>>>,
 ) -> Result<Response<Body>> {
     // Check if the request is requesting the right path
-    if request.uri().path() != config.path {
-        return Ok(create_empty_response());
-    }
+    ensure!(
+        request.uri().path() != config.path,
+        "Got a simplex request to wrong path: {}",
+        request.uri().path()
+    );
 
-    if request
-        .headers()
-        .get(config.secret_header.0.as_str())
-        .and_then(|v| v.to_str().ok())
-        != Some(config.secret_header.1.as_str())
-    {
-        return Ok(create_empty_response());
-    }
-
-    if is_upgrade_request(&request) {
-        let response = match upgrade_response(&request) {
-            Ok(r) => r,
-            Err(_) => return Ok(create_empty_response()),
-        };
-
-        let endpoint = match request
+    ensure!(
+        request
             .headers()
-            .get(ENDPOINT_HEADER_KEY)
-            .and_then(|ep| ep.to_str().ok())
-            .and_then(|ep| ep.parse().ok())
-        {
-            Some(ep) => ep,
-            None => return Ok(create_empty_response()),
-        };
+            .get(config.secret_header.0.as_str())
+            .and_then(|v| v.to_str().ok())
+            != Some(config.secret_header.1.as_str()),
+        "Got a simplex request with wrong secret header value."
+    );
 
-        let upgrade_signal = signal
-            .lock()
-            .await
-            .take()
-            .expect("there should be only one upgrade request for one connection");
-        upgrade_signal
-            .endpoint_tx
-            .send(endpoint)
-            .expect("the other side should not be released");
+    ensure!(
+        is_upgrade_request(&request),
+        "Got a non upgrade request when simplex request is expected"
+    );
 
-        upgrade_signal
-            .done_rx
-            .await
-            .expect("the done signal should be sent before polling the connection");
+    let endpoint = request
+        .headers()
+        .get(ENDPOINT_HEADER_KEY)
+        .and_then(|ep| ep.to_str().ok())
+        .and_then(|ep| ep.parse().ok())
+        .ok_or_else(|| anyhow!("Failed to find valid target endpoint from simplex request"))?;
 
-        Ok(response)
-    } else {
-        Ok(create_empty_response())
-    }
+    let upgrade_signal = signal
+        .lock()
+        .await
+        .take()
+        .expect("there should be only one upgrade request for one connection");
+
+    upgrade_signal
+        .endpoint_tx
+        .send(endpoint)
+        .expect("the other side should not be released");
+
+    upgrade_signal
+        .done_rx
+        .await
+        .expect("the done signal should be sent before polling the connection");
+
+    let response =
+        upgrade_response(&request).context("Failed to create websocket upgrade response")?;
+
+    Ok(response)
 }
 
 // From hyper_tungstenite
 fn upgrade_response(request: &Request<Body>) -> Result<Response<Body>> {
-    let key =
-        request
-            .headers()
-            .get("Sec-WebSocket-Key")
-            .ok_or(tungstenite::error::Error::Protocol(
-                ProtocolError::MissingSecWebSocketKey,
-            ))?;
+    let key = request
+        .headers()
+        .get("Sec-WebSocket-Key")
+        .ok_or(ProtocolError::MissingSecWebSocketKey)?;
+
     if request
         .headers()
         .get("Sec-WebSocket-Version")
         .map(|v| v.as_bytes())
         != Some(b"13")
     {
-        return Err(tungstenite::error::Error::Protocol(
-            ProtocolError::MissingSecWebSocketVersionHeader,
-        )
-        .into());
+        return Err(ProtocolError::MissingSecWebSocketVersionHeader.into());
     }
 
     Ok(Response::builder()
@@ -140,7 +151,7 @@ pub async fn handshake(
             let config = config.clone();
             let signal = signal.clone();
             // We need to pin the future here so the `conn` can be unpinned.
-            handler(req, config, signal).boxed()
+            hide_error_handler(req, config, signal).boxed()
         }),
     );
 
@@ -150,7 +161,7 @@ pub async fn handshake(
         _ = &mut conn_fut => {
             // There is no upgrade happens. The client is not a
             // simplex client;
-            return Err(SimplexError::InvalidClient.into());
+            bail!("The client is not a valid simplex client");
         }
         result = endpoint_rx => {
             match result {
@@ -184,7 +195,7 @@ pub async fn handshake(
         )
         .await;
 
-        Ok::<_, Error>(into_io(ws_stream))
+        Ok(into_io(ws_stream))
     }))
 }
 

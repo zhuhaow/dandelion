@@ -6,7 +6,7 @@ use crate::{
     },
     endpoint::Endpoint,
     simplex::Config,
-    Error, Result,
+    Result,
 };
 use log::{debug, info, warn};
 use serde::Deserialize;
@@ -148,7 +148,7 @@ impl Server {
                     copy_bidirectional(&mut local, &mut remote).await?;
                     debug!("Done processing connection");
 
-                    Ok::<_, Error>(())
+                    Ok::<_, anyhow::Error>(())
                 }
                 .await;
 
