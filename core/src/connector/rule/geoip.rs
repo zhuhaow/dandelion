@@ -8,6 +8,7 @@ use crate::{
 };
 use iso3166_1::CountryCode;
 use maxminddb::{geoip2::Country, MaxMindDBError, Reader};
+use memmap2::Mmap;
 use std::{net::IpAddr, sync::Arc};
 use tokio::net::lookup_host;
 
@@ -17,7 +18,7 @@ use tokio::net::lookup_host;
 /// provided directly or we can resolve the host name successfully.
 pub struct GeoRule {
     factory: BoxedConnectorFactory,
-    reader: Arc<Reader<Vec<u8>>>,
+    reader: Arc<Reader<Mmap>>,
     country: Option<CountryCode<'static>>,
     equal: bool,
 }
@@ -25,7 +26,7 @@ pub struct GeoRule {
 impl GeoRule {
     pub fn new(
         factory: BoxedConnectorFactory,
-        reader: Arc<Reader<Vec<u8>>>,
+        reader: Arc<Reader<Mmap>>,
         country: Option<CountryCode<'static>>,
         equal: bool,
     ) -> Self {
