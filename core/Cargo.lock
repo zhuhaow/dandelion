@@ -973,6 +973,7 @@ dependencies = [
  "lazy_static",
  "log",
  "pin-project",
+ "regex",
  "ron",
  "rstest",
  "serde",

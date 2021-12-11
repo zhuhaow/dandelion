@@ -1,4 +1,5 @@
 pub mod boxed;
+pub mod rule;
 pub mod simplex;
 pub mod tcp;
 pub mod tls;
@@ -12,7 +13,7 @@ pub trait Connector: Send + Sync + 'static {
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream>;
 }
 
-pub trait ConnectorFactory: 'static {
+pub trait ConnectorFactory: Send + Sync + 'static {
     type Product: Connector;
 
     fn build(&self) -> Self::Product;

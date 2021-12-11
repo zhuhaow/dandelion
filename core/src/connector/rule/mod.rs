@@ -1,0 +1,46 @@
+pub mod all;
+pub mod domain;
+
+use super::{boxed::BoxedConnector, Connector, ConnectorFactory};
+use crate::{endpoint::Endpoint, Result};
+use anyhow::anyhow;
+use std::sync::Arc;
+
+pub struct RuleConnector {
+    rules: Arc<Vec<Box<dyn Rule>>>,
+}
+
+#[async_trait::async_trait]
+impl Connector for RuleConnector {
+    type Stream = <BoxedConnector as Connector>::Stream;
+
+    async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
+        for rule in self.rules.iter() {
+            match rule.check(endpoint).await {
+                Some(c) => return c.connect(endpoint).await,
+                None => continue,
+            }
+        }
+
+        return Err(anyhow!("No rule match the target endpoint").into());
+    }
+}
+
+pub struct RuleConnectorFactory {
+    rules: Arc<Vec<Box<dyn Rule>>>,
+}
+
+impl ConnectorFactory for RuleConnectorFactory {
+    type Product = BoxedConnector;
+
+    fn build(&self) -> Self::Product {
+        BoxedConnector::new(RuleConnector {
+            rules: self.rules.clone(),
+        })
+    }
+}
+
+#[async_trait::async_trait]
+pub trait Rule: Sync + Send {
+    async fn check(&self, endpoint: &Endpoint) -> Option<BoxedConnector>;
+}
