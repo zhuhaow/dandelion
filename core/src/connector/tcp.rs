@@ -26,6 +26,7 @@ impl Connector for TcpConnector {
     }
 }
 
+#[derive(Default)]
 pub struct TcpConnectorFactory;
 
 impl ConnectorFactory for TcpConnectorFactory {

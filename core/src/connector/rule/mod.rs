@@ -1,4 +1,5 @@
 pub mod all;
+pub mod dns_fail;
 pub mod domain;
 pub mod geoip;
 pub mod ip;
