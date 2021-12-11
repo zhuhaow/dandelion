@@ -28,6 +28,8 @@ jobs:
         with:
           command: test
           args: --manifest-path core/Cargo.toml
+        env:
+          MAXMINDDB_LICENSE: ${{ secrets.MAXMINDDB_LICENSE }}
 
   lint_swift:
     runs-on: macos-11
