@@ -1275,6 +1275,7 @@ dependencies = [
  "structopt",
  "strum",
  "tar",
+ "tempfile",
  "test-log",
  "tokio",
  "tokio-native-tls",

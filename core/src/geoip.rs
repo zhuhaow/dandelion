@@ -1,16 +1,16 @@
 use crate::Result;
-use anyhow::Context;
 use flate2::read::GzDecoder;
-use log::info;
+use log::debug;
 use maxminddb::Reader;
 use memmap2::Mmap;
 use serde::Deserialize;
 use std::{
     env,
     fs::{create_dir_all, read_dir},
-    path::PathBuf,
+    path::{Path, PathBuf},
 };
 use tar::Archive;
+use tempfile::tempdir;
 
 #[derive(Debug, Deserialize, Clone)]
 pub enum Source {
@@ -26,55 +26,76 @@ pub async fn create_reader(source: &Source) -> Result<Reader<Mmap>> {
             let tempdir = env::temp_dir().join("specht2/geoip");
             let db_path = tempdir.join("GeoLite2-Country.mmdb");
 
-            create_dir_all(&tempdir)
-                .context("Failed to create temp folder to hold GeoLite database file")?;
-
-            // For now we only download database if there is no one existing
-
-            if !db_path.exists() {
-                info!(
-                    "Downloading GeoLite2 database from remote to {} ...",
-                    db_path.to_str().unwrap()
-                );
-                let url = format!("https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key={}&suffix=tar.gz", license);
-                let response = reqwest::get(url).await?;
-                let slice = &response.bytes().await?[..];
-
-                let tar = GzDecoder::new(slice);
-                let mut archive = Archive::new(tar);
-                archive.unpack(&tempdir)?;
-
-                // The file is extracted to a folder with the release data of
-                // the database, so it's super tedious to use.
-
-                // We first try to find the folder
-                let db_temp_dir = read_dir(tempdir)?
-                    .filter_map(|e| e.ok())
-                    .find(|e| e.path().is_dir())
-                    .ok_or_else(|| anyhow::anyhow!("Failed to find the downloaded file. Maxmind changed the archive structure?"))?.path();
-
-                std::fs::copy(db_temp_dir.join("GeoLite2-Country.mmdb"), &db_path)?;
-                std::fs::remove_dir_all(db_temp_dir)?;
-
-                info!("Done");
-            }
-
-            Reader::open_mmap(db_path).map_err(Into::into)
+            ensure_reader(license, db_path.as_path()).await
         }
     }
+}
+
+async fn download_db(license: &str, to: &Path) -> Result<()> {
+    let dir = tempdir()?;
+
+    debug!(
+        "Downloading GeoLite2 database from remote to temp folder {} ...",
+        dir.path().to_str().unwrap()
+    );
+    let url = format!("https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key={}&suffix=tar.gz", license);
+    let response = reqwest::get(url).await?;
+    let slice = &response.bytes().await?[..];
+
+    let tar = GzDecoder::new(slice);
+    let mut archive = Archive::new(tar);
+    archive.unpack(&dir)?;
+
+    // The file is extracted to a folder with the release data of
+    // the database, so it's super tedious to use.
+
+    // We first try to find the folder
+    let db_temp_dir = read_dir(&dir)?
+        .filter_map(|e| e.ok())
+        .find(|e| e.path().is_dir())
+        .ok_or_else(|| {
+            anyhow::anyhow!(
+                "Failed to find the downloaded file. Maxmind changed the archive structure?"
+            )
+        })?
+        .path();
+
+    create_dir_all(to.parent().unwrap())?;
+
+    std::fs::copy(db_temp_dir.join("GeoLite2-Country.mmdb"), &to)?;
+    debug!("Done");
+
+    Ok(())
+}
+
+fn open_reader(from: &Path) -> Result<Reader<Mmap>> {
+    Reader::open_mmap(from).map_err(Into::into)
+}
+
+async fn ensure_reader(license: &str, temp_file: &Path) -> Result<Reader<Mmap>> {
+    // first try to load the file
+    if let Ok(reader) = open_reader(temp_file) {
+        return Ok(reader);
+    }
+
+    download_db(license, temp_file).await?;
+
+    open_reader(temp_file)
 }
 
 #[cfg(test)]
 mod tests {
     use maxminddb::geoip2::Country;
+    use tempfile::NamedTempFile;
 
     use super::*;
 
     #[test_log::test(tokio::test)]
     #[ignore]
-    async fn test_name() -> Result<()> {
+    async fn bootstrap_from_license() -> Result<()> {
         let license = env::var("MAXMINDDB_LICENSE")?;
-        let builder = create_reader(&Source::License(license)).await?;
+        let temp = NamedTempFile::new()?;
+        let builder = ensure_reader(&license, temp.path()).await?;
 
         let result: Country = builder.lookup("8.8.8.8".parse().unwrap())?;
 
