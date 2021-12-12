@@ -73,7 +73,6 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
             toolchain: nightly
-            components: clippy, rustfmt
             override: true
             target: aarch64-apple-darwin
       - uses: ruby/setup-ruby@v1
