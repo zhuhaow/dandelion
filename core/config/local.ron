@@ -4,11 +4,15 @@ ServerConfig (
             addr: "127.0.0.1:8086",
         ),
     connector:
-        Simplex(
-            endpoint: "127.0.0.1:8089",
-            path: "/test",
-            secret_key: "Simplex-Secret",
-            secret_value: "SimplexSecret",
-            next: Direct,
-        )
+        Speed([
+            (0, Direct),
+            (100, Simplex(
+                    endpoint: "127.0.0.1:8089",
+                    path: "/test",
+                    secret_key: "Simplex-Secret",
+                    secret_value: "SimplexSecret",
+                    next: Direct,
+                )
+            )
+        ])
 )

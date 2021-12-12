@@ -1,26 +1,31 @@
 use crate::{
-    connector::rule::{
-        all::AllRule, dns_fail::DnsFailRule, domain::DomainRule, geoip::GeoRule, ip::IpRule, Rule,
-        RuleConnectorFactory,
-    },
-    Result,
-};
-use anyhow::Error;
-use ipnetwork::IpNetwork;
-use iso3166_1::CountryCode;
-use serde::Deserialize;
-use serde_with::{serde_as, DisplayFromStr};
-use std::{collections::HashMap, net::SocketAddr, sync::Arc};
-
-use crate::{
     connector::{
-        boxed::BoxedConnectorFactory, rule::domain::Mode, simplex::SimplexConnectorFactory,
-        tcp::TcpConnectorFactory, tls::TlsConnectorFactory,
+        boxed::BoxedConnectorFactory,
+        rule::{
+            all::AllRule,
+            dns_fail::DnsFailRule,
+            domain::{DomainRule, Mode},
+            geoip::GeoRule,
+            ip::IpRule,
+            Rule, RuleConnectorFactory,
+        },
+        simplex::SimplexConnectorFactory,
+        speed::SpeedConnectorFactory,
+        tcp::TcpConnectorFactory,
+        tls::TlsConnectorFactory,
     },
     endpoint::Endpoint,
     geoip::Source,
     simplex::Config,
+    Result,
 };
+use anyhow::Error;
+use futures::{StreamExt, TryStreamExt};
+use ipnetwork::IpNetwork;
+use iso3166_1::CountryCode;
+use serde::Deserialize;
+use serde_with::{serde_as, DisplayFromStr, DurationMilliSeconds};
+use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
 
 use super::geoip::GeoIpBuilder;
 
@@ -168,6 +173,7 @@ pub enum ConnectorConfig {
         connectors: HashMap<String, Box<ConnectorConfig>>,
         rules: Vec<RuleEntry>,
     },
+    Speed(#[serde_as(as = "Vec<(DurationMilliSeconds, _)>")] Vec<(Duration, Box<ConnectorConfig>)>),
 }
 
 impl ConnectorConfig {
@@ -197,6 +203,14 @@ impl ConnectorConfig {
                 connectors,
                 rules,
             } => get_rule_factory(geoip, connectors, rules).await,
+            ConnectorConfig::Speed(c) => {
+                Ok(BoxedConnectorFactory::new(SpeedConnectorFactory::new(
+                    futures::stream::iter(c.iter())
+                        .then(|c| async move { Ok::<_, Error>((c.0, c.1.get_factory().await?)) })
+                        .try_collect()
+                        .await?,
+                )))
+            }
         }
     }
 }
