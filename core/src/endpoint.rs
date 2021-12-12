@@ -53,3 +53,17 @@ impl Display for Endpoint {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_from_str() {
+        assert!(Endpoint::from_str("127.0.0.1:89").is_ok());
+        assert!(Endpoint::from_str("127.0.0.1").is_err());
+        assert!(Endpoint::from_str("google.com").is_err());
+        assert!(Endpoint::from_str("google.com:443").is_ok());
+        assert!(Endpoint::from_str("[fe::1]:443").is_ok());
+    }
+}
