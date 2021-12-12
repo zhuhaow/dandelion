@@ -1,6 +1,7 @@
 pub mod boxed;
 pub mod rule;
 pub mod simplex;
+pub mod speed;
 pub mod tcp;
 pub mod tls;
 
