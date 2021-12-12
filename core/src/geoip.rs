@@ -4,6 +4,7 @@ use flate2::read::GzDecoder;
 use log::info;
 use maxminddb::Reader;
 use memmap2::Mmap;
+use serde::Deserialize;
 use std::{
     env,
     fs::{create_dir_all, read_dir},
@@ -11,12 +12,13 @@ use std::{
 };
 use tar::Archive;
 
+#[derive(Debug, Deserialize, Clone)]
 pub enum Source {
     File(PathBuf),
     License(String),
 }
 
-pub async fn create_builder(source: Source) -> Result<Reader<Mmap>> {
+pub async fn create_reader(source: &Source) -> Result<Reader<Mmap>> {
     match source {
         Source::File(p) => Reader::open_mmap(p).map_err(Into::into),
         Source::License(license) => {
@@ -72,7 +74,7 @@ mod tests {
     #[ignore]
     async fn test_name() -> Result<()> {
         let license = env::var("MAXMINDDB_LICENSE")?;
-        let builder = create_builder(Source::License(license)).await?;
+        let builder = create_reader(&Source::License(license)).await?;
 
         let result: Country = builder.lookup("8.8.8.8".parse().unwrap())?;
 

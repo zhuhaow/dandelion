@@ -7,12 +7,14 @@ use crate::{
     endpoint::Endpoint,
 };
 use regex::Regex;
+use serde::Deserialize;
 
+#[derive(Debug, Deserialize, Clone)]
 pub enum Mode {
     Prefix(String),
     Suffix(String),
     Keyword(String),
-    Regex(Regex),
+    Regex(#[serde(with = "serde_regex")] Regex),
 }
 
 pub struct DomainRule {

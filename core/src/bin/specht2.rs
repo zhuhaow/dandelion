@@ -1,7 +1,7 @@
 use fdlimit::raise_fd_limit;
 use log::info;
 use specht2_core::{
-    server::{Server, ServerConfig},
+    server::{config::ServerConfig, Server},
     Result,
 };
 use std::{

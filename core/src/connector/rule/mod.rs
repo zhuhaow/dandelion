@@ -33,6 +33,12 @@ pub struct RuleConnectorFactory {
     rules: Arc<Vec<Box<dyn Rule>>>,
 }
 
+impl RuleConnectorFactory {
+    pub fn new(rules: Arc<Vec<Box<dyn Rule>>>) -> Self {
+        Self { rules }
+    }
+}
+
 impl ConnectorFactory for RuleConnectorFactory {
     type Product = BoxedConnector;
 

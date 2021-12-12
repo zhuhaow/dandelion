@@ -1,0 +1,23 @@
+ServerConfig(
+    acceptor:
+        Socks5(
+            addr: "127.0.0.1:8086",
+        ),
+    connector:
+        Rule(
+            geoip: Some(License(
+                "$$LICENSE$$"
+            )),
+            connectors: {
+                "direct": Direct,
+                "tls": Tls(Direct),
+            },
+            rules: [
+                GeoIp(
+                    country: Some("CN"),
+                    equal: true,
+                    index: "direct"
+                )
+            ]
+        )
+)
