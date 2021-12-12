@@ -69,6 +69,7 @@ mod tests {
     use super::*;
 
     #[test_log::test(tokio::test)]
+    #[ignore]
     async fn test_name() -> Result<()> {
         let license = env::var("MAXMINDDB_LICENSE")?;
         let builder = create_builder(Source::License(license)).await?;
