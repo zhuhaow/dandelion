@@ -26,14 +26,14 @@ impl Server {
         let mut listeners = select_all(
             try_join_all(
                 self.config
-                    .acceptor
+                    .acceptors
                     .iter()
                     .map(|c| TcpListener::bind(c.server_addr())),
             )
             .await?
             .into_iter()
             .map(TcpListenerStream::new)
-            .zip(self.config.acceptor.iter())
+            .zip(self.config.acceptors.iter())
             .map(|(s, c)| s.map_ok(move |stream| (stream, c))),
         );
 

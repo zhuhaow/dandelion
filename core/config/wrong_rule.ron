@@ -1,5 +1,5 @@
 ServerConfig(
-    acceptor:
+    acceptors:
         [Socks5(
             addr: "127.0.0.1:8086",
         )],

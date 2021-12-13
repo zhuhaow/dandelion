@@ -33,7 +33,7 @@ use super::geoip::GeoIpBuilder;
 
 #[derive(Debug, Deserialize)]
 pub struct ServerConfig {
-    pub acceptor: Vec<AcceptorConfig>,
+    pub acceptors: Vec<AcceptorConfig>,
     pub connector: ConnectorConfig,
 }
 
@@ -266,6 +266,7 @@ mod test {
     #[case("remote.ron", true)]
     #[case("rule_without_geo.ron", true)]
     #[case("wrong_rule.ron", false)]
+    #[case("multiple_acceptors.ron", true)]
     #[trace]
     #[tokio::test]
     async fn config_file_without_geo(#[case] filename: &str, #[case] success: bool) -> Result<()> {

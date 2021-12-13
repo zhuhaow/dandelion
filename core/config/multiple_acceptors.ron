@@ -1,8 +1,13 @@
 ServerConfig (
     acceptors:
-        [Socks5(
-            addr: "127.0.0.1:8086",
-        )],
+        [
+            Socks5(
+                addr: "127.0.0.1:8086",
+            ),
+            Http(
+                addr: "127.0.0.1:8087",
+        )
+    ],
     connector:
         Speed([
             (0, Direct),
