@@ -220,7 +220,6 @@ pub async fn handshake(io: impl Io) -> Result<(Endpoint, impl Future<Output = Re
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use http::Uri;
     use rstest::*;
 
