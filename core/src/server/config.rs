@@ -1,4 +1,5 @@
 use crate::{
+    acceptor::{http::HttpAcceptor, simplex::SimplexAcceptor, socks5::Socks5Acceptor, Acceptor},
     connector::{
         boxed::BoxedConnectorFactory,
         rule::{
@@ -26,12 +27,13 @@ use iso3166_1::CountryCode;
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr, DurationMilliSeconds};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
+use tokio::net::TcpStream;
 
 use super::geoip::GeoIpBuilder;
 
 #[derive(Debug, Deserialize)]
 pub struct ServerConfig {
-    pub acceptor: AcceptorConfig,
+    pub acceptor: Vec<AcceptorConfig>,
     pub connector: ConnectorConfig,
 }
 
@@ -46,6 +48,9 @@ pub enum AcceptorConfig {
         secret_key: String,
         secret_value: String,
     },
+    Http {
+        addr: SocketAddr,
+    },
 }
 
 impl AcceptorConfig {
@@ -58,6 +63,26 @@ impl AcceptorConfig {
                 secret_key: _,
                 secret_value: _,
             } => addr,
+            AcceptorConfig::Http { addr } => addr,
+        }
+    }
+
+    pub fn get_acceptor(&self) -> Box<dyn Acceptor<TcpStream>> {
+        match self {
+            AcceptorConfig::Socks5 { addr: _ } => Box::new(Socks5Acceptor {}),
+            AcceptorConfig::Simplex {
+                addr: _,
+                ref path,
+                ref secret_key,
+                ref secret_value,
+            } => {
+                let config = Config::new(
+                    path.to_string(),
+                    (secret_key.to_string(), secret_value.to_string()),
+                );
+                Box::new(SimplexAcceptor::new(config))
+            }
+            AcceptorConfig::Http { addr: _ } => Box::new(HttpAcceptor {}),
         }
     }
 }

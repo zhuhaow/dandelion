@@ -2,17 +2,14 @@ pub mod config;
 pub mod geoip;
 
 use crate::{
-    acceptor::{simplex::SimplexAcceptor, socks5::Socks5Acceptor, Acceptor},
     connector::{Connector, ConnectorFactory},
-    server::config::{AcceptorConfig, ServerConfig},
-    simplex::Config,
+    server::config::ServerConfig,
     Result,
 };
+use futures::{future::try_join_all, stream::select_all, TryStreamExt};
 use log::{debug, info, warn};
-use tokio::{
-    io::copy_bidirectional,
-    net::{TcpListener, TcpStream},
-};
+use tokio::{io::copy_bidirectional, net::TcpListener};
+use tokio_stream::{wrappers::TcpListenerStream, StreamExt};
 
 pub struct Server {
     config: ServerConfig,
@@ -24,40 +21,28 @@ impl Server {
     }
 
     pub async fn serve(&self) -> Result<()> {
-        // TODO: we can probably remove Acceptor and Connector and simply replace it with a lambda.
-
         info!("Server started");
 
-        let addr = self.config.acceptor.server_addr();
-
-        let listener = TcpListener::bind(addr).await?;
-
-        info!("Server started listening on {}", addr);
-
-        let acceptor_fn: Box<dyn Fn() -> Box<dyn Acceptor<TcpStream>>> = match self.config.acceptor
-        {
-            AcceptorConfig::Socks5 { addr: _ } => Box::new(|| Box::new(Socks5Acceptor {})),
-            AcceptorConfig::Simplex {
-                addr: _,
-                ref path,
-                ref secret_key,
-                ref secret_value,
-            } => {
-                let config = Config::new(
-                    path.to_string(),
-                    (secret_key.to_string(), secret_value.to_string()),
-                );
-                Box::new(move || Box::new(SimplexAcceptor::new(config.clone())))
-            }
-        };
+        let mut listeners = select_all(
+            try_join_all(
+                self.config
+                    .acceptor
+                    .iter()
+                    .map(|c| TcpListener::bind(c.server_addr())),
+            )
+            .await?
+            .into_iter()
+            .map(TcpListenerStream::new)
+            .zip(self.config.acceptor.iter())
+            .map(|(s, c)| s.map_ok(move |stream| (stream, c))),
+        );
 
         let connector_factory = self.config.connector.get_factory().await?;
 
-        loop {
-            let (stream, addr) = listener.accept().await?;
-            info!("Accepted a new connection from {}", addr);
+        while let Some(result) = listeners.next().await {
+            let (stream, acceptor_config) = result?;
 
-            let acceptor = acceptor_fn();
+            let acceptor = acceptor_config.get_acceptor();
             let connector = connector_factory.build();
 
             tokio::spawn(async move {
@@ -83,5 +68,6 @@ impl Server {
                 }
             });
         }
+        Ok(())
     }
 }
