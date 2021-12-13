@@ -1,8 +1,8 @@
 ServerConfig(
     acceptor:
-        Socks5(
+        [Socks5(
             addr: "127.0.0.1:8086",
-        ),
+        )],
     connector:
         Rule(
             geoip: Some(License(
