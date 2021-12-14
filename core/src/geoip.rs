@@ -39,7 +39,12 @@ async fn download_db(license: &str, to: &Path) -> Result<()> {
         dir.path().to_str().unwrap()
     );
     let url = format!("https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key={}&suffix=tar.gz", license);
-    let response = reqwest::get(url).await?;
+    let response = reqwest::ClientBuilder::new()
+        .no_proxy()
+        .build()?
+        .get(url)
+        .send()
+        .await?;
     let slice = &response.bytes().await?[..];
 
     let tar = GzDecoder::new(slice);
