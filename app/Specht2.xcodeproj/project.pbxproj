@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		36A843682753B7AA00E6201D /* core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36A843672753B79E00E6201D /* core.a */; };
+		36B37984276846F700445DF6 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 36B37983276846F700445DF6 /* Sparkle */; };
+		36B379872768526500445DF6 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B379862768526500445DF6 /* Defaults.swift */; };
+		36B379892768559200445DF6 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = 36B379882768559200445DF6 /* Defaults */; };
 		36DBECF6273CE96B00D4A0DB /* Specht2App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF5273CE96B00D4A0DB /* Specht2App.swift */; };
 		36DBECF8273CE96B00D4A0DB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF7273CE96B00D4A0DB /* ContentView.swift */; };
 		36DBECFA273CE96C00D4A0DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36DBECF9273CE96C00D4A0DB /* Assets.xcassets */; };
@@ -28,6 +31,7 @@
 /* Begin PBXFileReference section */
 		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
 		36A843672753B79E00E6201D /* core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = core.a; path = Specht2/core.a; sourceTree = "<group>"; };
+		36B379862768526500445DF6 /* Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Defaults.swift; sourceTree = "<group>"; };
 		36DBECF2273CE96B00D4A0DB /* Specht2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Specht2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36DBECF5273CE96B00D4A0DB /* Specht2App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Specht2App.swift; sourceTree = "<group>"; };
 		36DBECF7273CE96B00D4A0DB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -44,7 +48,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				36B379892768559200445DF6 /* Defaults in Frameworks */,
 				36A843682753B7AA00E6201D /* core.a in Frameworks */,
+				36B37984276846F700445DF6 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,6 +92,7 @@
 				36DBECF9273CE96C00D4A0DB /* Assets.xcassets */,
 				36DBECFE273CE96C00D4A0DB /* Specht2.entitlements */,
 				36DBECFB273CE96C00D4A0DB /* Preview Content */,
+				36B379862768526500445DF6 /* Defaults.swift */,
 			);
 			path = Specht2;
 			sourceTree = "<group>";
@@ -133,6 +140,10 @@
 			dependencies = (
 			);
 			name = Specht2;
+			packageProductDependencies = (
+				36B37983276846F700445DF6 /* Sparkle */,
+				36B379882768559200445DF6 /* Defaults */,
+			);
 			productName = Specht2;
 			productReference = 36DBECF2273CE96B00D4A0DB /* Specht2.app */;
 			productType = "com.apple.product-type.application";
@@ -183,6 +194,10 @@
 				Base,
 			);
 			mainGroup = 36DBECE9273CE96B00D4A0DB;
+			packageReferences = (
+				36B37982276846F700445DF6 /* XCRemoteSwiftPackageReference "Sparkle" */,
+				36B379852768523F00445DF6 /* XCRemoteSwiftPackageReference "Defaults" */,
+			);
 			productRefGroup = 36DBECF3273CE96B00D4A0DB /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -258,6 +273,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				36B379872768526500445DF6 /* Defaults.swift in Sources */,
 				36DBECF8273CE96B00D4A0DB /* ContentView.swift in Sources */,
 				36DBECF6273CE96B00D4A0DB /* Specht2App.swift in Sources */,
 			);
@@ -552,6 +568,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		36B37982276846F700445DF6 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+		36B379852768523F00445DF6 /* XCRemoteSwiftPackageReference "Defaults" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/Defaults";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		36B37983276846F700445DF6 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 36B37982276846F700445DF6 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+		36B379882768559200445DF6 /* Defaults */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 36B379852768523F00445DF6 /* XCRemoteSwiftPackageReference "Defaults" */;
+			productName = Defaults;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 36DBECEA273CE96B00D4A0DB /* Project object */;
 }
