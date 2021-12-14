@@ -7,10 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		360610D62768940B004EF795 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 360610D52768940B004EF795 /* main.swift */; };
 		36A843682753B7AA00E6201D /* core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36A843672753B79E00E6201D /* core.a */; };
 		36B37984276846F700445DF6 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 36B37983276846F700445DF6 /* Sparkle */; };
 		36B379872768526500445DF6 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B379862768526500445DF6 /* Defaults.swift */; };
 		36B379892768559200445DF6 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = 36B379882768559200445DF6 /* Defaults */; };
+		36B37995276856F500445DF6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36B37994276856F500445DF6 /* Assets.xcassets */; };
+		36B3799F276859BB00445DF6 /* Specht2LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 36B3798E276856F400445DF6 /* Specht2LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		36DBECF6273CE96B00D4A0DB /* Specht2App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF5273CE96B00D4A0DB /* Specht2App.swift */; };
 		36DBECF8273CE96B00D4A0DB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF7273CE96B00D4A0DB /* ContentView.swift */; };
 		36DBECFA273CE96C00D4A0DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36DBECF9273CE96C00D4A0DB /* Assets.xcassets */; };
@@ -28,10 +31,28 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		36B3799E2768599700445DF6 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LoginItems;
+			dstSubfolderSpec = 1;
+			files = (
+				36B3799F276859BB00445DF6 /* Specht2LaunchHelper.app in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		360610D52768940B004EF795 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
 		36A843672753B79E00E6201D /* core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = core.a; path = Specht2/core.a; sourceTree = "<group>"; };
 		36B379862768526500445DF6 /* Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Defaults.swift; sourceTree = "<group>"; };
+		36B3798E276856F400445DF6 /* Specht2LaunchHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Specht2LaunchHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		36B37994276856F500445DF6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		36B37999276856F500445DF6 /* LaunchHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LaunchHelper.entitlements; sourceTree = "<group>"; };
+		36B3799D2768594500445DF6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		36DBECF2273CE96B00D4A0DB /* Specht2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Specht2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36DBECF5273CE96B00D4A0DB /* Specht2App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Specht2App.swift; sourceTree = "<group>"; };
 		36DBECF7273CE96B00D4A0DB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -44,6 +65,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		36B3798B276856F400445DF6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		36DBECEF273CE96B00D4A0DB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -64,11 +92,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		36B3798F276856F400445DF6 /* LaunchHelper */ = {
+			isa = PBXGroup;
+			children = (
+				36B3799D2768594500445DF6 /* Info.plist */,
+				360610D52768940B004EF795 /* main.swift */,
+				36B37994276856F500445DF6 /* Assets.xcassets */,
+				36B37999276856F500445DF6 /* LaunchHelper.entitlements */,
+			);
+			path = LaunchHelper;
+			sourceTree = "<group>";
+		};
 		36DBECE9273CE96B00D4A0DB = {
 			isa = PBXGroup;
 			children = (
 				36DBECF4273CE96B00D4A0DB /* Specht2 */,
 				36DBED06273CE96C00D4A0DB /* Specht2Tests */,
+				36B3798F276856F400445DF6 /* LaunchHelper */,
 				36DBED3C273D0A7100D4A0DB /* Frameworks */,
 				36DBECF3273CE96B00D4A0DB /* Products */,
 			);
@@ -79,6 +119,7 @@
 			children = (
 				36DBECF2273CE96B00D4A0DB /* Specht2.app */,
 				36DBED03273CE96C00D4A0DB /* Specht2Tests.xctest */,
+				36B3798E276856F400445DF6 /* Specht2LaunchHelper.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -125,6 +166,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		36B3798D276856F400445DF6 /* Specht2LaunchHelper */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 36B3799A276856F500445DF6 /* Build configuration list for PBXNativeTarget "Specht2LaunchHelper" */;
+			buildPhases = (
+				36B3798A276856F400445DF6 /* Sources */,
+				36B3798B276856F400445DF6 /* Frameworks */,
+				36B3798C276856F400445DF6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Specht2LaunchHelper;
+			productName = LaunchHelper;
+			productReference = 36B3798E276856F400445DF6 /* Specht2LaunchHelper.app */;
+			productType = "com.apple.product-type.application";
+		};
 		36DBECF1273CE96B00D4A0DB /* Specht2 */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 36DBED17273CE96C00D4A0DB /* Build configuration list for PBXNativeTarget "Specht2" */;
@@ -134,6 +192,7 @@
 				36DBECEE273CE96B00D4A0DB /* Sources */,
 				36DBECEF273CE96B00D4A0DB /* Frameworks */,
 				36DBECF0273CE96B00D4A0DB /* Resources */,
+				36B3799E2768599700445DF6 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -176,6 +235,9 @@
 				LastSwiftUpdateCheck = 1310;
 				LastUpgradeCheck = 1310;
 				TargetAttributes = {
+					36B3798D276856F400445DF6 = {
+						CreatedOnToolsVersion = 13.1;
+					};
 					36DBECF1273CE96B00D4A0DB = {
 						CreatedOnToolsVersion = 13.1;
 					};
@@ -204,11 +266,20 @@
 			targets = (
 				36DBECF1273CE96B00D4A0DB /* Specht2 */,
 				36DBED02273CE96C00D4A0DB /* Specht2Tests */,
+				36B3798D276856F400445DF6 /* Specht2LaunchHelper */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		36B3798C276856F400445DF6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				36B37995276856F500445DF6 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		36DBECF0273CE96B00D4A0DB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -269,6 +340,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		36B3798A276856F400445DF6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				360610D62768940B004EF795 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		36DBECEE273CE96B00D4A0DB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -298,6 +377,64 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		36B3799B276856F500445DF6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = LaunchHelper/LaunchHelper.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = H5443445N6;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LaunchHelper/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = me.zhuhaow.Specht2.Specht2LaunchHelper;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		36B3799C276856F500445DF6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = LaunchHelper/LaunchHelper.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = H5443445N6;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LaunchHelper/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = me.zhuhaow.Specht2.Specht2LaunchHelper;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		36DBED15273CE96C00D4A0DB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -540,6 +677,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		36B3799A276856F500445DF6 /* Build configuration list for PBXNativeTarget "Specht2LaunchHelper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				36B3799B276856F500445DF6 /* Debug */,
+				36B3799C276856F500445DF6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		36DBECED273CE96B00D4A0DB /* Build configuration list for PBXProject "Specht2" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
