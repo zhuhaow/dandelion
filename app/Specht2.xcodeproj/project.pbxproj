@@ -8,13 +8,15 @@
 
 /* Begin PBXBuildFile section */
 		360610D62768940B004EF795 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 360610D52768940B004EF795 /* main.swift */; };
+		36298E14276A2BE300A90377 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E13276A2BE300A90377 /* main.swift */; };
 		36A843682753B7AA00E6201D /* core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36A843672753B79E00E6201D /* core.a */; };
 		36B37984276846F700445DF6 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 36B37983276846F700445DF6 /* Sparkle */; };
 		36B379872768526500445DF6 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B379862768526500445DF6 /* Defaults.swift */; };
 		36B379892768559200445DF6 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = 36B379882768559200445DF6 /* Defaults */; };
 		36B37995276856F500445DF6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36B37994276856F500445DF6 /* Assets.xcassets */; };
 		36B3799F276859BB00445DF6 /* Specht2LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 36B3798E276856F400445DF6 /* Specht2LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		36DBECF6273CE96B00D4A0DB /* Specht2App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF5273CE96B00D4A0DB /* Specht2App.swift */; };
+		36C7958D276A0A2500D3C5F2 /* TaskBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36C7958C276A0A2500D3C5F2 /* TaskBarController.swift */; };
+		36DBECF6273CE96B00D4A0DB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF5273CE96B00D4A0DB /* AppDelegate.swift */; };
 		36DBECF8273CE96B00D4A0DB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF7273CE96B00D4A0DB /* ContentView.swift */; };
 		36DBECFA273CE96C00D4A0DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36DBECF9273CE96C00D4A0DB /* Assets.xcassets */; };
 		36DBECFD273CE96C00D4A0DB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36DBECFC273CE96C00D4A0DB /* Preview Assets.xcassets */; };
@@ -46,6 +48,7 @@
 
 /* Begin PBXFileReference section */
 		360610D52768940B004EF795 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		36298E13276A2BE300A90377 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
 		36A843672753B79E00E6201D /* core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = core.a; path = Specht2/core.a; sourceTree = "<group>"; };
 		36B379862768526500445DF6 /* Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Defaults.swift; sourceTree = "<group>"; };
@@ -53,8 +56,9 @@
 		36B37994276856F500445DF6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		36B37999276856F500445DF6 /* LaunchHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LaunchHelper.entitlements; sourceTree = "<group>"; };
 		36B3799D2768594500445DF6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		36C7958C276A0A2500D3C5F2 /* TaskBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskBarController.swift; sourceTree = "<group>"; };
 		36DBECF2273CE96B00D4A0DB /* Specht2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Specht2.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		36DBECF5273CE96B00D4A0DB /* Specht2App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Specht2App.swift; sourceTree = "<group>"; };
+		36DBECF5273CE96B00D4A0DB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		36DBECF7273CE96B00D4A0DB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		36DBECF9273CE96C00D4A0DB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		36DBECFC273CE96C00D4A0DB /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -127,13 +131,15 @@
 		36DBECF4273CE96B00D4A0DB /* Specht2 */ = {
 			isa = PBXGroup;
 			children = (
-				36DBECF5273CE96B00D4A0DB /* Specht2App.swift */,
+				36DBECF5273CE96B00D4A0DB /* AppDelegate.swift */,
 				36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */,
 				36DBECF7273CE96B00D4A0DB /* ContentView.swift */,
 				36DBECF9273CE96C00D4A0DB /* Assets.xcassets */,
 				36DBECFE273CE96C00D4A0DB /* Specht2.entitlements */,
 				36DBECFB273CE96C00D4A0DB /* Preview Content */,
 				36B379862768526500445DF6 /* Defaults.swift */,
+				36C7958C276A0A2500D3C5F2 /* TaskBarController.swift */,
+				36298E13276A2BE300A90377 /* main.swift */,
 			);
 			path = Specht2;
 			sourceTree = "<group>";
@@ -233,7 +239,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1310;
-				LastUpgradeCheck = 1310;
+				LastUpgradeCheck = 1320;
 				TargetAttributes = {
 					36B3798D276856F400445DF6 = {
 						CreatedOnToolsVersion = 13.1;
@@ -353,8 +359,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				36B379872768526500445DF6 /* Defaults.swift in Sources */,
+				36298E14276A2BE300A90377 /* main.swift in Sources */,
 				36DBECF8273CE96B00D4A0DB /* ContentView.swift in Sources */,
-				36DBECF6273CE96B00D4A0DB /* Specht2App.swift in Sources */,
+				36C7958D276A0A2500D3C5F2 /* TaskBarController.swift in Sources */,
+				36DBECF6273CE96B00D4A0DB /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -383,6 +391,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = LaunchHelper/LaunchHelper.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -412,6 +421,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = LaunchHelper/LaunchHelper.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -553,13 +563,10 @@
 		36DBED18273CE96C00D4A0DB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					arm64,
-					x86_64,
-				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Specht2/Specht2.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -590,13 +597,10 @@
 		36DBED19273CE96C00D4A0DB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					arm64,
-					x86_64,
-				);
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Specht2/Specht2.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
