@@ -17,7 +17,6 @@
 		36B3799F276859BB00445DF6 /* Specht2LaunchHelper.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 36B3798E276856F400445DF6 /* Specht2LaunchHelper.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		36C7958D276A0A2500D3C5F2 /* TaskBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36C7958C276A0A2500D3C5F2 /* TaskBarController.swift */; };
 		36DBECF6273CE96B00D4A0DB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF5273CE96B00D4A0DB /* AppDelegate.swift */; };
-		36DBECF8273CE96B00D4A0DB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF7273CE96B00D4A0DB /* ContentView.swift */; };
 		36DBECFA273CE96C00D4A0DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36DBECF9273CE96C00D4A0DB /* Assets.xcassets */; };
 		36DBECFD273CE96C00D4A0DB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36DBECFC273CE96C00D4A0DB /* Preview Assets.xcassets */; };
 		36DBED08273CE96C00D4A0DB /* Specht2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBED07273CE96C00D4A0DB /* Specht2Tests.swift */; };
@@ -60,7 +59,6 @@
 		36C7958C276A0A2500D3C5F2 /* TaskBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskBarController.swift; sourceTree = "<group>"; };
 		36DBECF2273CE96B00D4A0DB /* Specht2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Specht2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36DBECF5273CE96B00D4A0DB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		36DBECF7273CE96B00D4A0DB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		36DBECF9273CE96C00D4A0DB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		36DBECFC273CE96C00D4A0DB /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		36DBECFE273CE96C00D4A0DB /* Specht2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Specht2.entitlements; sourceTree = "<group>"; };
@@ -135,7 +133,6 @@
 				36298E15276A2C8500A90377 /* Info.plist */,
 				36DBECF5273CE96B00D4A0DB /* AppDelegate.swift */,
 				36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */,
-				36DBECF7273CE96B00D4A0DB /* ContentView.swift */,
 				36DBECF9273CE96C00D4A0DB /* Assets.xcassets */,
 				36DBECFE273CE96C00D4A0DB /* Specht2.entitlements */,
 				36DBECFB273CE96C00D4A0DB /* Preview Content */,
@@ -362,7 +359,6 @@
 			files = (
 				36B379872768526500445DF6 /* Defaults.swift in Sources */,
 				36298E14276A2BE300A90377 /* main.swift in Sources */,
-				36DBECF8273CE96B00D4A0DB /* ContentView.swift in Sources */,
 				36C7958D276A0A2500D3C5F2 /* TaskBarController.swift in Sources */,
 				36DBECF6273CE96B00D4A0DB /* AppDelegate.swift in Sources */,
 			);
