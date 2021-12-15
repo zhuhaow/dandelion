@@ -20,4 +20,14 @@ class TaskBarController: NSObject, NSMenuDelegate {
         statusItem.menu = NSMenu()
         statusItem.menu!.delegate = self
     }
+
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        menu.removeAllItems()
+
+        menu.addItem(withTitle: "Open config folder", action: #selector(self.openConfigFolder), keyEquivalent: "").target = self
+    }
+
+    @objc func openConfigFolder() {
+        ConfigManager.openConfigFolder()
+    }
 }
