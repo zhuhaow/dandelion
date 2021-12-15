@@ -1,1 +1,4 @@
 language = "C"
+
+[fn]
+swift_name_macro = "NS_SWIFT_NAME"
