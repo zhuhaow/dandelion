@@ -25,9 +25,10 @@ async fn main() -> Result<()> {
         .start()
         .unwrap();
 
+    #[cfg(not(target_os = "windows"))]
     match raise_fd_limit() {
         Some(limit) => info!("Raised fd limit to {}", limit),
-        None => info!("Failed to raise fd limit, this is expected on Windows, but may cause \"Too many files error\" on *nix when there is too many connections"),
+        None => info!("Failed to raise fd limit, this may cause \"Too many files error\" when there is too many connections"),
     }
 
     let opt: Opt = Opt::from_args();
