@@ -93,4 +93,4 @@ jobs:
         with:
           prerelease: false
           files:
-            app/Specht2.zip
+            app/Specht2.dmg
