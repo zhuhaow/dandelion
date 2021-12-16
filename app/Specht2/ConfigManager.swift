@@ -49,33 +49,29 @@ class ConfigManager {
     }
 
     static func run(name: String) {
-        Task {
-            guard let configUrl = configs[name] else {
-                reloadConfigs()
-                return
-            }
+        guard let configUrl = configs[name] else {
+            reloadConfigs()
+            return
+        }
 
-            Defaults[.activeConfig] = name
-            await server.run(name: name, configUrl: configUrl) { err in
-                if let err = err {
-                    Alert.alert(message: err)
-                }
+        Defaults[.activeConfig] = name
+        server.run(name: name, configUrl: configUrl) { err in
+            if let err = err {
+                Alert.alert(message: err)
             }
         }
     }
 
     static func stop() {
-        Task {
-            Defaults[.activeConfig] = nil
-            await server.shutdown()
-        }
+        Defaults[.activeConfig] = nil
+        server.shutdown()
     }
 
     static func initialize() {
         reloadConfigs()
     }
 
-    static func isRunning() async -> Bool {
-        return await server.running
+    static func isRunning() -> Bool {
+        return server.isRunning()
     }
 }

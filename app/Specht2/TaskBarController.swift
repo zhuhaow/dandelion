@@ -78,7 +78,7 @@ extension TaskBarController {
 
         item.target = self
 
-        if name == ConfigManager.activeConfig {
+        if name == ConfigManager.activeConfig && ConfigManager.isRunning() {
             item.state = .on
         }
 

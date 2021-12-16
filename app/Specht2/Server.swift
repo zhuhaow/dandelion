@@ -8,27 +8,34 @@
 import Foundation
 import Defaults
 
+// We are not using `actor` since it won't work with synchronous code (other than create a `Task`).
+// Before Apple makes AppKit fully async-ready, we cannot use the new fancy concurrecy feature with anything
+// but the very limited SwiftUI.
+
 // We don't really care the cycle reference here since the server instance is expected
 // to exist throught the app's lifetime.
 //
 // Call `stop()` can properly release all cycled reference.
-actor Server {
+class Server {
     private var stopHandle: StopHandle?
     private var afterStop: (() -> Void)?
+    private let queue = DispatchQueue(label: "me.zhuhaow.Specht2")
 
-    var running: Bool {
-        stopHandle != nil
+    private var running: Bool {
+        self.stopHandle != nil
     }
 
     func run(name: String, configUrl: URL, stopCallback: @escaping (String?) -> Void) {
-        if running {
-            afterStop = {
+        queue.async {
+            if self.running {
+                self.afterStop = {
+                    self.runServer(name: name, configUrl: configUrl, stopCallback: stopCallback)
+                }
+
+                self.stop()
+            } else {
                 self.runServer(name: name, configUrl: configUrl, stopCallback: stopCallback)
             }
-
-            stop()
-        } else {
-            runServer(name: name, configUrl: configUrl, stopCallback: stopCallback)
         }
     }
 
@@ -49,8 +56,16 @@ actor Server {
     }
 
     func shutdown() {
-        afterStop = nil
-        stopHandle = nil
+        queue.async {
+            self.afterStop = nil
+            self.stopHandle = nil
+        }
+    }
+
+    func isRunning() -> Bool {
+        return queue.sync {
+            return self.running
+        }
     }
 }
 
