@@ -9,6 +9,8 @@ import AppKit
 import Defaults
 
 class ConfigManager {
+    static var server = Server()
+
     static var configPath: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     }
@@ -16,7 +18,7 @@ class ConfigManager {
     static var configs: [String: URL] = [:]
 
     static var activeConfig: String? {
-        Defaults[.activeConfig]
+        return Defaults[.activeConfig]
     }
 
     static func openConfigFolder() {
@@ -34,20 +36,46 @@ class ConfigManager {
             configs = Dictionary(uniqueKeysWithValues: paths.map {
                 ($0.deletingPathExtension().lastPathComponent, $0)
             })
+
+            if let name = Defaults[.activeConfig], configs.keys.contains(name) {
+                run(name: name)
+            } else {
+                stop()
+                Defaults[.activeConfig] = nil
+            }
         } catch {
             Alert.alert(message: "Failed to load config files due to error: \(error)")
         }
     }
 
     static func run(name: String) {
-        fatalError("not implemented")
+        Task {
+            guard let configUrl = configs[name] else {
+                reloadConfigs()
+                return
+            }
+
+            Defaults[.activeConfig] = name
+            await server.run(name: name, configUrl: configUrl) { err in
+                if let err = err {
+                    Alert.alert(message: err)
+                }
+            }
+        }
     }
 
     static func stop() {
-        fatalError("not implemented")
+        Task {
+            Defaults[.activeConfig] = nil
+            await server.shutdown()
+        }
     }
 
     static func initialize() {
         reloadConfigs()
+    }
+
+    static func isRunning() async -> Bool {
+        return await server.running
     }
 }

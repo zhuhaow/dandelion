@@ -50,7 +50,7 @@ class TaskBarController: NSObject, NSMenuDelegate {
         menu.addItem(NSMenuItem.separator())
 
         _ = menu.addItem(withTitle: "Autostart app at login",
-                     action: #selector(self.setAutostart),
+                     action: #selector(self.toggleAutostart),
                      keyEquivalent: "").then {
             $0.target = self
             if Defaults[.autostart] {
@@ -87,10 +87,12 @@ extension TaskBarController {
 
     @objc func startServer(sender: NSMenuItem) {
         ConfigManager.run(name: sender.title)
+
     }
 
     @objc func stopServer() {
         ConfigManager.stop()
+
     }
 
     @objc func openConfigFolder() {
@@ -103,9 +105,8 @@ extension TaskBarController {
 }
 
 extension TaskBarController {
-    @objc func setAutostart() {
-        Defaults[.autostart].toggle()
-        Autostart.setState(Defaults[.autostart])
+    @objc func toggleAutostart() {
+        Autostart.toggle()
     }
 
     @objc func about() {

@@ -13,6 +13,7 @@
 		36298E1A276AD9BF00A90377 /* Autostart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E19276AD9BF00A90377 /* Autostart.swift */; };
 		36298E1D276AE1FC00A90377 /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = 36298E1C276AE1FC00A90377 /* Then */; };
 		36298E1F276B01C500A90377 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E1E276B01C500A90377 /* Alert.swift */; };
+		36298E21276B0B5900A90377 /* Server.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E20276B0B5900A90377 /* Server.swift */; };
 		36A843682753B7AA00E6201D /* core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36A843672753B79E00E6201D /* core.a */; };
 		36B37984276846F700445DF6 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 36B37983276846F700445DF6 /* Sparkle */; };
 		36B379872768526500445DF6 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B379862768526500445DF6 /* Defaults.swift */; };
@@ -56,6 +57,7 @@
 		36298E17276A2E0700A90377 /* ConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
 		36298E19276AD9BF00A90377 /* Autostart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Autostart.swift; sourceTree = "<group>"; };
 		36298E1E276B01C500A90377 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
+		36298E20276B0B5900A90377 /* Server.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Server.swift; sourceTree = "<group>"; };
 		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
 		36A843672753B79E00E6201D /* core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = core.a; path = Specht2/core.a; sourceTree = "<group>"; };
 		36B379862768526500445DF6 /* Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Defaults.swift; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 				36298E13276A2BE300A90377 /* main.swift */,
 				36298E19276AD9BF00A90377 /* Autostart.swift */,
 				36298E1E276B01C500A90377 /* Alert.swift */,
+				36298E20276B0B5900A90377 /* Server.swift */,
 			);
 			path = Specht2;
 			sourceTree = "<group>";
@@ -376,6 +379,7 @@
 				36298E18276A2E0700A90377 /* ConfigManager.swift in Sources */,
 				36DBECF6273CE96B00D4A0DB /* AppDelegate.swift in Sources */,
 				36298E1A276AD9BF00A90377 /* Autostart.swift in Sources */,
+				36298E21276B0B5900A90377 /* Server.swift in Sources */,
 				36298E1F276B01C500A90377 /* Alert.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
