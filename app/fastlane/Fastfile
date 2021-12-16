@@ -42,7 +42,17 @@ lane :test do
   scan(xcargs: "CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO")
 end
 
+lane :update_version do
+  increment_version_number(
+    version_number: last_git_tag
+  )
+  increment_build_number(
+    build_number: last_git_commit[:abbreviated_commit_hash]
+  )
+end
+
 lane :release do
+  update_version
   build_mac_app(export_method: "developer-id")
   dmg(path: "Specht2.app", output_path: "Specht2.dmg")
   notarize(package: "Specht2.dmg", asc_provider: "H5443445N6", "bundle_id": "me.zhuhaow.Specht2")
