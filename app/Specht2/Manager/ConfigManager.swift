@@ -9,9 +9,7 @@ import AppKit
 
 class ConfigManager {
     static var configPath: URL {
-        get {
-            FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        }
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     }
 
     static func openConfigFolder() {
