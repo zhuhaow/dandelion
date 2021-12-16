@@ -10,6 +10,9 @@
 		360610D62768940B004EF795 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 360610D52768940B004EF795 /* main.swift */; };
 		36298E14276A2BE300A90377 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E13276A2BE300A90377 /* main.swift */; };
 		36298E18276A2E0700A90377 /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E17276A2E0700A90377 /* ConfigManager.swift */; };
+		36298E1A276AD9BF00A90377 /* Autostart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E19276AD9BF00A90377 /* Autostart.swift */; };
+		36298E1D276AE1FC00A90377 /* Then in Frameworks */ = {isa = PBXBuildFile; productRef = 36298E1C276AE1FC00A90377 /* Then */; };
+		36298E1F276B01C500A90377 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E1E276B01C500A90377 /* Alert.swift */; };
 		36A843682753B7AA00E6201D /* core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36A843672753B79E00E6201D /* core.a */; };
 		36B37984276846F700445DF6 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 36B37983276846F700445DF6 /* Sparkle */; };
 		36B379872768526500445DF6 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36B379862768526500445DF6 /* Defaults.swift */; };
@@ -51,6 +54,8 @@
 		36298E13276A2BE300A90377 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		36298E15276A2C8500A90377 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		36298E17276A2E0700A90377 /* ConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
+		36298E19276AD9BF00A90377 /* Autostart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Autostart.swift; sourceTree = "<group>"; };
+		36298E1E276B01C500A90377 /* Alert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Alert.swift; sourceTree = "<group>"; };
 		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
 		36A843672753B79E00E6201D /* core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = core.a; path = Specht2/core.a; sourceTree = "<group>"; };
 		36B379862768526500445DF6 /* Defaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Defaults.swift; sourceTree = "<group>"; };
@@ -84,6 +89,7 @@
 				36B379892768559200445DF6 /* Defaults in Frameworks */,
 				36A843682753B7AA00E6201D /* core.a in Frameworks */,
 				36B37984276846F700445DF6 /* Sparkle in Frameworks */,
+				36298E1D276AE1FC00A90377 /* Then in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,14 +103,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		36298E16276A2DFA00A90377 /* Manager */ = {
-			isa = PBXGroup;
-			children = (
-				36298E17276A2E0700A90377 /* ConfigManager.swift */,
-			);
-			path = Manager;
-			sourceTree = "<group>";
-		};
 		36B3798F276856F400445DF6 /* LaunchHelper */ = {
 			isa = PBXGroup;
 			children = (
@@ -140,8 +138,8 @@
 		36DBECF4273CE96B00D4A0DB /* Specht2 */ = {
 			isa = PBXGroup;
 			children = (
-				36298E16276A2DFA00A90377 /* Manager */,
 				36298E15276A2C8500A90377 /* Info.plist */,
+				36298E17276A2E0700A90377 /* ConfigManager.swift */,
 				36DBECF5273CE96B00D4A0DB /* AppDelegate.swift */,
 				36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */,
 				36DBECF9273CE96C00D4A0DB /* Assets.xcassets */,
@@ -150,6 +148,8 @@
 				36B379862768526500445DF6 /* Defaults.swift */,
 				36C7958C276A0A2500D3C5F2 /* TaskBarController.swift */,
 				36298E13276A2BE300A90377 /* main.swift */,
+				36298E19276AD9BF00A90377 /* Autostart.swift */,
+				36298E1E276B01C500A90377 /* Alert.swift */,
 			);
 			path = Specht2;
 			sourceTree = "<group>";
@@ -218,6 +218,7 @@
 			packageProductDependencies = (
 				36B37983276846F700445DF6 /* Sparkle */,
 				36B379882768559200445DF6 /* Defaults */,
+				36298E1C276AE1FC00A90377 /* Then */,
 			);
 			productName = Specht2;
 			productReference = 36DBECF2273CE96B00D4A0DB /* Specht2.app */;
@@ -275,6 +276,7 @@
 			packageReferences = (
 				36B37982276846F700445DF6 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				36B379852768523F00445DF6 /* XCRemoteSwiftPackageReference "Defaults" */,
+				36298E1B276AE04200A90377 /* XCRemoteSwiftPackageReference "Then" */,
 			);
 			productRefGroup = 36DBECF3273CE96B00D4A0DB /* Products */;
 			projectDirPath = "";
@@ -373,6 +375,8 @@
 				36C7958D276A0A2500D3C5F2 /* TaskBarController.swift in Sources */,
 				36298E18276A2E0700A90377 /* ConfigManager.swift in Sources */,
 				36DBECF6273CE96B00D4A0DB /* AppDelegate.swift in Sources */,
+				36298E1A276AD9BF00A90377 /* Autostart.swift in Sources */,
+				36298E1F276B01C500A90377 /* Alert.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -732,6 +736,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		36298E1B276AE04200A90377 /* XCRemoteSwiftPackageReference "Then" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/devxoul/Then";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 		36B37982276846F700445DF6 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sparkle-project/Sparkle";
@@ -751,6 +763,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		36298E1C276AE1FC00A90377 /* Then */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 36298E1B276AE04200A90377 /* XCRemoteSwiftPackageReference "Then" */;
+			productName = Then;
+		};
 		36B37983276846F700445DF6 /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 36B37982276846F700445DF6 /* XCRemoteSwiftPackageReference "Sparkle" */;
