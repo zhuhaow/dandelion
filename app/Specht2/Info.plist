@@ -4,5 +4,13 @@
 <dict>
 	<key>LSUIElement</key>
 	<false/>
+	<key>SUPublicEDKey</key>
+	<string>Q4yEAbv1Sga770dh+/wuKvHaUb01GWe2gaATp7/D+Fw=</string>
+	<key>SUFeedURL</key>
+	<string>https://zhuhaow.github.io/Specht2/appcast.xml</string>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+	<key>SUEnableAutomaticChecks</key>
+	<false/>
 </dict>
 </plist>

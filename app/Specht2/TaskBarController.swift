@@ -23,6 +23,7 @@ class TaskBarController: NSObject, NSMenuDelegate {
         statusItem.menu!.delegate = self
     }
 
+    // swiftlint:disable function_body_length
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
 
@@ -45,6 +46,22 @@ class TaskBarController: NSObject, NSMenuDelegate {
         menu.addItem(withTitle: "Open config folder",
                      action: #selector(self.openConfigFolder),
                      keyEquivalent: "")
+            .target = self
+
+        menu.addItem(NSMenuItem.separator())
+
+        _ = menu.addItem(withTitle: "Check update automatically",
+                     action: #selector(self.toggleAutoUpdate),
+                     keyEquivalent: "").then {
+            $0.target = self
+            if Defaults[.autoUpdate] {
+                $0.state = .on
+            }
+        }
+
+        menu.addItem(withTitle: "Check update now",
+                     action: #selector(self.checkUpdate),
+                         keyEquivalent: "")
             .target = self
 
         menu.addItem(NSMenuItem.separator())
@@ -101,6 +118,16 @@ extension TaskBarController {
 
     @objc func reloadConfig() {
         ConfigManager.reloadConfigs()
+    }
+}
+
+extension TaskBarController {
+    @objc func toggleAutoUpdate() {
+        Update.shared.autoUpdate(enable: !Defaults[.autoUpdate])
+    }
+
+    @objc func checkUpdate() {
+        Update.shared.checkUpdate()
     }
 }
 
