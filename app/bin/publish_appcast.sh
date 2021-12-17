@@ -11,7 +11,6 @@ cd "${sparkle_tmp}"
 curl -L \
     https://github.com/sparkle-project/Sparkle/releases/download/2.0.0-rc.1/Sparkle-2.0.0-rc.1.tar.xz \
     | tar -xJ
-echo "${SPARKLE_KEY}" > private_key
 
 export PATH="${sparkle_tmp}/bin:$PATH"
 
@@ -28,11 +27,11 @@ cp "${git_tmp}/appcast.xml" "${release_tmp}/" || true
 generate_appcast \
     --download-url-prefix \
     "https://github.com/zhuhaow/Specht2/releases/download/${GITHUB_REF_NAME}/" \
-    -f "${sparkle_tmp}/private_key" \
+    -s "${SPARKLE_KEY}" \
     "${release_tmp}"
 
 cp "${release_tmp}/appcast.xml" "${git_tmp}/"
 cd "${git_tmp}"
 git add .
 git commit -m "Update appcast for ${GITHUB_REF_NAME}"
-git push --force --quite "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/zhuhaow/Specht2" gh-pages > /dev/null 2>&1
+git push --force --quiet "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/zhuhaow/Specht2" gh-pages
