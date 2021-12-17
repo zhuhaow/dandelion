@@ -95,3 +95,7 @@ jobs:
           files:
             app/Specht2.zip
             app/Specht2.app.dSYM.zip
+      - name: update version information for sparkle
+        run: app/bin/publish_appcast.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
