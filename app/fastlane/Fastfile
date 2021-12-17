@@ -43,12 +43,14 @@ lane :test do
 end
 
 lane :update_version do
-  increment_version_number(
-    version_number: last_git_tag
-  )
-  increment_build_number(
-    build_number: last_git_commit[:abbreviated_commit_hash]
-  )
+  if ENV["CI"]
+    increment_version_number(
+      version_number: last_git_tag
+    )
+    increment_build_number(
+      build_number: ENV["GITHUB_RUN_ID"]
+    )
+  end
 end
 
 lane :release do
