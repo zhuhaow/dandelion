@@ -347,7 +347,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\n\"${SRCROOT}/build_core.sh\"\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\n\"${SRCROOT}/bin/build_core.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
