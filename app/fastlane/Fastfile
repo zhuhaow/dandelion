@@ -56,8 +56,10 @@ end
 lane :release do
   update_version
   build_mac_app(export_method: "developer-id")
-  dmg(path: "Specht2.app", output_path: "Specht2.dmg")
-  notarize(package: "Specht2.dmg", asc_provider: "H5443445N6", "bundle_id": "me.zhuhaow.Specht2")
+  notarize(package: "Specht2.app", asc_provider: "H5443445N6")
+  Dir.chdir("..") do
+    sh("ditto -c -k --sequesterRsrc --keepParent Specht2.app Specht2.zip")
+  end
 end
 
 lane :init_ci do
