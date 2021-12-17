@@ -6,7 +6,11 @@ set -euxo pipefail
 
 __build() {
     cd "${SRCROOT}/../core"
-    cargo build --release --target="$1"
+    if [[ "${CONFIGURATION}" == "Debug" ]]; then
+        cargo build --target="$1"
+    else
+        cargo build --release --target="$1"
+    fi
 }
 
 arch_to_target() {
@@ -37,7 +41,11 @@ build() {
 
     libs=()
     for arch in "${active_archs[@]}"; do
-        libs+=( "${SRCROOT}/../core/target/$(arch_to_target "$arch")/release/libspecht2_core.a" )
+        if [[ "${CONFIGURATION}" == "Debug" ]]; then
+            libs+=( "${SRCROOT}/../core/target/$(arch_to_target "$arch")/debug/libspecht2_core.a" )
+        else
+            libs+=( "${SRCROOT}/../core/target/$(arch_to_target "$arch")/release/libspecht2_core.a" )
+        fi
     done
 
     lipo -create -output "${SRCROOT}/Specht2/core.a" "${libs[@]}"
