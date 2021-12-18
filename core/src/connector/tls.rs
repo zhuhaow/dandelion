@@ -4,18 +4,18 @@ use anyhow::Context;
 use tokio_native_tls::TlsStream;
 
 #[derive(Clone, Debug)]
-pub struct TlsConector<C: Connector> {
+pub struct TlsConnector<C: Connector> {
     connector: C,
 }
 
-impl<C: Connector> TlsConector<C> {
+impl<C: Connector> TlsConnector<C> {
     pub fn new(connector: C) -> Self {
         Self { connector }
     }
 }
 
 #[async_trait::async_trait]
-impl<C: Connector> Connector for TlsConector<C> {
+impl<C: Connector> Connector for TlsConnector<C> {
     type Stream = TlsStream<C::Stream>;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
@@ -48,9 +48,9 @@ impl<F: ConnectorFactory> TlsConnectorFactory<F> {
 }
 
 impl<F: ConnectorFactory> ConnectorFactory for TlsConnectorFactory<F> {
-    type Product = TlsConector<F::Product>;
+    type Product = TlsConnector<F::Product>;
 
     fn build(&self) -> Self::Product {
-        TlsConector::new(self.factory.build())
+        TlsConnector::new(self.factory.build())
     }
 }
