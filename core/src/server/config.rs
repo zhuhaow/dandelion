@@ -2,6 +2,7 @@ use crate::{
     acceptor::{http::HttpAcceptor, simplex::SimplexAcceptor, socks5::Socks5Acceptor, Acceptor},
     connector::{
         boxed::BoxedConnectorFactory,
+        http::HttpConnectorFactory,
         rule::{
             all::AllRule,
             dns_fail::DnsFailRule,
@@ -199,6 +200,11 @@ pub enum ConnectorConfig {
         rules: Vec<RuleEntry>,
     },
     Speed(#[serde_as(as = "Vec<(DurationMilliSeconds, _)>")] Vec<(Duration, Box<ConnectorConfig>)>),
+    Http {
+        #[serde_as(as = "DisplayFromStr")]
+        endpoint: Endpoint,
+        next: Box<ConnectorConfig>,
+    },
 }
 
 impl ConnectorConfig {
@@ -236,6 +242,9 @@ impl ConnectorConfig {
                         .await?,
                 )))
             }
+            ConnectorConfig::Http { endpoint, next } => Ok(BoxedConnectorFactory::new(
+                HttpConnectorFactory::new(next.get_factory().await?, endpoint.clone()),
+            )),
         }
     }
 }

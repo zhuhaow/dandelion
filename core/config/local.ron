@@ -13,6 +13,10 @@ ServerConfig (
                     secret_value: "SimplexSecret",
                     next: Direct,
                 )
-            )
+            ),
+            (100, Http(
+                    endpoint: "127.0.0.1:8089",
+                    next: Direct
+                ))
         ])
 )

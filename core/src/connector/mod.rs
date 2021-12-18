@@ -1,4 +1,5 @@
 pub mod boxed;
+pub mod http;
 pub mod rule;
 pub mod simplex;
 pub mod speed;
