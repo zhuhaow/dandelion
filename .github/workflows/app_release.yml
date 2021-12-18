@@ -1,0 +1,40 @@
+name: App Release
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  release:
+    runs-on: macos-11
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            override: true
+            target: aarch64-apple-darwin
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.0"
+          bundler-cache: true
+          working-directory: app
+      - uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.MATCH_DEPLOY_KEY }}
+      - run: bundler exec fastlane ci_release
+        env:
+          MATCH_READONLY: true
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
+        working-directory: app
+      - uses: softprops/action-gh-release@v1
+        with:
+          prerelease: false
+          files: |
+            app/Specht2.zip
+            app/Specht2.app.dSYM.zip
+      - name: update version information for sparkle
+        run: app/bin/publish_appcast.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
