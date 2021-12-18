@@ -1,5 +1,3 @@
-#![feature(trait_alias)]
-
 pub mod acceptor;
 pub mod binding;
 pub mod connector;
