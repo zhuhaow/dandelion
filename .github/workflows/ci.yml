@@ -68,7 +68,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platforms: ["linux/amd64", "linux/arm64"]
+        # We don't build docker image for other archs because it's toooooo slow.
+        # You can build it yourself or use snap to install it.
+        platforms: ["linux/amd64"]
     needs: [check_rust]
     steps:
       - name: Set up QEMU
