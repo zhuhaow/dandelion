@@ -5,17 +5,8 @@ ServerConfig (
         )],
     connector:
         Speed([
-            (0, Direct),
-            (100, Simplex(
-                    endpoint: "127.0.0.1:8089",
-                    path: "/test",
-                    secret_key: "Simplex-Secret",
-                    secret_value: "SimplexSecret",
-                    next: Direct,
-                )
-            ),
-            (100, Http(
-                    endpoint: "127.0.0.1:8089",
+            (100, Socks5(
+                    endpoint: "127.0.0.1:8088",
                     next: Direct
                 ))
         ])

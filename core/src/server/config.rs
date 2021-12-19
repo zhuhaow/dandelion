@@ -12,6 +12,7 @@ use crate::{
             Rule, RuleConnectorFactory,
         },
         simplex::SimplexConnectorFactory,
+        socks5::Socks5ConnectorFactory,
         speed::SpeedConnectorFactory,
         tcp::TcpConnectorFactory,
         tls::TlsConnectorFactory,
@@ -205,6 +206,11 @@ pub enum ConnectorConfig {
         endpoint: Endpoint,
         next: Box<ConnectorConfig>,
     },
+    Socks5 {
+        #[serde_as(as = "DisplayFromStr")]
+        endpoint: Endpoint,
+        next: Box<ConnectorConfig>,
+    },
 }
 
 impl ConnectorConfig {
@@ -244,6 +250,9 @@ impl ConnectorConfig {
             }
             ConnectorConfig::Http { endpoint, next } => Ok(BoxedConnectorFactory::new(
                 HttpConnectorFactory::new(next.get_factory().await?, endpoint.clone()),
+            )),
+            ConnectorConfig::Socks5 { endpoint, next } => Ok(BoxedConnectorFactory::new(
+                Socks5ConnectorFactory::new(next.get_factory().await?, endpoint.clone()),
             )),
         }
     }

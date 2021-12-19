@@ -23,6 +23,13 @@ impl Endpoint {
             Endpoint::Domain(d, _) => d.to_owned(),
         }
     }
+
+    pub fn port(&self) -> u16 {
+        match self {
+            Endpoint::Addr(addr) => addr.port(),
+            Endpoint::Domain(_, port) => *port,
+        }
+    }
 }
 
 impl FromStr for Endpoint {
