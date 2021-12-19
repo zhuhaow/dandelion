@@ -75,11 +75,8 @@ pub async fn handshake(
             IpOrDomain::Ip(IpAddr::from(buf))
         }
         3 => {
-            let mut buf = [0; 1];
-            io.read_exact(&mut buf).await?;
-
-            let mut buf = vec![0; buf[0].into()];
-
+            let len: usize = io.read_u8().await?.into();
+            let mut buf = vec![0; len];
             io.read_exact(&mut buf).await?;
             let domain = String::from_utf8(buf)
                 .context("The socks5 client is not sending a valid domain")?;
@@ -93,9 +90,7 @@ pub async fn handshake(
         t => bail!("Unsupported address type {}", t),
     };
 
-    let mut buf = [0; 2];
-    io.read_exact(&mut buf).await?;
-    let port = u16::from_be_bytes(buf);
+    let port = io.read_u16().await?;
 
     let endpoint = match ip_or_domain {
         IpOrDomain::Domain(d) => Endpoint::new_from_domain(&d, port),
