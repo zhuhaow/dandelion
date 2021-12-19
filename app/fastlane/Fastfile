@@ -56,7 +56,7 @@ lane :release do
   build_mac_app(export_method: "developer-id")
   notarize(package: "Specht2.app", asc_provider: "H5443445N6")
   Dir.chdir("..") do
-    sh("ditto -c -k --sequesterRsrc --keepParent Specht2.app Specht2.zip")
+    sh("ditto -c -k --sequesterRsrc --keepParent Specht2.app Specht2.app.zip")
   end
 end
 

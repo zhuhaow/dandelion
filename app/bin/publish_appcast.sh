@@ -20,7 +20,7 @@ git clone --depth=1 --branch=gh-pages https://github.com/zhuhaow/Specht2 "${git_
 
 # Copy everything to release folder
 release_tmp=$(mktemp -d)
-cp "${project_dir}/app/Specht2.zip" "${release_tmp}/"
+cp "${project_dir}/app/Specht2.app.zip" "${release_tmp}/"
 # The appcast file is not required
 cp "${git_tmp}/appcast.xml" "${release_tmp}/" || true
 
