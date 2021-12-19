@@ -46,6 +46,8 @@ jobs:
         run: |
           gh release upload "${{ github.ref_name }}" app/Specht2.app.zip --clobber
           gh release upload "${{ github.ref_name }}" app/Specht2.app.dSYM.zip --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: update version information for sparkle
         run: app/bin/publish_appcast.sh
         env:
@@ -86,18 +88,24 @@ jobs:
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
-          - target: x86_64-apple-darwin
-            os: macos-11
+          - target: aarch64-unknown-linux-gnu
           - target: x86_64-apple-darwin
             os: macos-11
           - target: aarch64-apple-darwin
             os: macos-11
           - target: x86_64-pc-windows-msvc
             os: windows-latest
-          - target: x86_64-unknown-linux-musl
     runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v2
+      - run: |
+          cp -r core ..
+          rm -rf ./*
+          cp -r ../core/* .
+        shell: bash
+      - if: ${{ matrix.target == 'aarch64-unknown-linux-gnu' }}
+        run: |
+          docker build -t arm64_with_openssl -f cross/Dockerfile-arm64 .
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: specht2
