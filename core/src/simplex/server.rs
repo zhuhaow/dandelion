@@ -32,7 +32,7 @@ async fn hide_error_handler(
         Ok(response) => Ok(response),
         Err(err) => {
             info!(
-                "Failed to process incoming simplex request.\
+                "Failed to process incoming simplex request. \
                    It's most likely the client is not a \
                    valid simplex client or the configuration is wrong. \
                    Hiding the error for security reasons. Error: {}",
@@ -53,7 +53,7 @@ async fn handler(
 ) -> Result<Response<Body>> {
     // Check if the request is requesting the right path
     ensure!(
-        request.uri().path() != config.path,
+        request.uri().path() == config.path,
         "Got a simplex request to wrong path: {}",
         request.uri().path()
     );
@@ -63,7 +63,7 @@ async fn handler(
             .headers()
             .get(config.secret_header.0.as_str())
             .and_then(|v| v.to_str().ok())
-            != Some(config.secret_header.1.as_str()),
+            == Some(config.secret_header.1.as_str()),
         "Got a simplex request with wrong secret header value."
     );
 
