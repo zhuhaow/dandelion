@@ -6,6 +6,7 @@ on:
 
 jobs:
   create_release:
+    name: Create a new Github release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,8 +18,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   release_app:
+    name: Release GUI app
     runs-on: macos-11
-    needs: [create_release],
+    needs: [create_release]
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -40,12 +42,10 @@ jobs:
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
         working-directory: app
-      - uses: softprops/action-gh-release@v1
-        with:
-          prerelease: false
-          files: |
-            app/Specht2.app.zip
-            app/Specht2.app.dSYM.zip
+      - name: Upload assets
+        run: |
+          gh release upload "${{ github.ref_name }}" app/Specht2.app.zip --clobber
+          gh release upload "${{ github.ref_name }}" app/Specht2.app.dSYM.zip --clobber
       - name: update version information for sparkle
         run: app/bin/publish_appcast.sh
         env:
@@ -53,7 +53,9 @@ jobs:
           SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
 
   release_docker:
+    name: Release Docker image
     runs-on: ubuntu-latest
+    needs: [create_release]
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -76,3 +78,33 @@ jobs:
           tags: ghcr.io/zhuhaow/specht2:${{ github.ref_name }}
           cache-from: type=registry,ref=ghcr.io/zhuhaow/specht2:buildcache
           cache-to: type=registry,ref=ghcr.io/zhuhaow/specht2:buildcache,mode=max
+
+  release_bin:
+    name: Release CLI binary
+    needs: [create_release]
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+          - target: x86_64-apple-darwin
+            os: macos-11
+          - target: x86_64-apple-darwin
+            os: macos-11
+          - target: aarch64-apple-darwin
+            os: macos-11
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+          - target: x86_64-unknown-linux-musl
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: taiki-e/upload-rust-binary-action@v1
+        with:
+          bin: specht2
+          tar: unix
+          zip: windows
+          target: ${{ matrix.target }}
+          archive: $bin-$target
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CARGO_PROFILE_RELEASE_LTO: true
