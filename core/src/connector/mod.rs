@@ -1,3 +1,4 @@
+pub mod block;
 pub mod boxed;
 pub mod http;
 pub mod rule;

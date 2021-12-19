@@ -1,6 +1,7 @@
 use crate::{
     acceptor::{http::HttpAcceptor, simplex::SimplexAcceptor, socks5::Socks5Acceptor, Acceptor},
     connector::{
+        block::BlockConnectorFactory,
         boxed::BoxedConnectorFactory,
         http::HttpConnectorFactory,
         rule::{
@@ -211,6 +212,7 @@ pub enum ConnectorConfig {
         endpoint: Endpoint,
         next: Box<ConnectorConfig>,
     },
+    Block,
 }
 
 impl ConnectorConfig {
@@ -254,6 +256,7 @@ impl ConnectorConfig {
             ConnectorConfig::Socks5 { endpoint, next } => Ok(BoxedConnectorFactory::new(
                 Socks5ConnectorFactory::new(next.get_factory().await?, endpoint.clone()),
             )),
+            ConnectorConfig::Block => Ok(BoxedConnectorFactory::new(BlockConnectorFactory {})),
         }
     }
 }
