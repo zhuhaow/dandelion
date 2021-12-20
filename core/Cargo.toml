@@ -13,7 +13,7 @@ strum = { version = "0.23.0", features = ["derive"] }
 async-trait = "0.1.52"
 structopt = "0.3.25"
 tokio-tungstenite = "0.16.1"
-futures = "0.3.17"
+futures = "0.3.19"
 async-compat = "0.2.1"
 http = "0.2.5"
 pin-project = "1.0.8"
