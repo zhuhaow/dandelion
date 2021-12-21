@@ -123,6 +123,23 @@ mod tests {
         assert!(resolver.lookup_ipv4(host).await.is_err());
     }
 
+    // Surprisingly, we cannot use getaddrinfo to do AAAA query on Windows! And
+    // it's not documented. But we can find similar issue here
+    // https://stackoverflow.com/questions/66755681/getaddrinfo-c-on-windows-not-handling-ipv6-correctly-returning-error-code-1
+    // and it seems there is no fix. An article suggests setting up Teredo would
+    // fix this on Windows 7.
+    // http://netscantools.blogspot.co.uk/2011/06/ipv6-teredo-problems-and-solutions-on.html
+    // Obviously it not a solution but a bug Microsoft probably not going to
+    // fix.
+    //
+    // But it should still be ok as long as IPv4 is still available, just we
+    // won't be able to use IPv6 on Windows.
+    //
+    // But I'm not using Windows, so it's fine for me and I won't try to fix it
+    // anymore.
+    //
+    // Anyway, PR is always welcomed.
+    #[cfg(not(target_os = "windows"))]
     #[rstest]
     #[case("localhost", Some("::1"))]
     #[case("google.com", None)]
