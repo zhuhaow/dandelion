@@ -1,20 +1,14 @@
 use super::Rule;
-use crate::{
-    connector::{
-        boxed::{BoxedConnector, BoxedConnectorFactory},
-        ConnectorFactory,
-    },
-    endpoint::Endpoint,
-};
+use crate::{connector::BoxedConnector, endpoint::Endpoint};
 use tokio::net::lookup_host;
 
 pub struct DnsFailRule {
-    factory: BoxedConnectorFactory,
+    connector: BoxedConnector,
 }
 
 impl DnsFailRule {
-    pub fn new(factory: BoxedConnectorFactory) -> Self {
-        Self { factory }
+    pub fn new(connector: BoxedConnector) -> Self {
+        Self { connector }
     }
 }
 
@@ -26,10 +20,10 @@ impl Rule for DnsFailRule {
             match result {
                 Ok(addrs) => {
                     if addrs.count() == 0 {
-                        return Some(self.factory.build());
+                        return Some(self.connector.clone());
                     }
                 }
-                Err(_) => return Some(self.factory.build()),
+                Err(_) => return Some(self.connector.clone()),
             }
         }
         None
@@ -38,13 +32,12 @@ impl Rule for DnsFailRule {
 
 #[cfg(test)]
 mod tests {
+    use super::DnsFailRule;
     use crate::{
-        connector::{boxed::BoxedConnectorFactory, rule::Rule, tcp::TcpConnectorFactory},
+        connector::{rule::Rule, tcp::TcpConnector, Connector},
         endpoint::Endpoint,
     };
     use rstest::*;
-
-    use super::DnsFailRule;
 
     #[rstest]
     #[case("t.test", true)]
@@ -52,8 +45,7 @@ mod tests {
     #[case("google.com", false)]
     #[tokio::test]
     async fn test_dns_fail(#[case] domain: &str, #[case] is_some: bool) {
-        let factory = BoxedConnectorFactory::new(TcpConnectorFactory::default());
-        let rule = DnsFailRule::new(factory);
+        let rule = DnsFailRule::new(TcpConnector::default().boxed());
 
         assert_eq!(
             rule.check(&Endpoint::Domain(domain.to_owned(), 443))

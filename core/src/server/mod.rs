@@ -1,11 +1,7 @@
 pub mod config;
 pub mod geoip;
 
-use crate::{
-    connector::{Connector, ConnectorFactory},
-    server::config::ServerConfig,
-    Result,
-};
+use crate::{connector::Connector, server::config::ServerConfig, Result};
 use futures::{future::try_join_all, stream::select_all, TryStreamExt};
 use log::{debug, info, warn};
 use tokio::{io::copy_bidirectional, net::TcpListener};
@@ -37,13 +33,13 @@ impl Server {
             .map(|(s, c)| s.map_ok(move |stream| (stream, c))),
         );
 
-        let connector_factory = self.config.connector.get_factory().await?;
+        let connector = self.config.connector.get_connector().await?;
 
         while let Some(result) = listeners.next().await {
             let (stream, acceptor_config) = result?;
 
             let acceptor = acceptor_config.get_acceptor();
-            let connector = connector_factory.build();
+            let connector = connector.clone();
 
             tokio::spawn(async move {
                 let result = async move {

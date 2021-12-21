@@ -6,7 +6,7 @@ use std::{
     vec::IntoIter,
 };
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct SystemResolver {}
 
 #[async_trait::async_trait]
@@ -108,8 +108,8 @@ mod tests {
 
         if let Some(expect) = expected {
             assert!(result
-                .collect::<Vec<_>>()
-                .contains(&expect.parse().unwrap()));
+                .into_iter()
+                .any(|x| x == expect.parse::<Ipv4Addr>().unwrap()));
         }
     }
 
@@ -135,8 +135,8 @@ mod tests {
 
         if let Some(expect) = expected {
             assert!(result
-                .collect::<Vec<_>>()
-                .contains(&expect.parse().unwrap()));
+                .into_iter()
+                .any(|x| x == expect.parse::<Ipv6Addr>().unwrap()));
         }
     }
 

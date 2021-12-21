@@ -1,25 +1,20 @@
 use super::Rule;
-use crate::{
-    connector::{
-        boxed::{BoxedConnector, BoxedConnectorFactory},
-        ConnectorFactory,
-    },
-    endpoint::Endpoint,
-};
+use crate::{connector::BoxedConnector, endpoint::Endpoint};
 
+#[derive(Clone)]
 pub struct AllRule {
-    factory: BoxedConnectorFactory,
+    connector: BoxedConnector,
 }
 
 impl AllRule {
-    pub fn new(factory: BoxedConnectorFactory) -> Self {
-        Self { factory }
+    pub fn new(connector: BoxedConnector) -> Self {
+        Self { connector }
     }
 }
 
 #[async_trait::async_trait]
 impl Rule for AllRule {
     async fn check(&self, _endpoint: &Endpoint) -> Option<BoxedConnector> {
-        Some(self.factory.build())
+        Some(self.connector.clone())
     }
 }

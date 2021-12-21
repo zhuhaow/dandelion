@@ -1,11 +1,5 @@
 use super::Rule;
-use crate::{
-    connector::{
-        boxed::{BoxedConnector, BoxedConnectorFactory},
-        ConnectorFactory,
-    },
-    endpoint::Endpoint,
-};
+use crate::{connector::BoxedConnector, endpoint::Endpoint};
 use regex::Regex;
 use serde::Deserialize;
 
@@ -19,12 +13,12 @@ pub enum Mode {
 
 pub struct DomainRule {
     modes: Vec<Mode>,
-    factory: BoxedConnectorFactory,
+    connector: BoxedConnector,
 }
 
 impl DomainRule {
-    pub fn new(modes: Vec<Mode>, factory: BoxedConnectorFactory) -> Self {
-        Self { modes, factory }
+    pub fn new(modes: Vec<Mode>, connector: BoxedConnector) -> Self {
+        Self { modes, connector }
     }
 }
 
@@ -39,7 +33,7 @@ impl Rule for DomainRule {
                     Mode::Keyword(k) => d.contains(k),
                     Mode::Regex(r) => r.is_match(d),
                 } {
-                    return Some(self.factory.build());
+                    return Some(self.connector.clone());
                 }
             }
         }

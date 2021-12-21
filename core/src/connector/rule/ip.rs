@@ -1,22 +1,17 @@
 use super::Rule;
-use crate::{
-    connector::{
-        boxed::{BoxedConnector, BoxedConnectorFactory},
-        ConnectorFactory,
-    },
-    endpoint::Endpoint,
-};
+use crate::{connector::BoxedConnector, endpoint::Endpoint};
 use ipnetwork::IpNetwork;
 use tokio::net::lookup_host;
 
+#[derive(Clone)]
 pub struct IpRule {
     subnets: Vec<IpNetwork>,
-    factory: BoxedConnectorFactory,
+    connector: BoxedConnector,
 }
 
 impl IpRule {
-    pub fn new(subnets: Vec<IpNetwork>, factory: BoxedConnectorFactory) -> Self {
-        Self { subnets, factory }
+    pub fn new(subnets: Vec<IpNetwork>, connector: BoxedConnector) -> Self {
+        Self { subnets, connector }
     }
 }
 
@@ -27,7 +22,7 @@ impl Rule for IpRule {
             Endpoint::Addr(addr) => {
                 for network in self.subnets.iter() {
                     if network.contains(addr.ip()) {
-                        return Some(self.factory.build());
+                        return Some(self.connector.clone());
                     }
                 }
             }
@@ -36,7 +31,7 @@ impl Rule for IpRule {
                 for addr in addrs {
                     for network in self.subnets.iter() {
                         if network.contains(addr.ip()) {
-                            return Some(self.factory.build());
+                            return Some(self.connector.clone());
                         }
                     }
                 }

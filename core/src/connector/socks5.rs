@@ -1,15 +1,15 @@
+use super::Connector;
+use crate::{endpoint::Endpoint, Result};
 use anyhow::{bail, ensure, Context};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-use super::{Connector, ConnectorFactory};
-use crate::{endpoint::Endpoint, Result};
-
-pub struct Socks5Connector<C: Connector> {
+#[derive(Clone)]
+pub struct Socks5Connector<C: Connector + Clone> {
     connector: C,
     next_hop: Endpoint,
 }
 
-impl<C: Connector> Socks5Connector<C> {
+impl<C: Connector + Clone> Socks5Connector<C> {
     pub fn new(connector: C, next_hop: Endpoint) -> Self {
         Self {
             connector,
@@ -19,7 +19,7 @@ impl<C: Connector> Socks5Connector<C> {
 }
 
 #[async_trait::async_trait]
-impl<C: Connector> Connector for Socks5Connector<C> {
+impl<C: Connector + Clone> Connector for Socks5Connector<C> {
     type Stream = C::Stream;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
@@ -80,24 +80,5 @@ impl<C: Connector> Connector for Socks5Connector<C> {
         }
 
         Ok(io)
-    }
-}
-
-pub struct Socks5ConnectorFactory<F: ConnectorFactory> {
-    factory: F,
-    next_hop: Endpoint,
-}
-
-impl<F: ConnectorFactory> Socks5ConnectorFactory<F> {
-    pub fn new(factory: F, next_hop: Endpoint) -> Self {
-        Self { factory, next_hop }
-    }
-}
-
-impl<F: ConnectorFactory> ConnectorFactory for Socks5ConnectorFactory<F> {
-    type Product = Socks5Connector<F::Product>;
-
-    fn build(&self) -> Self::Product {
-        Socks5Connector::new(self.factory.build(), self.next_hop.clone())
     }
 }

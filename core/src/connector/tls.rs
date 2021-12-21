@@ -1,21 +1,21 @@
-use super::{Connector, ConnectorFactory};
+use super::Connector;
 use crate::{endpoint::Endpoint, Result};
 use anyhow::Context;
 use tokio_native_tls::TlsStream;
 
 #[derive(Clone, Debug)]
-pub struct TlsConnector<C: Connector> {
+pub struct TlsConnector<C: Connector + Clone> {
     connector: C,
 }
 
-impl<C: Connector> TlsConnector<C> {
+impl<C: Connector + Clone> TlsConnector<C> {
     pub fn new(connector: C) -> Self {
         Self { connector }
     }
 }
 
 #[async_trait::async_trait]
-impl<C: Connector> Connector for TlsConnector<C> {
+impl<C: Connector + Clone> Connector for TlsConnector<C> {
     type Stream = TlsStream<C::Stream>;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
@@ -34,23 +34,5 @@ impl<C: Connector> Connector for TlsConnector<C> {
         .with_context(|| format!("Failed to establish a secure connection to {}", endpoint))?;
 
         Ok(s)
-    }
-}
-
-pub struct TlsConnectorFactory<F: ConnectorFactory> {
-    factory: F,
-}
-
-impl<F: ConnectorFactory> TlsConnectorFactory<F> {
-    pub fn new(factory: F) -> Self {
-        Self { factory }
-    }
-}
-
-impl<F: ConnectorFactory> ConnectorFactory for TlsConnectorFactory<F> {
-    type Product = TlsConnector<F::Product>;
-
-    fn build(&self) -> Self::Product {
-        TlsConnector::new(self.factory.build())
     }
 }

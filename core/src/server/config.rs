@@ -1,22 +1,23 @@
+use super::geoip::GeoIpBuilder;
 use crate::{
     acceptor::{http::HttpAcceptor, simplex::SimplexAcceptor, socks5::Socks5Acceptor, Acceptor},
     connector::{
-        block::BlockConnectorFactory,
-        boxed::BoxedConnectorFactory,
-        http::HttpConnectorFactory,
+        block::BlockConnector,
+        http::HttpConnector,
         rule::{
             all::AllRule,
             dns_fail::DnsFailRule,
             domain::{DomainRule, Mode},
             geoip::GeoRule,
             ip::IpRule,
-            Rule, RuleConnectorFactory,
+            Rule, RuleConnector,
         },
-        simplex::SimplexConnectorFactory,
-        socks5::Socks5ConnectorFactory,
-        speed::SpeedConnectorFactory,
-        tcp::TcpConnectorFactory,
-        tls::TlsConnectorFactory,
+        simplex::SimplexConnector,
+        socks5::Socks5Connector,
+        speed::SpeedConnector,
+        tcp::TcpConnector,
+        tls::TlsConnector,
+        BoxedConnector, Connector,
     },
     endpoint::Endpoint,
     geoip::Source,
@@ -29,10 +30,8 @@ use ipnetwork::IpNetwork;
 use iso3166_1::CountryCode;
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr, DurationMilliSeconds};
-use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
+use std::{collections::HashMap, net::SocketAddr, time::Duration};
 use tokio::net::TcpStream;
-
-use super::geoip::GeoIpBuilder;
 
 #[derive(Debug, Deserialize)]
 pub struct ServerConfig {
@@ -123,20 +122,20 @@ pub enum RuleEntry {
     },
 }
 
-async fn get_rule_factory(
+async fn get_rule_connector(
     geoip_config: &Option<Source>,
     connectors: &HashMap<String, Box<ConnectorConfig>>,
     rules: &[RuleEntry],
-) -> Result<BoxedConnectorFactory> {
+) -> Result<BoxedConnector> {
     async fn get_connector(
         connectors: &HashMap<String, Box<ConnectorConfig>>,
         ind: &str,
-    ) -> Result<BoxedConnectorFactory> {
+    ) -> Result<BoxedConnector> {
         let config = connectors
             .get(ind)
             .ok_or_else(|| anyhow::anyhow!("Failed to find connector named {}", ind))?;
 
-        config.get_factory().await
+        config.get_connector().await
     }
 
     let mut geo_ip_builder = geoip_config
@@ -178,9 +177,7 @@ async fn get_rule_factory(
         connector_rules.push(rule);
     }
 
-    Ok(BoxedConnectorFactory::new(RuleConnectorFactory::new(
-        Arc::new(connector_rules),
-    )))
+    Ok(RuleConnector::new(connector_rules).boxed())
 }
 
 #[serde_as]
@@ -217,46 +214,44 @@ pub enum ConnectorConfig {
 
 impl ConnectorConfig {
     #[async_recursion::async_recursion]
-    pub async fn get_factory(&self) -> Result<BoxedConnectorFactory> {
+    pub async fn get_connector(&self) -> Result<BoxedConnector> {
         match self {
-            ConnectorConfig::Direct => Ok(BoxedConnectorFactory::new(TcpConnectorFactory {})),
+            ConnectorConfig::Direct => Ok(TcpConnector {}.boxed()),
             ConnectorConfig::Simplex {
                 endpoint,
                 path,
                 secret_key,
                 secret_value,
                 next,
-            } => Ok(BoxedConnectorFactory::new(SimplexConnectorFactory::new(
-                next.get_factory().await?,
+            } => Ok(SimplexConnector::new(
                 endpoint.clone(),
                 Config::new(
                     path.to_owned(),
                     (secret_key.to_owned(), secret_value.to_owned()),
                 ),
-            ))),
-            ConnectorConfig::Tls(c) => Ok(BoxedConnectorFactory::new(TlsConnectorFactory::new(
-                c.get_factory().await?,
-            ))),
+                next.get_connector().await?,
+            )
+            .boxed()),
+            ConnectorConfig::Tls(c) => Ok(TlsConnector::new(c.get_connector().await?).boxed()),
             ConnectorConfig::Rule {
                 geoip,
                 connectors,
                 rules,
-            } => get_rule_factory(geoip, connectors, rules).await,
-            ConnectorConfig::Speed(c) => {
-                Ok(BoxedConnectorFactory::new(SpeedConnectorFactory::new(
-                    futures::stream::iter(c.iter())
-                        .then(|c| async move { Ok::<_, Error>((c.0, c.1.get_factory().await?)) })
-                        .try_collect()
-                        .await?,
-                )))
+            } => get_rule_connector(geoip, connectors, rules).await,
+            ConnectorConfig::Speed(c) => Ok(SpeedConnector::new(
+                futures::stream::iter(c.iter())
+                    .then(|c| async move { Ok::<_, Error>((c.0, c.1.get_connector().await?)) })
+                    .try_collect()
+                    .await?,
+            )
+            .boxed()),
+            ConnectorConfig::Http { endpoint, next } => {
+                Ok(HttpConnector::new(next.get_connector().await?, endpoint.clone()).boxed())
             }
-            ConnectorConfig::Http { endpoint, next } => Ok(BoxedConnectorFactory::new(
-                HttpConnectorFactory::new(next.get_factory().await?, endpoint.clone()),
-            )),
-            ConnectorConfig::Socks5 { endpoint, next } => Ok(BoxedConnectorFactory::new(
-                Socks5ConnectorFactory::new(next.get_factory().await?, endpoint.clone()),
-            )),
-            ConnectorConfig::Block => Ok(BoxedConnectorFactory::new(BlockConnectorFactory {})),
+            ConnectorConfig::Socks5 { endpoint, next } => {
+                Ok(Socks5Connector::new(next.get_connector().await?, endpoint.clone()).boxed())
+            }
+            ConnectorConfig::Block => Ok(BlockConnector {}.boxed()),
         }
     }
 }
@@ -271,7 +266,7 @@ mod test {
     async fn test_config_file(content: &str, success: bool) -> Result<()> {
         let config: ServerConfig = ron::de::from_str(content)?;
 
-        let factory_result = config.connector.get_factory().await;
+        let factory_result = config.connector.get_connector().await;
 
         if success {
             factory_result?;

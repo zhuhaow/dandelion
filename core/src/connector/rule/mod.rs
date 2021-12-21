@@ -4,18 +4,27 @@ pub mod domain;
 pub mod geoip;
 pub mod ip;
 
-use super::{boxed::BoxedConnector, Connector, ConnectorFactory};
-use crate::{endpoint::Endpoint, Result};
+use super::{BoxedConnector, Connector};
+use crate::{endpoint::Endpoint, io::Io, Result};
 use anyhow::anyhow;
 use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct RuleConnector {
     rules: Arc<Vec<Box<dyn Rule>>>,
 }
 
+impl RuleConnector {
+    pub fn new(rules: Vec<Box<dyn Rule>>) -> Self {
+        Self {
+            rules: Arc::new(rules),
+        }
+    }
+}
+
 #[async_trait::async_trait]
 impl Connector for RuleConnector {
-    type Stream = <BoxedConnector as Connector>::Stream;
+    type Stream = Box<dyn Io>;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
         for rule in self.rules.iter() {
@@ -26,26 +35,6 @@ impl Connector for RuleConnector {
         }
 
         return Err(anyhow!("No rule match the target endpoint"));
-    }
-}
-
-pub struct RuleConnectorFactory {
-    rules: Arc<Vec<Box<dyn Rule>>>,
-}
-
-impl RuleConnectorFactory {
-    pub fn new(rules: Arc<Vec<Box<dyn Rule>>>) -> Self {
-        Self { rules }
-    }
-}
-
-impl ConnectorFactory for RuleConnectorFactory {
-    type Product = BoxedConnector;
-
-    fn build(&self) -> Self::Product {
-        BoxedConnector::new(RuleConnector {
-            rules: self.rules.clone(),
-        })
     }
 }
 

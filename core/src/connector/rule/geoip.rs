@@ -1,11 +1,5 @@
 use super::Rule;
-use crate::{
-    connector::{
-        boxed::{BoxedConnector, BoxedConnectorFactory},
-        ConnectorFactory,
-    },
-    endpoint::Endpoint,
-};
+use crate::{connector::BoxedConnector, endpoint::Endpoint};
 use iso3166_1::CountryCode;
 use maxminddb::{geoip2::Country, MaxMindDBError, Reader};
 use memmap2::Mmap;
@@ -17,7 +11,7 @@ use tokio::net::lookup_host;
 /// It only matches when the IP addresses can be obtained either they are
 /// provided directly or we can resolve the host name successfully.
 pub struct GeoRule {
-    factory: BoxedConnectorFactory,
+    connector: BoxedConnector,
     reader: Arc<Reader<Mmap>>,
     country: Option<CountryCode<'static>>,
     equal: bool,
@@ -25,13 +19,13 @@ pub struct GeoRule {
 
 impl GeoRule {
     pub fn new(
-        factory: BoxedConnectorFactory,
+        connector: BoxedConnector,
         reader: Arc<Reader<Mmap>>,
         country: Option<CountryCode<'static>>,
         equal: bool,
     ) -> Self {
         Self {
-            factory,
+            connector,
             reader,
             country,
             equal,
@@ -64,14 +58,14 @@ impl Rule for GeoRule {
         match endpoint {
             Endpoint::Addr(addr) => {
                 if self.match_ip(&addr.ip()) == Some(self.equal) {
-                    return Some(self.factory.build());
+                    return Some(self.connector.clone());
                 }
             }
             Endpoint::Domain(host, port) => {
                 let addrs = lookup_host((host.as_str(), *port)).await.ok()?;
                 for addr in addrs {
                     if self.match_ip(&addr.ip()) == Some(self.equal) {
-                        return Some(self.factory.build());
+                        return Some(self.connector.clone());
                     }
                 }
             }

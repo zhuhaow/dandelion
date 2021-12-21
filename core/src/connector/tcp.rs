@@ -1,4 +1,4 @@
-use super::{Connector, ConnectorFactory};
+use super::Connector;
 use crate::{endpoint::Endpoint, Result};
 use tokio::net::TcpStream;
 
@@ -23,16 +23,5 @@ impl Connector for TcpConnector {
 
         let stream = TcpStream::connect(addr).await?;
         Ok(stream)
-    }
-}
-
-#[derive(Default)]
-pub struct TcpConnectorFactory;
-
-impl ConnectorFactory for TcpConnectorFactory {
-    type Product = TcpConnector;
-
-    fn build(&self) -> Self::Product {
-        TcpConnector {}
     }
 }

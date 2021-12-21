@@ -1,16 +1,17 @@
-use super::{Connector, ConnectorFactory};
+use super::Connector;
 use crate::{endpoint::Endpoint, Result};
 use anyhow::{ensure, Context};
 use http::{Request, StatusCode};
 use hyper::{client::conn::handshake, Body};
 use log::debug;
 
-pub struct HttpConnector<C: Connector> {
+#[derive(Clone)]
+pub struct HttpConnector<C: Connector + Clone> {
     connector: C,
     next_hop: Endpoint,
 }
 
-impl<C: Connector> HttpConnector<C> {
+impl<C: Connector + Clone> HttpConnector<C> {
     pub fn new(connector: C, next_hop: Endpoint) -> Self {
         Self {
             connector,
@@ -20,7 +21,7 @@ impl<C: Connector> HttpConnector<C> {
 }
 
 #[async_trait::async_trait]
-impl<C: Connector> Connector for HttpConnector<C> {
+impl<C: Connector + Clone> Connector for HttpConnector<C> {
     type Stream = C::Stream;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
@@ -69,24 +70,5 @@ impl<C: Connector> Connector for HttpConnector<C> {
         debug!("Finished http CONNECT handshake");
 
         Ok(parts.io)
-    }
-}
-
-pub struct HttpConnectorFactory<F: ConnectorFactory> {
-    factory: F,
-    next_hop: Endpoint,
-}
-
-impl<F: ConnectorFactory> HttpConnectorFactory<F> {
-    pub fn new(factory: F, next_hop: Endpoint) -> Self {
-        Self { factory, next_hop }
-    }
-}
-
-impl<F: ConnectorFactory> ConnectorFactory for HttpConnectorFactory<F> {
-    type Product = HttpConnector<F::Product>;
-
-    fn build(&self) -> Self::Product {
-        HttpConnector::new(self.factory.build(), self.next_hop.clone())
     }
 }

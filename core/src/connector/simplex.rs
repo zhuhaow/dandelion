@@ -1,4 +1,4 @@
-use super::{Connector, ConnectorFactory};
+use super::Connector;
 use crate::{
     endpoint::Endpoint,
     io::Io,
@@ -6,13 +6,14 @@ use crate::{
     Result,
 };
 
-pub struct SimplexConnector<C: Connector> {
+#[derive(Clone)]
+pub struct SimplexConnector<C: Connector + Clone> {
     next_hop: Endpoint,
     config: Config,
     connector: C,
 }
 
-impl<C: Connector> SimplexConnector<C> {
+impl<C: Connector + Clone> SimplexConnector<C> {
     pub fn new(next_hop: Endpoint, config: Config, connector: C) -> Self {
         Self {
             next_hop,
@@ -23,7 +24,7 @@ impl<C: Connector> SimplexConnector<C> {
 }
 
 #[async_trait::async_trait]
-impl<C: Connector> Connector for SimplexConnector<C> {
+impl<C: Connector + Clone> Connector for SimplexConnector<C> {
     type Stream = Box<dyn Io>;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
@@ -36,33 +37,5 @@ impl<C: Connector> Connector for SimplexConnector<C> {
         .await?;
 
         Ok(Box::new(s))
-    }
-}
-
-pub struct SimplexConnectorFactory<F: ConnectorFactory> {
-    factory: F,
-    next_hop: Endpoint,
-    config: Config,
-}
-
-impl<F: ConnectorFactory> SimplexConnectorFactory<F> {
-    pub fn new(factory: F, next_hop: Endpoint, config: Config) -> Self {
-        Self {
-            factory,
-            next_hop,
-            config,
-        }
-    }
-}
-
-impl<F: ConnectorFactory> ConnectorFactory for SimplexConnectorFactory<F> {
-    type Product = SimplexConnector<F::Product>;
-
-    fn build(&self) -> Self::Product {
-        SimplexConnector::new(
-            self.next_hop.clone(),
-            self.config.clone(),
-            self.factory.build(),
-        )
     }
 }
