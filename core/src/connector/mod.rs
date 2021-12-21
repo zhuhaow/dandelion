@@ -8,37 +8,31 @@ pub mod tcp;
 pub mod tls;
 
 use crate::{endpoint::Endpoint, io::Io, Result};
-use dyn_clone::DynClone;
 
 #[async_trait::async_trait]
-pub trait Connector: Send + Sync + DynClone + 'static {
+pub trait Connector: Sync + Send {
     type Stream: Io;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream>;
 
     fn boxed(self) -> BoxedConnector
     where
-        Self: Sized + Clone,
+        Self: Sized + 'static,
     {
         Box::new(ConnectorWrapper { connector: self })
     }
 }
 
-dyn_clone::clone_trait_object!(Connector<Stream = Box<dyn Io>>);
-
-#[derive(Clone)]
-struct ConnectorWrapper<C: Connector + Clone> {
+struct ConnectorWrapper<C: Connector> {
     connector: C,
 }
 
 #[async_trait::async_trait]
-impl<C: Connector + Clone> Connector for ConnectorWrapper<C> {
+impl<C: Connector> Connector for ConnectorWrapper<C> {
     type Stream = Box<dyn Io>;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
-        let stream = self.connector.connect(endpoint).await?;
-
-        Ok(Box::new(stream))
+        Ok(Box::new(self.connector.connect(endpoint).await?))
     }
 }
 
@@ -49,6 +43,6 @@ impl Connector for BoxedConnector {
     type Stream = Box<dyn Io>;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
-        (*self).connect(endpoint).await
+        self.as_ref().connect(endpoint).await
     }
 }

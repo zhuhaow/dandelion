@@ -14,16 +14,16 @@ impl DnsFailRule {
 
 #[async_trait::async_trait]
 impl Rule for DnsFailRule {
-    async fn check(&self, endpoint: &Endpoint) -> Option<BoxedConnector> {
+    async fn check(&self, endpoint: &Endpoint) -> Option<&BoxedConnector> {
         if let Endpoint::Domain(host, port) = endpoint {
             let result = lookup_host((host.as_str(), *port)).await;
             match result {
                 Ok(addrs) => {
                     if addrs.count() == 0 {
-                        return Some(self.connector.clone());
+                        return Some(&self.connector);
                     }
                 }
-                Err(_) => return Some(self.connector.clone()),
+                Err(_) => return Some(&self.connector),
             }
         }
         None

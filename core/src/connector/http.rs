@@ -5,13 +5,12 @@ use http::{Request, StatusCode};
 use hyper::{client::conn::handshake, Body};
 use log::debug;
 
-#[derive(Clone)]
-pub struct HttpConnector<C: Connector + Clone> {
+pub struct HttpConnector<C: Connector> {
     connector: C,
     next_hop: Endpoint,
 }
 
-impl<C: Connector + Clone> HttpConnector<C> {
+impl<C: Connector> HttpConnector<C> {
     pub fn new(connector: C, next_hop: Endpoint) -> Self {
         Self {
             connector,
@@ -21,7 +20,7 @@ impl<C: Connector + Clone> HttpConnector<C> {
 }
 
 #[async_trait::async_trait]
-impl<C: Connector + Clone> Connector for HttpConnector<C> {
+impl<C: Connector> Connector for HttpConnector<C> {
     type Stream = C::Stream;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {

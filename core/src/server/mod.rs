@@ -4,6 +4,7 @@ pub mod geoip;
 use crate::{connector::Connector, server::config::ServerConfig, Result};
 use futures::{future::try_join_all, stream::select_all, TryStreamExt};
 use log::{debug, info, warn};
+use std::sync::Arc;
 use tokio::{io::copy_bidirectional, net::TcpListener};
 use tokio_stream::{wrappers::TcpListenerStream, StreamExt};
 
@@ -33,7 +34,7 @@ impl Server {
             .map(|(s, c)| s.map_ok(move |stream| (stream, c))),
         );
 
-        let connector = self.config.connector.get_connector().await?;
+        let connector = Arc::new(self.config.connector.get_connector().await?);
 
         while let Some(result) = listeners.next().await {
             let (stream, acceptor_config) = result?;

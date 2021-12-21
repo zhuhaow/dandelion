@@ -1,7 +1,6 @@
 use super::Rule;
 use crate::{connector::BoxedConnector, endpoint::Endpoint};
 
-#[derive(Clone)]
 pub struct AllRule {
     connector: BoxedConnector,
 }
@@ -14,7 +13,7 @@ impl AllRule {
 
 #[async_trait::async_trait]
 impl Rule for AllRule {
-    async fn check(&self, _endpoint: &Endpoint) -> Option<BoxedConnector> {
-        Some(self.connector.clone())
+    async fn check(&self, _endpoint: &Endpoint) -> Option<&BoxedConnector> {
+        Some(&self.connector)
     }
 }

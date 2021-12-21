@@ -7,18 +7,14 @@ pub mod ip;
 use super::{BoxedConnector, Connector};
 use crate::{endpoint::Endpoint, io::Io, Result};
 use anyhow::anyhow;
-use std::sync::Arc;
 
-#[derive(Clone)]
 pub struct RuleConnector {
-    rules: Arc<Vec<Box<dyn Rule>>>,
+    rules: Vec<Box<dyn Rule>>,
 }
 
 impl RuleConnector {
     pub fn new(rules: Vec<Box<dyn Rule>>) -> Self {
-        Self {
-            rules: Arc::new(rules),
-        }
+        Self { rules }
     }
 }
 
@@ -40,5 +36,5 @@ impl Connector for RuleConnector {
 
 #[async_trait::async_trait]
 pub trait Rule: Sync + Send {
-    async fn check(&self, endpoint: &Endpoint) -> Option<BoxedConnector>;
+    async fn check(&self, endpoint: &Endpoint) -> Option<&BoxedConnector>;
 }

@@ -3,7 +3,6 @@ use crate::{connector::BoxedConnector, endpoint::Endpoint};
 use ipnetwork::IpNetwork;
 use tokio::net::lookup_host;
 
-#[derive(Clone)]
 pub struct IpRule {
     subnets: Vec<IpNetwork>,
     connector: BoxedConnector,
@@ -17,12 +16,12 @@ impl IpRule {
 
 #[async_trait::async_trait]
 impl Rule for IpRule {
-    async fn check(&self, endpoint: &Endpoint) -> Option<BoxedConnector> {
+    async fn check(&self, endpoint: &Endpoint) -> Option<&BoxedConnector> {
         match endpoint {
             Endpoint::Addr(addr) => {
                 for network in self.subnets.iter() {
                     if network.contains(addr.ip()) {
-                        return Some(self.connector.clone());
+                        return Some(&self.connector);
                     }
                 }
             }
@@ -31,7 +30,7 @@ impl Rule for IpRule {
                 for addr in addrs {
                     for network in self.subnets.iter() {
                         if network.contains(addr.ip()) {
-                            return Some(self.connector.clone());
+                            return Some(&self.connector);
                         }
                     }
                 }

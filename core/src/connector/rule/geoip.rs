@@ -54,18 +54,18 @@ impl GeoRule {
 
 #[async_trait::async_trait]
 impl Rule for GeoRule {
-    async fn check(&self, endpoint: &Endpoint) -> Option<BoxedConnector> {
+    async fn check(&self, endpoint: &Endpoint) -> Option<&BoxedConnector> {
         match endpoint {
             Endpoint::Addr(addr) => {
                 if self.match_ip(&addr.ip()) == Some(self.equal) {
-                    return Some(self.connector.clone());
+                    return Some(&self.connector);
                 }
             }
             Endpoint::Domain(host, port) => {
                 let addrs = lookup_host((host.as_str(), *port)).await.ok()?;
                 for addr in addrs {
                     if self.match_ip(&addr.ip()) == Some(self.equal) {
-                        return Some(self.connector.clone());
+                        return Some(&self.connector);
                     }
                 }
             }

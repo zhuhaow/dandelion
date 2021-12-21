@@ -3,13 +3,12 @@ use crate::{endpoint::Endpoint, Result};
 use anyhow::{bail, ensure, Context};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-#[derive(Clone)]
-pub struct Socks5Connector<C: Connector + Clone> {
+pub struct Socks5Connector<C: Connector> {
     connector: C,
     next_hop: Endpoint,
 }
 
-impl<C: Connector + Clone> Socks5Connector<C> {
+impl<C: Connector> Socks5Connector<C> {
     pub fn new(connector: C, next_hop: Endpoint) -> Self {
         Self {
             connector,
@@ -19,7 +18,7 @@ impl<C: Connector + Clone> Socks5Connector<C> {
 }
 
 #[async_trait::async_trait]
-impl<C: Connector + Clone> Connector for Socks5Connector<C> {
+impl<C: Connector> Connector for Socks5Connector<C> {
     type Stream = C::Stream;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {

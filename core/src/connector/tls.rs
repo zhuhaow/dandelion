@@ -3,19 +3,19 @@ use crate::{endpoint::Endpoint, Result};
 use anyhow::Context;
 use tokio_native_tls::TlsStream;
 
-#[derive(Clone, Debug)]
-pub struct TlsConnector<C: Connector + Clone> {
+#[derive(Debug)]
+pub struct TlsConnector<C: Connector> {
     connector: C,
 }
 
-impl<C: Connector + Clone> TlsConnector<C> {
+impl<C: Connector> TlsConnector<C> {
     pub fn new(connector: C) -> Self {
         Self { connector }
     }
 }
 
 #[async_trait::async_trait]
-impl<C: Connector + Clone> Connector for TlsConnector<C> {
+impl<C: Connector> Connector for TlsConnector<C> {
     type Stream = TlsStream<C::Stream>;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {

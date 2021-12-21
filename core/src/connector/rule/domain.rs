@@ -24,7 +24,7 @@ impl DomainRule {
 
 #[async_trait::async_trait]
 impl Rule for DomainRule {
-    async fn check(&self, endpoint: &Endpoint) -> Option<BoxedConnector> {
+    async fn check(&self, endpoint: &Endpoint) -> Option<&BoxedConnector> {
         if let Endpoint::Domain(d, _) = endpoint {
             for mode in self.modes.iter() {
                 if match mode {
@@ -33,7 +33,7 @@ impl Rule for DomainRule {
                     Mode::Keyword(k) => d.contains(k),
                     Mode::Regex(r) => r.is_match(d),
                 } {
-                    return Some(self.connector.clone());
+                    return Some(&self.connector);
                 }
             }
         }

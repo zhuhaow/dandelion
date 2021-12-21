@@ -2,19 +2,16 @@ use super::{BoxedConnector, Connector};
 use crate::{endpoint::Endpoint, io::Io};
 use anyhow::Result;
 use futures::future::{select_ok, FutureExt};
-use std::{sync::Arc, time::Duration};
+use std::time::Duration;
 use tokio::time::sleep;
 
-#[derive(Clone)]
 pub struct SpeedConnector {
-    connectors: Arc<Vec<(Duration, BoxedConnector)>>,
+    connectors: Vec<(Duration, BoxedConnector)>,
 }
 
 impl SpeedConnector {
     pub fn new(connectors: Vec<(Duration, BoxedConnector)>) -> Self {
-        Self {
-            connectors: Arc::new(connectors),
-        }
+        Self { connectors }
     }
 }
 

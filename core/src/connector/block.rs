@@ -2,7 +2,7 @@ use super::Connector;
 use crate::{endpoint::Endpoint, io::Io, Result};
 use anyhow::bail;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Debug, Default)]
 pub struct BlockConnector {}
 
 #[async_trait::async_trait]

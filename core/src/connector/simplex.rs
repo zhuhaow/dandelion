@@ -6,14 +6,13 @@ use crate::{
     Result,
 };
 
-#[derive(Clone)]
-pub struct SimplexConnector<C: Connector + Clone> {
+pub struct SimplexConnector<C: Connector> {
     next_hop: Endpoint,
     config: Config,
     connector: C,
 }
 
-impl<C: Connector + Clone> SimplexConnector<C> {
+impl<C: Connector> SimplexConnector<C> {
     pub fn new(next_hop: Endpoint, config: Config, connector: C) -> Self {
         Self {
             next_hop,
@@ -24,7 +23,7 @@ impl<C: Connector + Clone> SimplexConnector<C> {
 }
 
 #[async_trait::async_trait]
-impl<C: Connector + Clone> Connector for SimplexConnector<C> {
+impl<C: Connector> Connector for SimplexConnector<C> {
     type Stream = Box<dyn Io>;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {

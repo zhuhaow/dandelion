@@ -2,7 +2,7 @@ use super::Connector;
 use crate::{endpoint::Endpoint, Result};
 use tokio::net::TcpStream;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Debug, Default)]
 pub struct TcpConnector;
 
 #[async_trait::async_trait]
