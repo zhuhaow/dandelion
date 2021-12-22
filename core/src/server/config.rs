@@ -21,6 +21,7 @@ use crate::{
     },
     endpoint::Endpoint,
     geoip::Source,
+    resolver::{system::SystemResolver, Resolver},
     simplex::Config,
     Result,
 };
@@ -30,13 +31,27 @@ use ipnetwork::IpNetwork;
 use iso3166_1::CountryCode;
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr, DurationMilliSeconds};
-use std::{collections::HashMap, net::SocketAddr, time::Duration};
+use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
 use tokio::net::TcpStream;
 
 #[derive(Debug, Deserialize)]
 pub struct ServerConfig {
     pub acceptors: Vec<AcceptorConfig>,
     pub connector: ConnectorConfig,
+    pub resolver: ResolverConfig,
+}
+
+#[derive(Debug, Deserialize)]
+pub enum ResolverConfig {
+    System,
+}
+
+impl ResolverConfig {
+    pub fn get_resolver(&self) -> Arc<dyn Resolver> {
+        match self {
+            ResolverConfig::System => Arc::new(SystemResolver::new()),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -126,16 +141,18 @@ async fn get_rule_connector(
     geoip_config: &Option<Source>,
     connectors: &HashMap<String, Box<ConnectorConfig>>,
     rules: &[RuleEntry],
+    resolver: Arc<dyn Resolver>,
 ) -> Result<BoxedConnector> {
     async fn get_connector(
         connectors: &HashMap<String, Box<ConnectorConfig>>,
         ind: &str,
+        resolver: Arc<dyn Resolver>,
     ) -> Result<BoxedConnector> {
         let config = connectors
             .get(ind)
             .ok_or_else(|| anyhow::anyhow!("Failed to find connector named {}", ind))?;
 
-        config.get_connector().await
+        config.get_connector(resolver).await
     }
 
     let mut geo_ip_builder = geoip_config
@@ -144,20 +161,22 @@ async fn get_rule_connector(
     let mut connector_rules: Vec<Box<dyn Rule>> = Vec::new();
     for entry in rules.iter() {
         let rule: Box<dyn Rule> = match entry {
-            RuleEntry::All(ind) => Box::new(AllRule::new(get_connector(connectors, ind).await?)),
-            RuleEntry::DnsFail(ind) => {
-                Box::new(DnsFailRule::new(get_connector(connectors, ind).await?))
-            }
+            RuleEntry::All(ind) => Box::new(AllRule::new(
+                get_connector(connectors, ind, resolver.clone()).await?,
+            )),
+            RuleEntry::DnsFail(ind) => Box::new(DnsFailRule::new(
+                get_connector(connectors, ind, resolver.clone()).await?,
+            )),
             RuleEntry::Domain { modes, index } => Box::new(DomainRule::new(
                 modes.clone(),
-                get_connector(connectors, index).await?,
+                get_connector(connectors, index, resolver.clone()).await?,
             )),
             RuleEntry::GeoIp {
                 country,
                 equal,
                 index,
             } => Box::new(GeoRule::new(
-                get_connector(connectors, index).await?,
+                get_connector(connectors, index, resolver.clone()).await?,
                 geo_ip_builder
                     .as_mut()
                     .ok_or_else(|| {
@@ -170,7 +189,7 @@ async fn get_rule_connector(
             )),
             RuleEntry::Ip { subnets, index } => Box::new(IpRule::new(
                 subnets.clone(),
-                get_connector(connectors, index).await?,
+                get_connector(connectors, index, resolver.clone()).await?,
             )),
         };
 
@@ -214,9 +233,9 @@ pub enum ConnectorConfig {
 
 impl ConnectorConfig {
     #[async_recursion::async_recursion]
-    pub async fn get_connector(&self) -> Result<BoxedConnector> {
+    pub async fn get_connector(&self, resolver: Arc<dyn Resolver>) -> Result<BoxedConnector> {
         match self {
-            ConnectorConfig::Direct => Ok(TcpConnector {}.boxed()),
+            ConnectorConfig::Direct => Ok(TcpConnector::new(resolver).boxed()),
             ConnectorConfig::Simplex {
                 endpoint,
                 path,
@@ -229,28 +248,36 @@ impl ConnectorConfig {
                     path.to_owned(),
                     (secret_key.to_owned(), secret_value.to_owned()),
                 ),
-                next.get_connector().await?,
+                next.get_connector(resolver).await?,
             )
             .boxed()),
-            ConnectorConfig::Tls(c) => Ok(TlsConnector::new(c.get_connector().await?).boxed()),
+            ConnectorConfig::Tls(c) => {
+                Ok(TlsConnector::new(c.get_connector(resolver).await?).boxed())
+            }
             ConnectorConfig::Rule {
                 geoip,
                 connectors,
                 rules,
-            } => get_rule_connector(geoip, connectors, rules).await,
+            } => get_rule_connector(geoip, connectors, rules, resolver).await,
             ConnectorConfig::Speed(c) => Ok(SpeedConnector::new(
                 futures::stream::iter(c.iter())
-                    .then(|c| async move { Ok::<_, Error>((c.0, c.1.get_connector().await?)) })
+                    .then(|c| async {
+                        Ok::<_, Error>((c.0, c.1.get_connector(resolver.clone()).await?))
+                    })
                     .try_collect()
                     .await?,
             )
             .boxed()),
-            ConnectorConfig::Http { endpoint, next } => {
-                Ok(HttpConnector::new(next.get_connector().await?, endpoint.clone()).boxed())
-            }
-            ConnectorConfig::Socks5 { endpoint, next } => {
-                Ok(Socks5Connector::new(next.get_connector().await?, endpoint.clone()).boxed())
-            }
+            ConnectorConfig::Http { endpoint, next } => Ok(HttpConnector::new(
+                next.get_connector(resolver).await?,
+                endpoint.clone(),
+            )
+            .boxed()),
+            ConnectorConfig::Socks5 { endpoint, next } => Ok(Socks5Connector::new(
+                next.get_connector(resolver).await?,
+                endpoint.clone(),
+            )
+            .boxed()),
             ConnectorConfig::Block => Ok(BlockConnector {}.boxed()),
         }
     }
@@ -266,7 +293,10 @@ mod test {
     async fn test_config_file(content: &str, success: bool) -> Result<()> {
         let config: ServerConfig = ron::de::from_str(content)?;
 
-        let factory_result = config.connector.get_connector().await;
+        let factory_result = config
+            .connector
+            .get_connector(config.resolver.get_resolver())
+            .await;
 
         if success {
             factory_result?;

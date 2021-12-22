@@ -34,7 +34,8 @@ impl Server {
             .map(|(s, c)| s.map_ok(move |stream| (stream, c))),
         );
 
-        let connector = Arc::new(self.config.connector.get_connector().await?);
+        let resolver = self.config.resolver.get_resolver();
+        let connector = Arc::new(self.config.connector.get_connector(resolver).await?);
 
         while let Some(result) = listeners.next().await {
             let (stream, acceptor_config) = result?;
