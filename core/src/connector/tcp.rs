@@ -30,7 +30,6 @@ impl<R: Resolver> Connector for TcpConnector<R> {
     type Stream = TcpStream;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
-        // TODO: Implement RFC 8305
         match endpoint {
             Endpoint::Addr(addr) => Ok(TcpStream::connect(addr).await?),
             Endpoint::Domain(host, port) => {
