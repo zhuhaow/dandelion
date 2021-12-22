@@ -26,7 +26,7 @@ use crate::{
     Result,
 };
 use anyhow::Error;
-use futures::{StreamExt, TryStreamExt};
+use futures::{Future, StreamExt, TryStreamExt};
 use ipnetwork::IpNetwork;
 use iso3166_1::CountryCode;
 use serde::Deserialize;
@@ -137,66 +137,73 @@ pub enum RuleEntry {
     },
 }
 
-async fn get_rule_connector(
-    geoip_config: &Option<Source>,
-    connectors: &HashMap<String, Box<ConnectorConfig>>,
-    rules: &[RuleEntry],
+// Workaround issue https://github.com/rust-lang/rust/issues/63033
+#[allow(clippy::manual_async_fn)]
+fn get_rule_connector<'a>(
+    geoip_config: &'a Option<Source>,
+    connectors: &'a HashMap<String, Box<ConnectorConfig>>,
+    rules: &'a [RuleEntry],
     resolver: Arc<dyn Resolver>,
-) -> Result<BoxedConnector> {
-    async fn get_connector(
-        connectors: &HashMap<String, Box<ConnectorConfig>>,
-        ind: &str,
+) -> impl Future<Output = Result<BoxedConnector>> + 'a {
+    #[allow(clippy::manual_async_fn)]
+    fn get_connector<'a>(
+        connectors: &'a HashMap<String, Box<ConnectorConfig>>,
+        ind: &'a str,
         resolver: Arc<dyn Resolver>,
-    ) -> Result<BoxedConnector> {
-        let config = connectors
-            .get(ind)
-            .ok_or_else(|| anyhow::anyhow!("Failed to find connector named {}", ind))?;
+    ) -> impl Future<Output = Result<BoxedConnector>> + 'a {
+        async move {
+            let config = connectors
+                .get(ind)
+                .ok_or_else(|| anyhow::anyhow!("Failed to find connector named {}", ind))?;
 
-        config.get_connector(resolver).await
+            config.get_connector(resolver).await
+        }
     }
 
-    let mut geo_ip_builder = geoip_config
-        .as_ref()
-        .map(|s| GeoIpBuilder::new(s.to_owned()));
-    let mut connector_rules: Vec<Box<dyn Rule>> = Vec::new();
-    for entry in rules.iter() {
-        let rule: Box<dyn Rule> = match entry {
-            RuleEntry::All(ind) => Box::new(AllRule::new(
-                get_connector(connectors, ind, resolver.clone()).await?,
-            )),
-            RuleEntry::DnsFail(ind) => Box::new(DnsFailRule::new(
-                get_connector(connectors, ind, resolver.clone()).await?,
-            )),
-            RuleEntry::Domain { modes, index } => Box::new(DomainRule::new(
-                modes.clone(),
-                get_connector(connectors, index, resolver.clone()).await?,
-            )),
-            RuleEntry::GeoIp {
-                country,
-                equal,
-                index,
-            } => Box::new(GeoRule::new(
-                get_connector(connectors, index, resolver.clone()).await?,
-                geo_ip_builder
-                    .as_mut()
-                    .ok_or_else(|| {
-                        anyhow::anyhow!("Must provide geoip config to enable geo based rule.")
-                    })?
-                    .get()
-                    .await?,
-                country.clone(),
-                *equal,
-            )),
-            RuleEntry::Ip { subnets, index } => Box::new(IpRule::new(
-                subnets.clone(),
-                get_connector(connectors, index, resolver.clone()).await?,
-            )),
-        };
+    async move {
+        let mut geo_ip_builder = geoip_config
+            .as_ref()
+            .map(|s| GeoIpBuilder::new(s.to_owned()));
+        let mut connector_rules: Vec<Box<dyn Rule>> = Vec::new();
+        for entry in rules.iter() {
+            let rule: Box<dyn Rule> = match entry {
+                RuleEntry::All(ind) => Box::new(AllRule::new(
+                    get_connector(connectors, ind, resolver.clone()).await?,
+                )),
+                RuleEntry::DnsFail(ind) => Box::new(DnsFailRule::new(
+                    get_connector(connectors, ind, resolver.clone()).await?,
+                )),
+                RuleEntry::Domain { modes, index } => Box::new(DomainRule::new(
+                    modes.clone(),
+                    get_connector(connectors, index, resolver.clone()).await?,
+                )),
+                RuleEntry::GeoIp {
+                    country,
+                    equal,
+                    index,
+                } => Box::new(GeoRule::new(
+                    get_connector(connectors, index, resolver.clone()).await?,
+                    geo_ip_builder
+                        .as_mut()
+                        .ok_or_else(|| {
+                            anyhow::anyhow!("Must provide geoip config to enable geo based rule.")
+                        })?
+                        .get()
+                        .await?,
+                    country.clone(),
+                    *equal,
+                )),
+                RuleEntry::Ip { subnets, index } => Box::new(IpRule::new(
+                    subnets.clone(),
+                    get_connector(connectors, index, resolver.clone()).await?,
+                )),
+            };
 
-        connector_rules.push(rule);
+            connector_rules.push(rule);
+        }
+
+        Ok(RuleConnector::new(connector_rules).boxed())
     }
-
-    Ok(RuleConnector::new(connector_rules).boxed())
 }
 
 #[serde_as]
