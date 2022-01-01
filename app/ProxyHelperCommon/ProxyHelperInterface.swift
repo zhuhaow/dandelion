@@ -8,6 +8,7 @@
 import Foundation
 
 @objc protocol ProxyHelperInterface {
+    // swiftlint:disable function_parameter_count
     func setProxy(setSocks5: Bool, socks5Address: String, socks5Port: UInt16,
                   setHttp: Bool, httpAddress: String, httpPort: UInt16)
 

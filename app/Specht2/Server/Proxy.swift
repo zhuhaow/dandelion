@@ -36,8 +36,12 @@ class Proxy {
         XpcConnection.runCommandWithLatestXpcService { result in
             switch result {
             case .success(let proxy):
-                proxy.setProxy(setSocks5: socks5 != nil, socks5Address: socks5?.connectableAddr ?? "", socks5Port: socks5?.port ?? 0,
-                                setHttp: http != nil, httpAddress: http?.connectableAddr ?? "", httpPort: http?.port ?? 0)
+                proxy.setProxy(setSocks5: socks5 != nil,
+                               socks5Address: socks5?.connectableAddr ?? "",
+                               socks5Port: socks5?.port ?? 0,
+                                setHttp: http != nil,
+                               httpAddress: http?.connectableAddr ?? "",
+                               httpPort: http?.port ?? 0)
             case .failure(let error):
                 Alert.alert(message: "Failed to set up system proxy: \(error)")
             }
@@ -57,6 +61,7 @@ private class XpcConnection {
 
         let connection = createConnection()
 
+        // swiftlint:disable force_cast
         let remoteProxy = connection.remoteObjectProxyWithErrorHandler { error in
             if let err = error as NSError?,
                err.domain == NSCocoaErrorDomain && err.code == NSXPCConnectionInvalid {
@@ -93,6 +98,7 @@ private class XpcConnection {
     static func runCommandWithLatestXpcService(block: @escaping (Result<ProxyHelperInterface, Error>) -> Void) {
         getDefaultConnection { result in
             block(result.map { conn in
+                // swiftlint:disable force_cast
                 return conn.remoteObjectProxyWithErrorHandler { error in
                     block(.failure(error))
                 } as! ProxyHelperInterface
@@ -125,7 +131,9 @@ private class XpcConnection {
         }
 
         var error: Unmanaged<CFError>?
-        let blessStatus = SMJobBless(kSMDomainSystemLaunchd, Constants.helperMachLabel as CFString, authorization, &error)
+        let blessStatus = SMJobBless(kSMDomainSystemLaunchd,
+                                     Constants.helperMachLabel as CFString,
+                                     authorization, &error)
 
         if !blessStatus {
             return .failure(.blessError(error!.takeRetainedValue().localizedDescription))

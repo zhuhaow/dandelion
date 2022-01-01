@@ -110,7 +110,8 @@ private func startServer(configUrl: URL, closure: @escaping (ServerEvent) -> Voi
     let beforeStartedCallback: @convention(c) (UnsafeMutableRawPointer, UnsafeMutablePointer<ServerInfo>) -> Void
         = { (_ userdata: UnsafeMutableRawPointer, _ serverInfo: UnsafeMutablePointer<ServerInfo>) in
             // We won't take ownership here.
-            let wrappedClosure: WrapClosure<(ServerEvent) -> Void> = Unmanaged.fromOpaque(userdata).takeUnretainedValue()
+            let wrappedClosure: WrapClosure<(ServerEvent) -> Void> =
+                Unmanaged.fromOpaque(userdata).takeUnretainedValue()
 
             var socks5: Endpoint?
             if let addr = serverInfo.pointee.socks5_addr {
@@ -140,7 +141,9 @@ private func startServer(configUrl: URL, closure: @escaping (ServerEvent) -> Voi
             wrappedClosure.closure(.completed(.failure(String.init(cString: err, encoding: .utf8)!)))
         }
 
-    let completion = EventCallback(userdata: data, before_start_callback: beforeStartedCallback, done_callback: doneCallback)
+    let completion = EventCallback(userdata: data,
+                                   before_start_callback: beforeStartedCallback,
+                                   done_callback: doneCallback)
 
     return StopHandle(handle: configUrl.withUnsafeFileSystemRepresentation {
         // Due to the limit of cbindgen, the generated signiture for NonNull is non-const,

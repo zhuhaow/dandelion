@@ -97,7 +97,7 @@ class ConfigManager {
     static func initialize() {
         reloadConfigs()
     }
-    
+
     static func clearUp() {
         if isManagingProxy() {
             clearProxy()

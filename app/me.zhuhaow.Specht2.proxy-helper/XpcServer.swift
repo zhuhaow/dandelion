@@ -49,8 +49,9 @@ class XpcServer: NSObject {
             return false
         }
 
-        // TODO: Put this in a better place since it's repeated in Info.plist now
-        let entitlements = "identifier \"me.zhuhaow.Specht2\" and anchor apple generic and certificate leaf[subject.OU] = \"H5443445N6\""
+        let entitlements =
+            "identifier \"me.zhuhaow.Specht2\"" +
+            " and anchor apple generic and certificate leaf[subject.OU] = \"H5443445N6\""
         var requirement: SecRequirement?
 
         status = SecRequirementCreateWithString(entitlements as CFString, flags, &requirement)
