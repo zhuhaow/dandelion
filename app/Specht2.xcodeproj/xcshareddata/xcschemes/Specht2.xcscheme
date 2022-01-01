@@ -38,16 +38,6 @@
                ReferencedContainer = "container:Specht2.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "36DBED0C273CE96C00D4A0DB"
-               BuildableName = "Specht2UITests.xctest"
-               BlueprintName = "Specht2UITests"
-               ReferencedContainer = "container:Specht2.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
