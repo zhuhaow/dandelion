@@ -57,3 +57,8 @@ private class UpdateDelegate: NSObject, SPUUpdaterDelegate {
         }
     }
 }
+
+extension Defaults.Keys {
+    static let autoUpdate = Key<Bool>("autoUpdate", default: true)
+    static let useBetaChannel = Key<Bool>("useBetaChannel", default: false)
+}

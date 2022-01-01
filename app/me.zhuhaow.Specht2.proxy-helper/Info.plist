@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>me.zhuhaow.Specht2.proxy-helper</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>SMAuthorizedClients</key>
+	<array>
+		<string>identifier &quot;me.zhuhaow.Specht2&quot; and anchor apple generic and certificate leaf[subject.OU] = &quot;H5443445N6&quot;</string>
+	</array>
+</dict>
+</plist>

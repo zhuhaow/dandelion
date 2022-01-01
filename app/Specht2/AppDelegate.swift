@@ -17,4 +17,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         taskBarController = TaskBarController()
     }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        ConfigManager.clearUp()
+    }
 }

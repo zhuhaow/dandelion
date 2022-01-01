@@ -41,3 +41,7 @@ class Autostart {
         refreshState()
     }
 }
+
+extension Defaults.Keys {
+    static let autostart = Key<Bool>("autostart", default: true)
+}

@@ -38,6 +38,10 @@ lane :build do
   build_mac_app(skip_codesigning: true, skip_archive: true)
 end
 
+lane :build_release do
+  build_mac_app(export_method: "developer-id")
+end
+
 lane :test do
   scan(xcargs: "CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO")
 end
@@ -53,7 +57,7 @@ end
 
 lane :release do
   update_version
-  build_mac_app(export_method: "developer-id")
+  build_release
   notarize(package: "Specht2.app", asc_provider: "H5443445N6")
   Dir.chdir("..") do
     sh("ditto -c -k --sequesterRsrc --keepParent Specht2.app Specht2.app.zip")

@@ -45,6 +45,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 
 
+### build_release
+
+```sh
+[bundle exec] fastlane build_release
+```
+
+
+
 ### test
 
 ```sh
