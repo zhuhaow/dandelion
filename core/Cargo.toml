@@ -27,7 +27,7 @@ serde = { version = "1.0.132", features = ["derive"] }
 serde_with = "1.11.0"
 log = "0.4.14"
 flexi_logger = "0.22.0"
-anyhow = "1.0.51"
+anyhow = "1.0.52"
 tokio-native-tls = "0.3.0"
 fdlimit = "0.2.1"
 lazy_static = "1.4.0"
@@ -37,7 +37,7 @@ maxminddb = { version = "0.21.0", features = ["mmap"] }
 iso3166-1 = "1.0.1"
 flate2 = "1.0.22"
 tar = "0.4.38"
-reqwest = "0.11.7"
+reqwest = "0.11.8"
 # Make sure it's compatible with maxminddb
 memmap2 = "0.3.1"
 serde_regex = "1.1.0"
