@@ -35,11 +35,11 @@ lane :ci_release do
 end
 
 lane :build do
-  build_mac_app(skip_codesigning: true, skip_archive: true)
+  build_mac_app(skip_codesigning: true, skip_archive: true, scheme: "Specht2")
 end
 
 lane :build_release do
-  build_mac_app(export_method: "developer-id")
+  build_mac_app(export_method: "developer-id", scheme: "Specht2")
 end
 
 lane :test do
