@@ -9,7 +9,6 @@ crate-type = ["staticlib", "lib"]
 
 [dependencies]
 tokio = { version = "1.15.0", features = ["io-util", "net", "macros", "rt", "rt-multi-thread"] }
-strum = { version = "0.23.0", features = ["derive"] }
 async-trait = "0.1.52"
 structopt = "0.3.25"
 tokio-tungstenite = "0.16.1"
@@ -46,7 +45,6 @@ tempfile = "3.2.0"
 tower = { version = "0.4.11", features = ["util"] }
 tokio-stream = { version = "0.1.8", features = ["net"] }
 dns-lookup = "1.0.8"
-dyn-clone = "1.0.4"
 itertools = "0.10.3"
 
 [dev-dependencies]
