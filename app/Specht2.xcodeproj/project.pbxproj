@@ -118,6 +118,7 @@
 		36298E5F277F0FF000A90377 /* uninstall.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = uninstall.sh; sourceTree = "<group>"; };
 		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
 		36A843672753B79E00E6201D /* core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = core.a; path = Specht2/core.a; sourceTree = "<group>"; };
+		36AD80CE2780273B00417A11 /* Specht2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Specht2.entitlements; sourceTree = "<group>"; };
 		36B3798E276856F400445DF6 /* Specht2LaunchHelper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Specht2LaunchHelper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36B37994276856F500445DF6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		36B37999276856F500445DF6 /* LaunchHelper.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LaunchHelper.entitlements; sourceTree = "<group>"; };
@@ -257,6 +258,7 @@
 		36DBECF4273CE96B00D4A0DB /* Specht2 */ = {
 			isa = PBXGroup;
 			children = (
+				36AD80CE2780273B00417A11 /* Specht2.entitlements */,
 				36298E5D27786E0900A90377 /* Server */,
 				36298E5C27785C6400A90377 /* Utilities */,
 				36298E5B277856FC00A90377 /* SupportFeatures */,
@@ -783,13 +785,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Specht2/Specht2.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = H5443445N6;
-				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Specht2/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
@@ -816,13 +819,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Specht2/Specht2.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = H5443445N6;
-				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Specht2/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
