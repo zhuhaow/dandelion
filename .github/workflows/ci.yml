@@ -32,7 +32,7 @@ jobs:
           command: test
           args: --manifest-path core/Cargo.toml -- --include-ignored
         env:
-          MAXMINDDB_LICENSE: ${{ secrets.MAXMINDDB_LICENSE }}
+          MAXMINDDB_LICENSE: ${{ secrets.MAXMINDDB_LICENSE || 'DISABLED' }}
 
   lint_swift:
     runs-on: macos-11

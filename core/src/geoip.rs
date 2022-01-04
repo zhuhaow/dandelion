@@ -99,6 +99,11 @@ mod tests {
     #[ignore]
     async fn bootstrap_from_license() -> Result<()> {
         let license = env::var("MAXMINDDB_LICENSE")?;
+        // We skip test when we explicitly disable it.
+        if license == "DISABLED" {
+            return Ok(());
+        }
+
         let temp = NamedTempFile::new()?;
         let builder = ensure_reader(&license, temp.path()).await?;
 
