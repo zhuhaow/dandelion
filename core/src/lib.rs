@@ -9,4 +9,7 @@ pub mod server;
 pub mod simplex;
 pub mod tunnel;
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub mod tun;
+
 pub use anyhow::Result;
