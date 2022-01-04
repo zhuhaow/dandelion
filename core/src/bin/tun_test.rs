@@ -1,9 +1,12 @@
-use log::info;
-use specht2_core::{tun::device::Device, Result};
-use tokio::signal::ctrl_c;
+use specht2_core::Result;
 
+#[cfg(target_os = "macos")]
 #[tokio::main]
 async fn main() -> Result<()> {
+    use log::info;
+    use specht2_core::tun::device::Device;
+    use tokio::signal::ctrl_c;
+
     flexi_logger::Logger::try_with_env()
         .unwrap()
         .start()
@@ -16,4 +19,12 @@ async fn main() -> Result<()> {
     ctrl_c().await?;
 
     Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+#[tokio::main]
+async fn main() -> Result<()> {
+    use anyhow::bail;
+
+    bail!("Not supported platform");
 }
