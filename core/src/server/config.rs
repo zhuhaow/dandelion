@@ -341,6 +341,11 @@ mod test {
             .join(filename);
         let content = read_to_string(path)?;
 
+        // We skip test when we explicitly disable it.
+        if env::var_os("SKIP_MAXMINDDB_TESTS").is_some() {
+            return Ok(());
+        }
+
         let license = env::var("MAXMINDDB_LICENSE")?;
         let content = content.replace("$$LICENSE$$", &license);
 

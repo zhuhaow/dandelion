@@ -27,12 +27,22 @@ jobs:
           command: clippy
           args: --all-targets --all-features --manifest-path core/Cargo.toml -- -D warnings
       - name: cargo test
+        if: ${{ env.MAXMINDDB_LICENSE != 0 }}
         uses: actions-rs/cargo@v1
         with:
           command: test
           args: --manifest-path core/Cargo.toml -- --include-ignored
         env:
-          MAXMINDDB_LICENSE: ${{ secrets.MAXMINDDB_LICENSE || 'DISABLED' }}
+          MAXMINDDB_LICENSE: ${{ secrets.MAXMINDDB_LICENSE }}
+      - name: cargo test (no secrets)
+        if: ${{ env.MAXMINDDB_LICENSE == 0 }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --manifest-path core/Cargo.toml -- --include-ignored
+        env:
+          MAXMINDDB_LICENSE: ${{ secrets.MAXMINDDB_LICENSE }}
+          SKIP_MAXMINDDB_TESTS: 1
 
   lint_swift:
     runs-on: macos-11

@@ -98,11 +98,11 @@ mod tests {
     #[test_log::test(tokio::test)]
     #[ignore]
     async fn bootstrap_from_license() -> Result<()> {
-        let license = env::var("MAXMINDDB_LICENSE")?;
         // We skip test when we explicitly disable it.
-        if license == "DISABLED" {
+        if env::var_os("SKIP_MAXMINDDB_TESTS").is_some() {
             return Ok(());
         }
+        let license = env::var("MAXMINDDB_LICENSE")?;
 
         let temp = NamedTempFile::new()?;
         let builder = ensure_reader(&license, temp.path()).await?;
