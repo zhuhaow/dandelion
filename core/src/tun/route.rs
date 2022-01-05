@@ -1,4 +1,3 @@
-use super::device::Device;
 use crate::Result;
 use anyhow::{bail, ensure, Context};
 use ipnetwork::IpNetwork;
@@ -64,7 +63,7 @@ struct rt_msg {
     netmask: libc::sockaddr_in,
 }
 
-pub fn add_route_for_device(device: &Device, route: &IpNetwork) -> Result<()> {
+pub fn add_route_for_device(name: &str, route: &IpNetwork) -> Result<()> {
     ensure!(
         route.is_ipv4(),
         "Only support adding route for IPV4 for now."
@@ -114,7 +113,7 @@ pub fn add_route_for_device(device: &Device, route: &IpNetwork) -> Result<()> {
         while !ifa.is_null() {
             if !(*ifa).ifa_addr.is_null() && (*(*ifa).ifa_addr).sa_family as i32 == libc::AF_LINK {
                 let ifa_name = CStr::from_ptr((*ifa).ifa_name);
-                if ifa_name.to_bytes() == device.name().as_bytes() {
+                if ifa_name.to_bytes() == name.as_bytes() {
                     let sdl: *mut libc::sockaddr_dl = (*ifa).ifa_addr as *mut _;
                     std::ptr::copy_nonoverlapping(sdl, &mut rtmsg.gateway as *mut _, 1);
                     found = true;
@@ -127,10 +126,7 @@ pub fn add_route_for_device(device: &Device, route: &IpNetwork) -> Result<()> {
         }
 
         if !found {
-            bail!(
-                "Failed to get AF_LINK address for interface {}",
-                device.name()
-            )
+            bail!("Failed to get AF_LINK address for interface {}", name)
         }
     }
 

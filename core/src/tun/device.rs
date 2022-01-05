@@ -1,35 +1,56 @@
 use super::route::add_route_for_device;
 use crate::Result;
 use ipnetwork::IpNetwork;
-use std::os::unix::prelude::{AsRawFd, RawFd};
-use tun::{configure, create_as_async, AsyncDevice, Device as TunDevice, Layer};
+use std::os::unix::prelude::{AsRawFd, IntoRawFd, RawFd};
+use tun::{configure, create, create_as_async, AsyncDevice, Device as TunDevice, Layer};
 
 pub struct Device {
     inner: AsyncDevice,
 }
 
-impl Device {
-    pub fn create(subnet: IpNetwork) -> Result<Self> {
-        let mut config = configure();
-        config
-            .layer(Layer::L3)
-            .address(subnet.ip())
-            // This is a bug, the netmask is not applied.
-            // But this won't prevent us from setting up routes.
-            .netmask(subnet.mask())
-            .up();
+pub fn create_as_raw_fd(subnet: IpNetwork) -> Result<RawFd> {
+    let mut config = configure();
+    config
+        .layer(Layer::L3)
+        .address(subnet.ip())
+        // This is a bug, the netmask is not applied.
+        // But this won't prevent us from setting up routes.
+        .netmask(subnet.mask())
+        .up();
 
-        let device = Self {
-            inner: create_as_async(&config)?,
-        };
+    let device = create(&config)?;
 
-        add_route_for_device(&device, &subnet)?;
+    add_route_for_device(device.name(), &subnet)?;
 
-        Ok(device)
+    Ok(device.into_raw_fd())
+}
+
+pub fn create_as_device(subnet: IpNetwork, fd: Option<RawFd>) -> Result<Device> {
+    let mut config = configure();
+    config
+        .layer(Layer::L3)
+        .address(subnet.ip())
+        // This is a bug, the netmask is not applied.
+        // But this won't prevent us from setting up routes.
+        .netmask(subnet.mask())
+        .up();
+
+    if let Some(fd) = fd {
+        config.raw_fd(fd);
     }
 
-    pub fn name(&self) -> &str {
-        self.inner.get_ref().name()
+    let device = Device {
+        inner: create_as_async(&config)?,
+    };
+
+    add_route_for_device(device.inner.get_ref().name(), &subnet)?;
+
+    Ok(device)
+}
+
+impl Device {
+    pub fn into_inner(self) -> AsyncDevice {
+        self.inner
     }
 }
 
