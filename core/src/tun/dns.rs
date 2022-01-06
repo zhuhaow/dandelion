@@ -72,6 +72,8 @@ impl TunDns {
             .into())
     }
 
+    // TODO: We should support a suffix to query real IP address. E.g.,
+    // google.com.test -> google.com
     fn should_use_fake_ip(&self, _domain: &str) -> bool {
         true
     }
