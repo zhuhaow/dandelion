@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
     let device = Device::new("10.128.0.1/12".parse().unwrap())?;
 
     let dns_server = TunDns::new(
-        "10.128.0.1:53".parse().unwrap(),
+        "8.8.8.8:53".parse().unwrap(),
         "10.128.0.1/12".parse().unwrap(),
     )
     .await?;
