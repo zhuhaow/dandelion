@@ -16,14 +16,14 @@ use trust_dns_client::{
     op::Message,
     serialize::binary::{BinDecodable, BinEncodable, BinEncoder},
 };
-use tun::{AsyncDevice, TunPacket, TunPacketCodec};
+use tun::{TunPacket, TunPacketCodec};
 
 pub async fn run_stack(
     device: Device,
     dns_server: TunDns,
     fake_dns_server_addr: SocketAddr,
 ) -> Result<()> {
-    let (sink, stream) = device.into_inner().into_framed().split();
+    let (sink, stream) = device.into_framed().split();
 
     let stack_impl = StackImpl::new(Arc::new(Mutex::new(sink)), dns_server, fake_dns_server_addr);
 
@@ -49,14 +49,14 @@ pub async fn run_stack(
 }
 
 struct StackImpl {
-    sink: Arc<Mutex<SplitSink<Framed<AsyncDevice, TunPacketCodec>, TunPacket>>>,
+    sink: Arc<Mutex<SplitSink<Framed<Device, TunPacketCodec>, TunPacket>>>,
     dns_server: TunDns,
     fake_dns_server_addr: SocketAddr,
 }
 
 impl StackImpl {
     fn new(
-        sink: Arc<Mutex<SplitSink<Framed<AsyncDevice, TunPacketCodec>, TunPacket>>>,
+        sink: Arc<Mutex<SplitSink<Framed<Device, TunPacketCodec>, TunPacket>>>,
         dns_server: TunDns,
         fake_dns_server_addr: SocketAddr,
     ) -> Self {
