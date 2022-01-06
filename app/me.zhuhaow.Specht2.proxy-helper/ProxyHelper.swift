@@ -125,27 +125,27 @@ class ProxyHelper: NSObject, ProxyHelperInterface {
         var proxySettings: [String: AnyObject] = [:]
         if let httpProxy = httpProxy {
             proxySettings[kCFNetworkProxiesHTTPProxy as String] = httpProxy.addr as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPEnable as String] = true as AnyObject
+            proxySettings[kCFNetworkProxiesHTTPEnable as String] = 1 as AnyObject
             proxySettings[kCFNetworkProxiesHTTPSProxy as String] = httpProxy.addr as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPSEnable as String] = true as AnyObject
+            proxySettings[kCFNetworkProxiesHTTPSEnable as String] = 1 as AnyObject
             proxySettings[kCFNetworkProxiesHTTPSPort as String] = httpProxy.port as AnyObject
             proxySettings[kCFNetworkProxiesHTTPPort as String] = httpProxy.port as AnyObject
         } else {
             proxySettings[kCFNetworkProxiesHTTPProxy as String] = "" as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPEnable as String] = false as AnyObject
+            proxySettings[kCFNetworkProxiesHTTPEnable as String] = 0 as AnyObject
             proxySettings[kCFNetworkProxiesHTTPSProxy as String] = "" as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPSEnable as String] = false as AnyObject
+            proxySettings[kCFNetworkProxiesHTTPSEnable as String] = 0 as AnyObject
             proxySettings[kCFNetworkProxiesHTTPSPort as String] = 0 as AnyObject
             proxySettings[kCFNetworkProxiesHTTPPort as String] = 0 as AnyObject
         }
 
         if let socksProxy = socksProxy {
             proxySettings[kCFNetworkProxiesSOCKSProxy as String] = socksProxy.addr as AnyObject
-            proxySettings[kCFNetworkProxiesSOCKSEnable as String] = true as AnyObject
+            proxySettings[kCFNetworkProxiesSOCKSEnable as String] = 1 as AnyObject
             proxySettings[kCFNetworkProxiesSOCKSPort as String] = socksProxy.port as AnyObject
         } else {
             proxySettings[kCFNetworkProxiesSOCKSProxy as String] = "" as AnyObject
-            proxySettings[kCFNetworkProxiesSOCKSEnable as String] = false as AnyObject
+            proxySettings[kCFNetworkProxiesSOCKSEnable as String] = 0 as AnyObject
             proxySettings[kCFNetworkProxiesSOCKSPort as String] = 0 as AnyObject
         }
 

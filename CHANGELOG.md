@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.0.13
+
+**[App]** Fix issue that app may not update proxy settings correctly
+
 ## 0.0.12
 
 **[App]** Add support to manage system proxy setting automatically
