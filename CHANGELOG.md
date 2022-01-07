@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.0.14
+
+**[App]** Fix "too many files" error.
+
 ## 0.0.13
 
 **[App]** Fix issue that app may not update proxy settings correctly
