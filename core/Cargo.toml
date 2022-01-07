@@ -22,7 +22,7 @@ hyper = { version = "0.14.16", features = ["http1", "server"] }
 bytes = "1.1.0"
 tungstenite = "0.16.0"
 ron = "0.7.0"
-serde = { version = "1.0.132", features = ["derive"] }
+serde = { version = "1.0.133", features = ["derive"] }
 serde_with = "1.11.0"
 log = "0.4.14"
 flexi_logger = "0.22.0"
