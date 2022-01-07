@@ -1,4 +1,4 @@
-use crate::Result;
+use crate::{utils::expiring_hash::ExpiringHashMap, Result};
 use anyhow::bail;
 use ipnetwork::{IpNetwork, IpNetworkIterator};
 use std::{
@@ -21,12 +21,12 @@ use trust_dns_proto::{
 
 // Only IPv4 is supported for now.
 // TODO: Add IPv6 support.
-pub struct TunDns {
+pub struct FakeDns {
     sender: AsyncClient,
     pool: Arc<Mutex<DnsFakeIpPool>>,
 }
 
-impl TunDns {
+impl FakeDns {
     pub async fn new(server: SocketAddr, subnet: IpNetwork) -> Result<Self> {
         let stream = UdpClientStream::<UdpSocket>::new(server);
         let (client, bg) = AsyncClient::connect(stream).await?;
@@ -58,7 +58,7 @@ impl TunDns {
                     IpAddr::V6(ip) => RData::AAAA(ip),
                 };
 
-                response.add_answer(Record::from_rdata(domain.clone(), pool.ttl(), rdata));
+                response.add_answer(Record::from_rdata(domain.clone(), pool.ttl() as u32, rdata));
 
                 return Ok(response);
             }
@@ -77,13 +77,16 @@ impl TunDns {
     fn should_use_fake_ip(&self, _domain: &str) -> bool {
         true
     }
+
+    async fn reverse_lookup(&self, addr: &IpAddr) -> Option<String> {
+        self.pool.lock().await.map.get(addr).map(String::clone)
+    }
 }
 
 struct DnsFakeIpPool {
     fake_ip_pool: LinkedList<IpAddr>,
     ip_iter: IpNetworkIterator,
-    map: HashMap<IpAddr, (String, Instant)>,
-    ttl: u32,
+    map: ExpiringHashMap<IpAddr, String>,
 }
 
 impl DnsFakeIpPool {
@@ -99,13 +102,12 @@ impl DnsFakeIpPool {
         Self {
             fake_ip_pool: Default::default(),
             ip_iter: iter,
-            map: Default::default(),
-            ttl: 10,
+            map: ExpiringHashMap::new(Duration::from_secs(15), true),
         }
     }
 
-    fn ttl(&self) -> u32 {
-        self.ttl
+    fn ttl(&self) -> u64 {
+        self.map.get_ttl().as_secs().saturating_sub(5)
     }
 
     fn get_fake_ip(&mut self, domain: String) -> Result<IpAddr> {
@@ -120,7 +122,7 @@ impl DnsFakeIpPool {
             }
         };
 
-        self.map.insert(ip, (domain, Instant::now()));
+        self.map.insert(ip, domain);
 
         Ok(ip)
     }
@@ -133,17 +135,8 @@ impl DnsFakeIpPool {
     }
 
     fn clear_outdated_map(&mut self) {
-        let mut released_ips: Vec<_> = Vec::new();
-        self.map.retain(|k, v| {
-            // We add 5 seconds here as a buffer
-            if v.1.elapsed() > Duration::from_secs(self.ttl as u64 + 5) {
-                released_ips.push(*k);
-                false
-            } else {
-                true
-            }
-        });
+        let released = self.map.evict_expired();
 
-        self.fake_ip_pool.extend(released_ips);
+        self.fake_ip_pool.extend(released.into_iter().map(|v| v.0));
     }
 }

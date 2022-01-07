@@ -1,8 +1,9 @@
-use super::{device::Device, dns::TunDns};
+use super::{device::Device, dns::FakeDns};
 use crate::Result;
-use anyhow::ensure;
+use anyhow::{bail, ensure};
 use bytes::{Bytes, BytesMut};
 use futures::{stream::SplitSink, SinkExt, StreamExt};
+use nix::sys::socket::SockAddr;
 use pnet_packet::{
     ip::IpNextHeaderProtocols,
     ipv4::{checksum, Ipv4Packet, MutableIpv4Packet},
@@ -23,7 +24,7 @@ use tun::{TunPacket, TunPacketCodec};
 
 pub async fn run_stack(
     device: Device,
-    dns_server: TunDns,
+    dns_server: FakeDns,
     fake_dns_server_addr: SocketAddr,
     mtu: usize,
 ) -> Result<()> {
@@ -59,7 +60,7 @@ pub async fn run_stack(
 
 struct StackImpl {
     sink: Arc<Mutex<SplitSink<Framed<Device, TunPacketCodec>, TunPacket>>>,
-    dns_server: TunDns,
+    dns_server: FakeDns,
     fake_dns_server_addr: SocketAddr,
     mtu: usize,
 }
@@ -67,7 +68,7 @@ struct StackImpl {
 impl StackImpl {
     fn new(
         sink: Arc<Mutex<SplitSink<Framed<Device, TunPacketCodec>, TunPacket>>>,
-        dns_server: TunDns,
+        dns_server: FakeDns,
         fake_dns_server_addr: SocketAddr,
         mtu: usize,
     ) -> Self {
@@ -149,6 +150,15 @@ impl StackImpl {
         ));
 
         self.send(response.freeze()).await?;
+
+        Ok(())
+    }
+
+    fn translate<'a>(&self, inbound_packet: &'a Ipv4Packet<'a>) -> Result<()> {
+        // We only handle TCP for now.
+        if inbound_packet.get_next_level_protocol() != IpNextHeaderProtocols::Tcp {
+            bail!("Do not support translate packet other than TCP");
+        }
 
         Ok(())
     }

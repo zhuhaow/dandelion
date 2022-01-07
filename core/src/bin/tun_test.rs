@@ -3,7 +3,7 @@ use specht2_core::Result;
 #[cfg(target_os = "macos")]
 #[tokio::main]
 async fn main() -> Result<()> {
-    use specht2_core::tun::{device::Device, dns::TunDns, stack::run_stack};
+    use specht2_core::tun::{device::Device, dns::FakeDns, stack::run_stack};
 
     flexi_logger::Logger::try_with_env()
         .unwrap()
@@ -12,7 +12,7 @@ async fn main() -> Result<()> {
 
     let device = Device::new("10.128.0.1/12".parse().unwrap())?;
 
-    let dns_server = TunDns::new(
+    let dns_server = FakeDns::new(
         "8.8.8.8:53".parse().unwrap(),
         "10.128.0.1/12".parse().unwrap(),
     )
