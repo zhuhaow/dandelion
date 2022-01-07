@@ -1,11 +1,11 @@
 use crate::{utils::expiring_hash::ExpiringHashMap, Result};
 use anyhow::bail;
-use ipnetwork::{IpNetwork, IpNetworkIterator};
+use ipnetwork::IpNetworkIterator;
 use std::{
-    collections::{HashMap, LinkedList},
+    collections::LinkedList,
     net::{IpAddr, SocketAddr},
     sync::Arc,
-    time::{Duration, Instant},
+    time::Duration,
 };
 use tokio::{net::UdpSocket, sync::Mutex};
 use trust_dns_client::{
@@ -27,14 +27,14 @@ pub struct FakeDns {
 }
 
 impl FakeDns {
-    pub async fn new(server: SocketAddr, subnet: IpNetwork) -> Result<Self> {
+    pub async fn new(server: SocketAddr, ip_range: IpNetworkIterator) -> Result<Self> {
         let stream = UdpClientStream::<UdpSocket>::new(server);
         let (client, bg) = AsyncClient::connect(stream).await?;
         tokio::spawn(bg);
 
         Ok(Self {
             sender: client,
-            pool: Arc::new(Mutex::new(DnsFakeIpPool::new(subnet))),
+            pool: Arc::new(Mutex::new(DnsFakeIpPool::new(ip_range))),
         })
     }
 
@@ -78,7 +78,7 @@ impl FakeDns {
         true
     }
 
-    async fn reverse_lookup(&self, addr: &IpAddr) -> Option<String> {
+    async fn _reverse_lookup(&self, addr: &IpAddr) -> Option<String> {
         self.pool.lock().await.map.get(addr).map(String::clone)
     }
 }
@@ -90,18 +90,10 @@ struct DnsFakeIpPool {
 }
 
 impl DnsFakeIpPool {
-    fn new(subnet: IpNetwork) -> Self {
-        let mut iter = subnet.into_iter();
-        // We remove the first from the iter since that suppose to be the IP of
-        // DNS server. Even it's not, it doesn't hurt since it's very unlikely
-        // the DNS server will be accessed by a domain, thus by checking if the
-        // packet goes to DNS server first we can identify if the target IP is
-        // intended to be used as a fake IP.
-        iter.next();
-
+    fn new(ip_range: IpNetworkIterator) -> Self {
         Self {
             fake_ip_pool: Default::default(),
-            ip_iter: iter,
+            ip_iter: ip_range,
             map: ExpiringHashMap::new(Duration::from_secs(15), true),
         }
     }

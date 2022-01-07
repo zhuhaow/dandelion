@@ -1,19 +1,18 @@
-use super::{device::Device, dns::FakeDns};
+use super::{
+    device::Device, dns::FakeDns, ipv4_addr_to_socketaddr, translator::Translator, TranslatorConfig,
+};
 use crate::Result;
-use anyhow::{bail, ensure};
+use anyhow::ensure;
 use bytes::{Bytes, BytesMut};
 use futures::{stream::SplitSink, SinkExt, StreamExt};
-use nix::sys::socket::SockAddr;
+
 use pnet_packet::{
     ip::IpNextHeaderProtocols,
     ipv4::{checksum, Ipv4Packet, MutableIpv4Packet},
     udp::{ipv4_checksum, MutableUdpPacket, UdpPacket},
     MutablePacket, Packet,
 };
-use std::{
-    net::{IpAddr, SocketAddr},
-    sync::Arc,
-};
+use std::{net::SocketAddr, sync::Arc};
 use tokio::sync::Mutex;
 use tokio_util::codec::Framed;
 use trust_dns_client::{
@@ -26,6 +25,7 @@ pub async fn run_stack(
     device: Device,
     dns_server: FakeDns,
     fake_dns_server_addr: SocketAddr,
+    translator_config: TranslatorConfig,
     mtu: usize,
 ) -> Result<()> {
     let (sink, stream) = device.into_framed(mtu).split();
@@ -34,6 +34,7 @@ pub async fn run_stack(
         Arc::new(Mutex::new(sink)),
         dns_server,
         fake_dns_server_addr,
+        translator_config,
         mtu,
     );
 
@@ -62,6 +63,7 @@ struct StackImpl {
     sink: Arc<Mutex<SplitSink<Framed<Device, TunPacketCodec>, TunPacket>>>,
     dns_server: FakeDns,
     fake_dns_server_addr: SocketAddr,
+    translator: Arc<Mutex<Translator>>,
     mtu: usize,
 }
 
@@ -70,12 +72,14 @@ impl StackImpl {
         sink: Arc<Mutex<SplitSink<Framed<Device, TunPacketCodec>, TunPacket>>>,
         dns_server: FakeDns,
         fake_dns_server_addr: SocketAddr,
+        translator_config: TranslatorConfig,
         mtu: usize,
     ) -> Self {
         Self {
             sink,
             dns_server,
             fake_dns_server_addr,
+            translator: Arc::new(Mutex::new(Translator::new(translator_config))),
             mtu,
         }
     }
@@ -87,11 +91,14 @@ impl StackImpl {
         if packet.get_next_level_protocol() == IpNextHeaderProtocols::Udp {
             let udp_packet = UdpPacket::new(packet.payload())
                 .ok_or_else(|| anyhow::anyhow!("Not a valid UDP packet"))?;
-            let addr: IpAddr = packet.get_destination().into();
 
-            if SocketAddr::from((addr, udp_packet.get_destination())) == self.fake_dns_server_addr {
+            if ipv4_addr_to_socketaddr(packet.get_destination(), udp_packet.get_destination())
+                == self.fake_dns_server_addr
+            {
                 self.handle_dns(&packet, &udp_packet).await?;
             }
+        } else {
+            self.send(self.translate(&packet).await?).await?;
         }
 
         Ok(())
@@ -154,13 +161,14 @@ impl StackImpl {
         Ok(())
     }
 
-    fn translate<'a>(&self, inbound_packet: &'a Ipv4Packet<'a>) -> Result<()> {
-        // We only handle TCP for now.
-        if inbound_packet.get_next_level_protocol() != IpNextHeaderProtocols::Tcp {
-            bail!("Do not support translate packet other than TCP");
-        }
+    async fn translate<'a>(&self, inbound_packet: &'a Ipv4Packet<'a>) -> Result<Bytes> {
+        let packet = self
+            .translator
+            .lock()
+            .await
+            .translate(inbound_packet, &self.dns_server)?;
 
-        Ok(())
+        Ok(packet)
     }
 
     async fn send(&self, packet: Bytes) -> Result<()> {

@@ -32,6 +32,7 @@ impl<K: Eq + Hash, V> ExpiringHashMap<K, V> {
         })
     }
 
+    #[allow(dead_code)]
     pub fn get_mut(&mut self, key: &K) -> Option<&mut V> {
         self.map.get_mut(key).and_then(|v| {
             if v.1.elapsed() >= self.ttl {
@@ -50,13 +51,7 @@ impl<K: Eq + Hash, V> ExpiringHashMap<K, V> {
     }
 
     pub fn clear_expired(&mut self) {
-        self.map.retain(|_, v| {
-            if v.1.elapsed() > self.ttl {
-                false
-            } else {
-                true
-            }
-        });
+        self.map.retain(|_, v| v.1.elapsed() <= self.ttl);
     }
 
     pub fn evict_expired(&mut self) -> Vec<(K, V)> {
@@ -64,7 +59,7 @@ impl<K: Eq + Hash, V> ExpiringHashMap<K, V> {
         let mut evicted = Vec::new();
         let mut kept = HashMap::new();
 
-        while let Some((k, v)) = drained.next() {
+        for (k, v) in drained.by_ref() {
             if v.1.elapsed() > self.ttl {
                 evicted.push((k, v.0));
             } else {
