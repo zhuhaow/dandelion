@@ -11,6 +11,6 @@ pub mod tunnel;
 
 #[cfg(any(target_os = "macos"))]
 pub mod tun;
-mod utils;
+pub mod utils;
 
 pub use anyhow::Result;
