@@ -53,8 +53,8 @@ impl Device {
         })
     }
 
-    pub fn into_framed(self) -> Framed<Self, TunPacketCodec> {
-        let codec = TunPacketCodec::new(true, 1504);
+    pub fn into_framed(self, mtu: usize) -> Framed<Self, TunPacketCodec> {
+        let codec = TunPacketCodec::new(true, mtu as i32);
         Framed::new(self, codec)
     }
 }

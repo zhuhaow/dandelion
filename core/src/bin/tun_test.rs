@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
     )
     .await?;
 
-    run_stack(device, dns_server, "10.128.0.1:53".parse().unwrap()).await?;
+    run_stack(device, dns_server, "10.128.0.1:53".parse().unwrap(), 1500).await?;
 
     Ok(())
 }
