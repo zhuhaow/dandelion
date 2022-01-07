@@ -44,6 +44,12 @@ unsafe impl Send for EventCallback {}
 
 impl EventCallback {
     fn before_start(&self, socks_info: Option<Endpoint>, http_info: Option<Endpoint>) {
+        #[cfg(not(target_os = "windows"))]
+        {
+            use fdlimit::raise_fd_limit;
+            raise_fd_limit();
+        }
+
         let socks5_addr = socks_info.map(|e| (CString::new(e.hostname()).unwrap(), e.port()));
         let http_addr = http_info.map(|e| (CString::new(e.hostname()).unwrap(), e.port()));
 
