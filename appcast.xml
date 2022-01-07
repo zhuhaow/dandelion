@@ -3,6 +3,14 @@
     <channel>
         <title>Specht2</title>
         <item>
+            <title>0.0.14</title>
+            <pubDate>Fri, 07 Jan 2022 15:32:24 +0000</pubDate>
+            <sparkle:version>1668081727</sparkle:version>
+            <sparkle:shortVersionString>0.0.14</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>12.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/zhuhaow/Specht2/releases/download/0.0.14/Specht2.app.zip" length="8887160" type="application/octet-stream" sparkle:edSignature="ZnsyMxf+bIIRHycjASLk5fY6SxaGEFWdRP/FSwdSEyqz0T3fC1kA23+p8lbqDBGL0x8gil4E0ZyrmjUeNpoFDQ=="/>
+        </item>
+        <item>
             <title>0.0.13</title>
             <pubDate>Thu, 06 Jan 2022 14:32:23 +0000</pubDate>
             <sparkle:version>1663330686</sparkle:version>
