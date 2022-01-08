@@ -5,8 +5,8 @@ use crate::{connector::Connector, server::config::ServerConfig, Result};
 use futures::{future::try_join_all, stream::select_all, TryStreamExt};
 use log::{debug, info, warn};
 use std::sync::Arc;
-use tokio::{io::copy_bidirectional, net::TcpListener};
-use tokio_stream::{wrappers::TcpListenerStream, StreamExt};
+use tokio::io::copy_bidirectional;
+use tokio_stream::StreamExt;
 
 pub struct Server {
     config: ServerConfig,
@@ -21,17 +21,11 @@ impl Server {
         info!("Server started");
 
         let mut listeners = select_all(
-            try_join_all(
-                self.config
-                    .acceptors
-                    .iter()
-                    .map(|c| TcpListener::bind(c.server_addr())),
-            )
-            .await?
-            .into_iter()
-            .map(TcpListenerStream::new)
-            .zip(self.config.acceptors.iter())
-            .map(|(s, c)| s.map_ok(move |stream| (stream, c))),
+            try_join_all(self.config.acceptors.iter().map(|c| c.get_listener()))
+                .await?
+                .into_iter()
+                .zip(self.config.acceptors.iter())
+                .map(|(s, c)| s.map_ok(move |stream| (stream, c))),
         );
 
         let resolver = self.config.resolver.get_resolver();

@@ -26,13 +26,14 @@ use crate::{
     Result,
 };
 use anyhow::Error;
-use futures::{Future, StreamExt, TryStreamExt};
+use futures::{stream::BoxStream, Future, StreamExt, TryStreamExt};
 use ipnetwork::IpNetwork;
 use iso3166_1::CountryCode;
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr, DurationMilliSeconds};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
-use tokio::net::TcpStream;
+use tokio::net::{TcpListener, TcpStream};
+use tokio_stream::wrappers::TcpListenerStream;
 
 #[derive(Debug, Deserialize)]
 pub struct ServerConfig {
@@ -74,24 +75,29 @@ impl AcceptorConfig {
     pub fn server_addr(&self) -> &SocketAddr {
         match self {
             AcceptorConfig::Socks5 { addr } => addr,
-            AcceptorConfig::Simplex {
-                addr,
-                path: _,
-                secret_key: _,
-                secret_value: _,
-            } => addr,
+            AcceptorConfig::Simplex { addr, .. } => addr,
             AcceptorConfig::Http { addr } => addr,
+        }
+    }
+
+    pub async fn get_listener(&self) -> Result<BoxStream<'static, Result<TcpStream>>> {
+        match self {
+            AcceptorConfig::Socks5 { addr }
+            | AcceptorConfig::Http { addr }
+            | AcceptorConfig::Simplex { addr, .. } => Ok(Box::pin(
+                TcpListenerStream::new(TcpListener::bind(addr).await?).map_err(Into::into),
+            )),
         }
     }
 
     pub fn get_acceptor(&self) -> Box<dyn Acceptor<TcpStream>> {
         match self {
-            AcceptorConfig::Socks5 { addr: _ } => Box::new(Socks5Acceptor {}),
+            AcceptorConfig::Socks5 { .. } => Box::new(Socks5Acceptor {}),
             AcceptorConfig::Simplex {
-                addr: _,
                 ref path,
                 ref secret_key,
                 ref secret_value,
+                ..
             } => {
                 let config = Config::new(
                     path.to_string(),
@@ -99,7 +105,7 @@ impl AcceptorConfig {
                 );
                 Box::new(SimplexAcceptor::new(config))
             }
-            AcceptorConfig::Http { addr: _ } => Box::new(HttpAcceptor {}),
+            AcceptorConfig::Http { .. } => Box::new(HttpAcceptor {}),
         }
     }
 }
