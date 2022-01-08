@@ -1,5 +1,5 @@
 use specht2_core::{
-    server::{config::ServerConfig, Server},
+    server::{config::ServerConfig, privilege::NoPrivilegeHandler, Server},
     Result,
 };
 use std::{
@@ -53,6 +53,8 @@ async fn main() -> Result<()> {
 
     let config: ServerConfig = ron::de::from_str(&read_to_string(path)?)?;
 
-    Server::new(config).serve().await?;
+    Server::new(config, NoPrivilegeHandler::default())
+        .serve(false)
+        .await?;
     Ok(())
 }

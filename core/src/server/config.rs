@@ -69,24 +69,21 @@ pub enum AcceptorConfig {
     Http {
         addr: SocketAddr,
     },
+    Tun {
+        listen_addr: SocketAddr,
+        subnet: IpNetwork,
+    },
 }
 
 impl AcceptorConfig {
     pub fn server_addr(&self) -> &SocketAddr {
         match self {
-            AcceptorConfig::Socks5 { addr } => addr,
-            AcceptorConfig::Simplex { addr, .. } => addr,
-            AcceptorConfig::Http { addr } => addr,
-        }
-    }
-
-    pub async fn get_listener(&self) -> Result<BoxStream<'static, Result<TcpStream>>> {
-        match self {
             AcceptorConfig::Socks5 { addr }
+            | AcceptorConfig::Simplex { addr, .. }
             | AcceptorConfig::Http { addr }
-            | AcceptorConfig::Simplex { addr, .. } => Ok(Box::pin(
-                TcpListenerStream::new(TcpListener::bind(addr).await?).map_err(Into::into),
-            )),
+            | AcceptorConfig::Tun {
+                listen_addr: addr, ..
+            } => addr,
         }
     }
 
@@ -106,6 +103,7 @@ impl AcceptorConfig {
                 Box::new(SimplexAcceptor::new(config))
             }
             AcceptorConfig::Http { .. } => Box::new(HttpAcceptor {}),
+            AcceptorConfig::Tun { .. } => todo!(),
         }
     }
 }
