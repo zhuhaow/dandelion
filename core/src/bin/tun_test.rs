@@ -3,7 +3,7 @@ use specht2_core::Result;
 #[cfg(target_os = "macos")]
 #[tokio::main]
 async fn main() -> Result<()> {
-    use std::time::Duration;
+    use std::{sync::Arc, time::Duration};
 
     use ipnetwork::IpNetwork;
     use specht2_core::tun::{device::Device, dns::FakeDns, stack::run_stack, TranslatorConfig};
@@ -33,11 +33,9 @@ async fn main() -> Result<()> {
         Duration::from_secs(180),
     );
 
-    let dns_server = FakeDns::new("8.8.8.8:53".parse().unwrap(), ip_iter).await?;
-
     run_stack(
         device,
-        dns_server,
+        Arc::new(FakeDns::new("8.8.8.8:53".parse().unwrap(), ip_iter).await?),
         "10.128.0.1:53".parse().unwrap(),
         translator_config,
         1500,
