@@ -44,12 +44,6 @@ unsafe impl Send for EventCallback {}
 
 impl EventCallback {
     fn before_start(&self, socks_info: Option<Endpoint>, http_info: Option<Endpoint>) {
-        #[cfg(not(target_os = "windows"))]
-        {
-            use fdlimit::raise_fd_limit;
-            raise_fd_limit();
-        }
-
         let socks5_addr = socks_info.map(|e| (CString::new(e.hostname()).unwrap(), e.port()));
         let http_addr = http_info.map(|e| (CString::new(e.hostname()).unwrap(), e.port()));
 
@@ -107,6 +101,11 @@ pub unsafe extern "C" fn specht2_start(
     let path = PathBuf::from(path_string);
     let (tx, rx) = oneshot::channel::<()>();
 
+    #[cfg(not(target_os = "windows"))]
+    {
+        use fdlimit::raise_fd_limit;
+        raise_fd_limit();
+    }
     thread::spawn(move || {
         let runtime = Builder::new_multi_thread()
             .enable_io()
