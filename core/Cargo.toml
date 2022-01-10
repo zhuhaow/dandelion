@@ -25,7 +25,7 @@ ron = "0.7.0"
 serde = { version = "1.0.132", features = ["derive"] }
 serde_with = "1.11.0"
 log = "0.4.14"
-flexi_logger = "0.22.0"
+flexi_logger = "0.22.2"
 anyhow = { version = "1.0.52", features = ["backtrace"] }
 tokio-native-tls = "0.3.0"
 fdlimit = "0.2.1"
