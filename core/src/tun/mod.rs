@@ -1,6 +1,9 @@
 pub mod acceptor;
+mod codec;
 pub mod device;
 pub mod dns;
-mod route;
 pub mod stack;
 mod translator;
+
+#[cfg(target_os = "macos")]
+mod route;

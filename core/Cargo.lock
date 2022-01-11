@@ -1498,6 +1498,7 @@ dependencies = [
  "async-compat",
  "async-recursion",
  "async-trait",
+ "byteorder",
  "bytes",
  "chrono",
  "dns-lookup",

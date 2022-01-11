@@ -1,4 +1,9 @@
-use super::{device::Device, dns::FakeDns, translator::Translator};
+use super::{
+    codec::{TunPacket, TunPacketCodec},
+    device::Device,
+    dns::FakeDns,
+    translator::Translator,
+};
 use crate::{acceptor::Acceptor, tun::acceptor::TunAcceptor, Result};
 use anyhow::ensure;
 use bytes::{Bytes, BytesMut};
@@ -17,7 +22,6 @@ use trust_dns_client::{
     op::Message,
     serialize::binary::{BinDecodable, BinEncodable, BinEncoder},
 };
-use tun::{TunPacket, TunPacketCodec};
 
 pub async fn create_stack(
     device: Device,

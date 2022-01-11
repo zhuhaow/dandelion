@@ -1,6 +1,6 @@
 // Derived from https://github.com/meh/rust-tun
 
-use super::route::add_route_for_device;
+use super::codec::TunPacketCodec;
 use crate::Result;
 use futures::ready;
 use ipnetwork::Ipv4Network;
@@ -13,13 +13,16 @@ use std::{
 };
 use tokio::io::{unix::AsyncFd, AsyncRead, AsyncWrite, ReadBuf};
 use tokio_util::codec::Framed;
-use tun::{configure, create, Device as TunDevice, Layer, TunPacketCodec};
 
 /// Creating a tun device and then returns the fd.
 ///
 /// We will send this fd with XPC so the unprivileged app can create tun
 /// interface.
+#[cfg(target_os = "macos")]
 pub fn create_tun_as_raw_fd(subnet: Ipv4Network) -> Result<RawFd> {
+    use super::route::add_route_for_device;
+    use tun::{configure, create, Device as TunDevice, Layer};
+
     let mut config = configure();
     config
         .layer(Layer::L3)
@@ -34,6 +37,13 @@ pub fn create_tun_as_raw_fd(subnet: Ipv4Network) -> Result<RawFd> {
     add_route_for_device(device.name(), &subnet)?;
 
     Ok(device.into_raw_fd())
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn create_tun_as_raw_fd(_subnet: Ipv4Network) -> Result<RawFd> {
+    use anyhow::bail;
+
+    bail!("Not supported")
 }
 
 pub struct Device {

@@ -5,7 +5,6 @@ pub mod privilege;
 use self::privilege::PrivilegeHandler;
 use crate::acceptor::http::HttpAcceptor;
 use crate::acceptor::AsDynAcceptorArc;
-#[cfg(target_os = "macos")]
 use crate::tun::stack::create_stack;
 use crate::{
     acceptor::{simplex::SimplexAcceptor, socks5::Socks5Acceptor},
@@ -94,7 +93,6 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
                     Arc::new(HttpAcceptor::default()).as_dyn_acceptor(),
                     None,
                 )),
-                #[cfg(target_os = "macos")]
                 AcceptorConfig::Tun {
                     listen_addr,
                     subnet,
@@ -146,7 +144,6 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
                     AcceptorConfig::Http { addr } => {
                         privilege_handler.set_http_proxy(Some(*addr)).await?
                     }
-                    #[cfg(target_os = "macos")]
                     AcceptorConfig::Tun { subnet, .. } => {
                         privilege_handler
                             .set_dns(Some((subnet.iter().next().unwrap(), 53).into()))
@@ -202,7 +199,6 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
                     }
                     AcceptorConfig::Simplex { .. } => {}
                     AcceptorConfig::Http { .. } => privilege_handler.set_http_proxy(None).await?,
-                    #[cfg(target_os = "macos")]
                     AcceptorConfig::Tun { .. } => privilege_handler.set_dns(None).await?,
                 }
             }

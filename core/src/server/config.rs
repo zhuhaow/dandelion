@@ -66,7 +66,6 @@ pub enum AcceptorConfig {
     Http {
         addr: SocketAddr,
     },
-    #[cfg(target_os = "macos")]
     Tun {
         listen_addr: SocketAddr,
         subnet: Ipv4Network,
@@ -79,7 +78,6 @@ impl AcceptorConfig {
             AcceptorConfig::Socks5 { addr }
             | AcceptorConfig::Simplex { addr, .. }
             | AcceptorConfig::Http { addr } => addr,
-            #[cfg(target_os = "macos")]
             AcceptorConfig::Tun {
                 listen_addr: addr, ..
             } => addr,

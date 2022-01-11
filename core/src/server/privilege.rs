@@ -1,4 +1,3 @@
-#[cfg(target_os = "macos")]
 use crate::tun::device::Device;
 use crate::Result;
 use anyhow::bail;
@@ -11,7 +10,6 @@ use std::net::SocketAddr;
 pub trait PrivilegeHandler {
     async fn set_http_proxy(&self, addr: Option<SocketAddr>) -> Result<()>;
     async fn set_socks5_proxy(&self, addr: Option<SocketAddr>) -> Result<()>;
-    #[cfg(target_os = "macos")]
     async fn create_tun_interface(&self, subnet: &Ipv4Network) -> Result<Device>;
     async fn set_dns(&self, addr: Option<SocketAddr>) -> Result<()>;
 }
@@ -29,7 +27,6 @@ impl PrivilegeHandler for NoPrivilegeHandler {
         bail!("No permission");
     }
 
-    #[cfg(target_os = "macos")]
     async fn create_tun_interface(&self, _subnet: &Ipv4Network) -> Result<Device> {
         bail!("No permission");
     }

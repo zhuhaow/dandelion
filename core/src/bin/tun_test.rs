@@ -1,11 +1,9 @@
+use ipnetwork::Ipv4Network;
+use specht2_core::tun::{device::Device, stack::create_stack};
 use specht2_core::Result;
 
-#[cfg(target_os = "macos")]
 #[tokio::main]
 async fn main() -> Result<()> {
-    use ipnetwork::Ipv4Network;
-    use specht2_core::tun::{device::Device, stack::create_stack};
-
     flexi_logger::Logger::try_with_env()
         .unwrap()
         .start()
@@ -20,12 +18,4 @@ async fn main() -> Result<()> {
     stack.0.await;
 
     Ok(())
-}
-
-#[cfg(not(target_os = "macos"))]
-#[tokio::main]
-async fn main() -> Result<()> {
-    use anyhow::bail;
-
-    bail!("Not supported platform");
 }
