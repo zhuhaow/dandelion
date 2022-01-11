@@ -9,7 +9,7 @@ pub mod server;
 pub mod simplex;
 pub mod tunnel;
 
-#[cfg(any(target_os = "macos"))]
+#[cfg(target_os = "macos")]
 pub mod tun;
 pub mod utils;
 

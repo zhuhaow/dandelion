@@ -1,6 +1,5 @@
 use super::geoip::GeoIpBuilder;
 use crate::{
-    acceptor::{http::HttpAcceptor, simplex::SimplexAcceptor, socks5::Socks5Acceptor, Acceptor},
     connector::{
         block::BlockConnector,
         http::HttpConnector,
@@ -32,7 +31,6 @@ use iso3166_1::CountryCode;
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr, DurationMilliSeconds};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
-use tokio::net::TcpStream;
 
 #[derive(Debug, Deserialize)]
 pub struct ServerConfig {
@@ -68,6 +66,7 @@ pub enum AcceptorConfig {
     Http {
         addr: SocketAddr,
     },
+    #[cfg(target_os = "macos")]
     Tun {
         listen_addr: SocketAddr,
         subnet: Ipv4Network,
@@ -79,30 +78,11 @@ impl AcceptorConfig {
         match self {
             AcceptorConfig::Socks5 { addr }
             | AcceptorConfig::Simplex { addr, .. }
-            | AcceptorConfig::Http { addr }
-            | AcceptorConfig::Tun {
+            | AcceptorConfig::Http { addr } => addr,
+            #[cfg(target_os = "macos")]
+            AcceptorConfig::Tun {
                 listen_addr: addr, ..
             } => addr,
-        }
-    }
-
-    pub fn get_acceptor(&self) -> Box<dyn Acceptor<TcpStream>> {
-        match self {
-            AcceptorConfig::Socks5 { .. } => Box::new(Socks5Acceptor {}),
-            AcceptorConfig::Simplex {
-                ref path,
-                ref secret_key,
-                ref secret_value,
-                ..
-            } => {
-                let config = Config::new(
-                    path.to_string(),
-                    (secret_key.to_string(), secret_value.to_string()),
-                );
-                Box::new(SimplexAcceptor::new(config))
-            }
-            AcceptorConfig::Http { .. } => Box::new(HttpAcceptor {}),
-            AcceptorConfig::Tun { .. } => todo!(),
         }
     }
 }

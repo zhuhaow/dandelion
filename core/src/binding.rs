@@ -1,10 +1,9 @@
 // See https://www.nickwilcox.com/blog/recipe_swift_rust_callback/
 
+use crate::server::{config::ServerConfig, privilege::PrivilegeHandler, Server};
+#[cfg(target_os = "macos")]
+use crate::tun::device::{create_tun_as_raw_fd, Device};
 use crate::Result;
-use crate::{
-    server::{config::ServerConfig, privilege::PrivilegeHandler, Server},
-    tun::device::{create_tun_as_raw_fd, Device},
-};
 use futures::future::AbortHandle;
 use ipnetwork::Ipv4Network;
 use rich_phantoms::PhantomInvariantAlwaysSendSync;
@@ -207,6 +206,7 @@ struct PrivilegeCallbackHandler<'a> {
     callback_data: NonNull<c_void>,
     set_http_proxy_handler: ExternalServerHandler,
     set_socks5_proxy_handler: ExternalServerHandler,
+    #[cfg(target_os = "macos")]
     create_tun_interface_handler: ExternalPayloadHandler<RawFd>,
     set_dns_handler: ExternalServerHandler,
     _marker: PhantomInvariantAlwaysSendSync<&'a ()>,
@@ -275,6 +275,7 @@ impl PrivilegeHandler for PrivilegeCallbackHandler<'_> {
         self.set_socks5_proxy_impl(addr).await
     }
 
+    #[cfg(target_os = "macos")]
     async fn create_tun_interface(&self, subnet: &Ipv4Network) -> Result<Device> {
         let (tx, rx) = oneshot::channel::<Result<RawFd>>();
 
