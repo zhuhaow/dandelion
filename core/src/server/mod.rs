@@ -5,7 +5,7 @@ pub mod privilege;
 use self::privilege::PrivilegeHandler;
 use crate::acceptor::http::HttpAcceptor;
 use crate::acceptor::AsDynAcceptorArc;
-use crate::tun::device::Device;
+
 use crate::tun::stack::create_stack;
 use crate::{
     acceptor::{simplex::SimplexAcceptor, socks5::Socks5Acceptor},
@@ -16,19 +16,12 @@ use crate::{
 };
 use anyhow::bail;
 use futures::future::{AbortHandle, Abortable, BoxFuture};
-use futures::{
-    future::try_join_all,
-    stream::{select_all, BoxStream},
-    StreamExt, TryStreamExt,
-};
-use futures::{Future, FutureExt};
-use log::{debug, info, warn};
+use futures::FutureExt;
+use futures::{future::try_join_all, stream::select_all, StreamExt, TryStreamExt};
+use log::{debug, warn};
 use std::sync::Arc;
 use tokio::task::JoinHandle;
-use tokio::{
-    io::copy_bidirectional,
-    net::{TcpListener, TcpStream},
-};
+use tokio::{io::copy_bidirectional, net::TcpListener};
 use tokio_stream::wrappers::TcpListenerStream;
 
 #[derive(Default)]
@@ -119,8 +112,7 @@ impl<P: PrivilegeHandler + Send + Sync + 'static> Server<P> {
                             }
                         };
 
-                        let (fut, acceptor) =
-                            create_stack(device, subnet.clone(), addr.clone()).await?;
+                        let (fut, acceptor) = create_stack(device, *subnet, *addr).await?;
 
                         Ok((
                             listener_stream,

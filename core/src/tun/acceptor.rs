@@ -1,5 +1,5 @@
 use super::{dns::FakeDns, translator::Translator};
-use crate::Result;
+
 use crate::{
     acceptor::{Acceptor, HandshakeResult},
     endpoint::Endpoint,
@@ -9,10 +9,7 @@ use anyhow::bail;
 use async_trait::async_trait;
 use futures::FutureExt;
 use std::sync::Arc;
-use tokio::{
-    net::{TcpSocket, TcpStream},
-    sync::Mutex,
-};
+use tokio::{net::TcpStream, sync::Mutex};
 
 pub struct TunAcceptor {
     dns_server: Arc<FakeDns>,

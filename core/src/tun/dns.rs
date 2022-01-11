@@ -1,9 +1,9 @@
 use crate::{utils::expiring_hash::ExpiringHashMap, Result};
 use anyhow::bail;
-use ipnetwork::{IpNetworkIterator, Ipv4NetworkIterator};
+use ipnetwork::Ipv4NetworkIterator;
 use std::{
     collections::LinkedList,
-    net::{IpAddr, Ipv4Addr, SocketAddr},
+    net::{Ipv4Addr, SocketAddr},
     sync::Arc,
     time::Duration,
 };

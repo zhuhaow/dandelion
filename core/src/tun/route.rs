@@ -1,5 +1,5 @@
 use crate::Result;
-use anyhow::{bail, ensure, Context};
+use anyhow::{bail, Context};
 use ipnetwork::Ipv4Network;
 use nix::unistd::{close, write};
 use os_socketaddr::OsSocketAddr;

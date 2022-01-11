@@ -26,14 +26,13 @@ use crate::{
     Result,
 };
 use anyhow::Error;
-use futures::{stream::BoxStream, Future, StreamExt, TryStreamExt};
+use futures::{Future, StreamExt, TryStreamExt};
 use ipnetwork::{IpNetwork, Ipv4Network};
 use iso3166_1::CountryCode;
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr, DurationMilliSeconds};
 use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
-use tokio::net::{TcpListener, TcpStream};
-use tokio_stream::wrappers::TcpListenerStream;
+use tokio::net::TcpStream;
 
 #[derive(Debug, Deserialize)]
 pub struct ServerConfig {

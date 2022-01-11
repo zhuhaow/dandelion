@@ -130,7 +130,7 @@ impl Translator {
     }
 
     pub fn look_up_source(&mut self, addr: &SocketAddrV4) -> Option<SocketAddrV4> {
-        self.fake_to_real_source_map.get(addr).map(|p| p.1.clone())
+        self.fake_to_real_source_map.get(addr).map(|p| p.1)
     }
 
     fn clear_expired(&mut self) {

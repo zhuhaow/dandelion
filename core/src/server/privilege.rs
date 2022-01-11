@@ -19,19 +19,19 @@ pub struct NoPrivilegeHandler {}
 
 #[async_trait::async_trait]
 impl PrivilegeHandler for NoPrivilegeHandler {
-    async fn set_http_proxy(&self, addr: Option<SocketAddr>) -> Result<()> {
+    async fn set_http_proxy(&self, _addr: Option<SocketAddr>) -> Result<()> {
         bail!("No permission");
     }
 
-    async fn set_socks5_proxy(&self, addr: Option<SocketAddr>) -> Result<()> {
+    async fn set_socks5_proxy(&self, _addr: Option<SocketAddr>) -> Result<()> {
         bail!("No permission");
     }
 
-    async fn create_tun_interface(&self, subnet: &Ipv4Network) -> Result<Device> {
+    async fn create_tun_interface(&self, _subnet: &Ipv4Network) -> Result<Device> {
         bail!("No permission");
     }
 
-    async fn set_dns(&self, addr: Option<SocketAddr>) -> Result<()> {
+    async fn set_dns(&self, _addr: Option<SocketAddr>) -> Result<()> {
         bail!("No permission");
     }
 }

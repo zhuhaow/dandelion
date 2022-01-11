@@ -1,8 +1,8 @@
 use super::{device::Device, dns::FakeDns, translator::Translator};
-use crate::{acceptor::Acceptor, io::Io, tun::acceptor::TunAcceptor, Result};
+use crate::{acceptor::Acceptor, tun::acceptor::TunAcceptor, Result};
 use anyhow::ensure;
 use bytes::{Bytes, BytesMut};
-use futures::{future, stream::SplitSink, Future, FutureExt, SinkExt, Stream, StreamExt};
+use futures::{stream::SplitSink, Future, SinkExt, StreamExt};
 use ipnetwork::Ipv4Network;
 use pnet_packet::{
     ip::IpNextHeaderProtocols,
@@ -11,11 +11,7 @@ use pnet_packet::{
     MutablePacket, Packet,
 };
 use std::{net::SocketAddrV4, ops::Range, sync::Arc, time::Duration};
-use tokio::{
-    net::{TcpListener, TcpStream},
-    select,
-    sync::Mutex,
-};
+use tokio::{net::TcpStream, sync::Mutex};
 use tokio_util::codec::Framed;
 use trust_dns_client::{
     op::Message,
@@ -47,8 +43,7 @@ pub async fn create_stack(
 
     let fake_snap_ip_pool = (&mut iter).take(FAKE_SNAT_IP_POOL_SIZE).collect::<_>();
 
-    let dns_server =
-        Arc::new(FakeDns::new((dns_addr.clone(), DNS_PORT).into(), iter, DNS_TTL).await?);
+    let dns_server = Arc::new(FakeDns::new((dns_addr, DNS_PORT).into(), iter, DNS_TTL).await?);
 
     let translator = Arc::new(Mutex::new(Translator::new(
         listening_addr,
@@ -60,7 +55,7 @@ pub async fn create_stack(
     let (sink, stream) = device.into_framed(MTU).split();
 
     let dns_server_clone = dns_server.clone();
-    let dns_addr_clone = dns_addr.clone();
+    let dns_addr_clone = dns_addr;
     let translator_clone = translator.clone();
     let packet_fut = async move {
         let stack_impl = StackImpl::new(
