@@ -7,6 +7,7 @@ use futures::future::BoxFuture;
 
 pub type HandshakeResult = Result<(Endpoint, BoxFuture<'static, Result<Box<dyn Io>>>)>;
 
+#[as_dyn_trait::as_dyn_trait]
 #[async_trait::async_trait]
 pub trait Acceptor<I: Io>: Send + Sync {
     async fn do_handshake(&self, io: I) -> HandshakeResult;

@@ -55,6 +55,9 @@ trust-dns-proto = "0.20.3"
 trust-dns-client = "0.20.3"
 tokio-util = { version = "0.6.9", features = ["codec"] }
 pnet_packet = "0.28.0"
+rich-phantoms = "0.1.0"
+as-dyn-trait = "0.2.0"
+async-stream = "0.3.2"
 
 [dev-dependencies]
 env_logger = "0.9.0"

@@ -45,6 +45,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "as-dyn-trait"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c10e6725b3055c298c14e70a059d1d0fee82147fa4b6100fa063c4aebb2e711"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "async-compat"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -62,6 +73,27 @@ name = "async-recursion"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d7d78656ba01f1b93024b7c3a0467f1608e4be67d725749fdcd7d2c7678fd7a2"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "async-stream"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "171374e7e3b2504e0e5236e3b59260560f9fe94bfe9ac39ba5e4e929c5590625"
+dependencies = [
+ "async-stream-impl",
+ "futures-core",
+]
+
+[[package]]
+name = "async-stream-impl"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "648ed8c8d2ce5409ccd57453d9d1b214b342a0d69376a6feda1fd6cae3299308"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1247,6 +1279,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "rich-phantoms"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e57d6423edb16dba439ca95583445237bd63d292a05bec1d24408f896f1c55c1"
+
+[[package]]
 name = "ron"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1458,8 +1496,10 @@ name = "specht2_core"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "as-dyn-trait",
  "async-compat",
  "async-recursion",
+ "async-stream",
  "async-trait",
  "bytes",
  "chrono",
@@ -1487,6 +1527,7 @@ dependencies = [
  "rand",
  "regex",
  "reqwest",
+ "rich-phantoms",
  "ron",
  "rstest",
  "scopeguard",

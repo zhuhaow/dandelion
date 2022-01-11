@@ -27,7 +27,7 @@ use crate::{
 };
 use anyhow::Error;
 use futures::{stream::BoxStream, Future, StreamExt, TryStreamExt};
-use ipnetwork::IpNetwork;
+use ipnetwork::{IpNetwork, Ipv4Network};
 use iso3166_1::CountryCode;
 use serde::Deserialize;
 use serde_with::{serde_as, DisplayFromStr, DurationMilliSeconds};
@@ -71,7 +71,7 @@ pub enum AcceptorConfig {
     },
     Tun {
         listen_addr: SocketAddr,
-        subnet: IpNetwork,
+        subnet: Ipv4Network,
     },
 }
 

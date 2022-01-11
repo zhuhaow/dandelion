@@ -3,133 +3,229 @@ pub mod geoip;
 pub mod privilege;
 
 use self::privilege::PrivilegeHandler;
+use crate::acceptor::http::HttpAcceptor;
+use crate::acceptor::AsDynAcceptorArc;
+use crate::tun::device::Device;
+use crate::tun::stack::create_stack;
 use crate::{
+    acceptor::{simplex::SimplexAcceptor, socks5::Socks5Acceptor},
     connector::Connector,
     server::config::{AcceptorConfig, ServerConfig},
+    simplex::Config,
     Result,
 };
+use anyhow::bail;
+use futures::future::{AbortHandle, Abortable, BoxFuture};
 use futures::{
     future::try_join_all,
     stream::{select_all, BoxStream},
     StreamExt, TryStreamExt,
 };
+use futures::{Future, FutureExt};
 use log::{debug, info, warn};
 use std::sync::Arc;
+use tokio::task::JoinHandle;
 use tokio::{
     io::copy_bidirectional,
     net::{TcpListener, TcpStream},
 };
 use tokio_stream::wrappers::TcpListenerStream;
 
+#[derive(Default)]
+struct Handles(Vec<JoinHandle<()>>);
+
+impl Handles {
+    pub fn push(&mut self, handle: JoinHandle<()>) {
+        self.0.push(handle)
+    }
+}
+
+impl Drop for Handles {
+    fn drop(&mut self) {
+        for handle in self.0.iter() {
+            handle.abort();
+        }
+    }
+}
+
 pub struct Server<P: PrivilegeHandler> {
     config: ServerConfig,
     handler: P,
+    route_traffic: bool,
 }
 
-impl<P: PrivilegeHandler> Server<P> {
-    pub fn new(config: ServerConfig, handler: P) -> Self {
-        Self { config, handler }
+impl<P: PrivilegeHandler + Send + Sync + 'static> Server<P> {
+    pub fn new(config: ServerConfig, handler: P, route_traffic: bool) -> Self {
+        Self {
+            config,
+            handler,
+            route_traffic,
+        }
     }
 
-    /// If route_traffic is set to true, we need to call `clear_traffic_routing`
-    /// manually to clear all routing config.
-    ///
-    /// This is necessary since the server won't `stop` unless we don't poll it.
-    /// So the server cannot clear the routing when the it actually stops.
-    ///
-    /// We cannot put it in deinit since it's async.
-    pub async fn serve(&self, route_traffic: bool) -> Result<()> {
-        info!("Server started");
+    pub fn serve(self) -> (BoxFuture<'static, Result<()>>, AbortHandle) {
+        let (handle, reg) = AbortHandle::new_pair();
 
-        let mut listeners = select_all(
-            try_join_all(self.config.acceptors.iter().map(|c| async move {
-                Ok::<BoxStream<Result<TcpStream>>, anyhow::Error>(
+        let fut = async move {
+            let Self {
+                config,
+                handler: privilege_handler,
+                route_traffic,
+            } = self;
+
+            let mut task_handles = Handles::default();
+
+            let privilege_handler_ref = &privilege_handler;
+            let streams = try_join_all(config.acceptors.iter().map(|c| async move {
+                let listener_stream =
                     TcpListenerStream::new(TcpListener::bind(c.server_addr()).await?)
-                        .map_err(Into::into)
-                        .boxed(),
-                )
+                        .map_err(Into::<anyhow::Error>::into);
+
+                match c {
+                    AcceptorConfig::Socks5 { .. } => Ok((
+                        listener_stream,
+                        Arc::new(Socks5Acceptor::default()).as_dyn_acceptor(),
+                        None,
+                    )),
+                    AcceptorConfig::Simplex {
+                        path,
+                        secret_key,
+                        secret_value,
+                        ..
+                    } => Ok((
+                        listener_stream,
+                        Arc::new(SimplexAcceptor::new(Config::new(
+                            path.to_string(),
+                            (secret_key.to_string(), secret_value.to_string()),
+                        )))
+                        .as_dyn_acceptor(),
+                        None,
+                    )),
+                    AcceptorConfig::Http { .. } => Ok((
+                        listener_stream,
+                        Arc::new(HttpAcceptor::default()).as_dyn_acceptor(),
+                        None,
+                    )),
+                    AcceptorConfig::Tun {
+                        listen_addr,
+                        subnet,
+                    } => {
+                        let device = privilege_handler_ref.create_tun_interface(subnet).await?;
+
+                        let addr = match listen_addr {
+                            std::net::SocketAddr::V4(addr) => addr,
+                            std::net::SocketAddr::V6(_) => {
+                                bail!("Do not support Ipv6 for tun yet")
+                            }
+                        };
+
+                        let (fut, acceptor) =
+                            create_stack(device, subnet.clone(), addr.clone()).await?;
+
+                        Ok((
+                            listener_stream,
+                            Arc::new(acceptor).as_dyn_acceptor(),
+                            Some(fut),
+                        ))
+                    }
+                }
             }))
             .await?
             .into_iter()
-            .zip(self.config.acceptors.iter())
-            .map(|(s, c)| s.map_ok(move |stream| (stream, c))),
-        );
+            .fold(Vec::new(), |mut streams, (s, a, f)| {
+                streams.push(s.map_ok(move |stream| (stream, a.clone())));
 
-        let tun_config = self
-            .config
-            .acceptors
-            .iter()
-            .find(|c| matches!(c, AcceptorConfig::Tun { .. }));
-
-        let resolver = self.config.resolver.get_resolver();
-        let connector = Arc::new(self.config.connector.get_connector(resolver).await?);
-
-        if route_traffic {
-            self.redirect_traffic().await?;
-        }
-
-        while let Some(result) = listeners.next().await {
-            let (stream, acceptor_config) = result?;
-
-            let acceptor = acceptor_config.get_acceptor();
-            let connector = connector.clone();
-
-            tokio::spawn(async move {
-                let result = async move {
-                    debug!("Start handshake");
-                    let (endpoint, fut) = acceptor.do_handshake(stream).await?;
-                    debug!("Accepted connection request to {}", endpoint);
-                    let mut remote = connector.connect(&endpoint).await?;
-                    debug!("Connected to {}", endpoint);
-                    let mut local = fut.await?;
-                    debug!("Forwarding data");
-                    copy_bidirectional(&mut local, &mut remote).await?;
-                    debug!("Done processing connection");
-
-                    Ok::<_, anyhow::Error>(())
+                if let Some(f) = f {
+                    task_handles.push(tokio::spawn(f));
                 }
-                .await;
 
-                if let Err(err) = result {
-                    warn!("Error happened when processing a connection: {}", err)
-                } else {
-                    debug!("Successfully processed connection");
-                }
+                streams
             });
-        }
 
-        Ok(())
-    }
+            let mut listeners = select_all(streams);
 
-    async fn redirect_traffic(&self) -> Result<()> {
-        for c in self.config.acceptors.iter() {
-            match c {
-                AcceptorConfig::Socks5 { addr } => {
-                    self.handler.set_socks5_proxy(Some(*addr)).await?
-                }
-                AcceptorConfig::Simplex { .. } => {}
-                AcceptorConfig::Http { addr } => self.handler.set_http_proxy(Some(*addr)).await?,
-                AcceptorConfig::Tun { subnet, .. } => {
-                    self.handler
-                        .set_dns(Some((subnet.iter().next().unwrap(), 53).into()))
-                        .await?
+            let resolver = config.resolver.get_resolver();
+
+            let connector = Arc::new(config.connector.get_connector(resolver).await?);
+
+            if route_traffic {
+                for c in config.acceptors.iter() {
+                    match c {
+                        AcceptorConfig::Socks5 { addr } => {
+                            privilege_handler.set_socks5_proxy(Some(*addr)).await?
+                        }
+                        AcceptorConfig::Simplex { .. } => {}
+                        AcceptorConfig::Http { addr } => {
+                            privilege_handler.set_http_proxy(Some(*addr)).await?
+                        }
+                        AcceptorConfig::Tun { subnet, .. } => {
+                            privilege_handler
+                                .set_dns(Some((subnet.iter().next().unwrap(), 53).into()))
+                                .await?
+                        }
+                    }
                 }
             }
-        }
 
-        Ok(())
-    }
+            let listen_fut = async move {
+                while let Some(result) = listeners.next().await {
+                    let (stream, acceptor) = result?;
 
-    pub async fn clear_traffic_routing(&self) -> Result<()> {
-        for c in self.config.acceptors.iter() {
-            match c {
-                AcceptorConfig::Socks5 { .. } => self.handler.set_socks5_proxy(None).await?,
-                AcceptorConfig::Simplex { .. } => {}
-                AcceptorConfig::Http { .. } => self.handler.set_http_proxy(None).await?,
-                AcceptorConfig::Tun { .. } => self.handler.set_dns(None).await?,
+                    let acceptor = acceptor.clone();
+                    let connector = connector.clone();
+
+                    tokio::spawn(async move {
+                        let result = async move {
+                            debug!("Start handshake");
+                            let (endpoint, fut) = acceptor.do_handshake(stream).await?;
+                            debug!("Accepted connection request to {}", endpoint);
+                            let mut remote = connector.connect(&endpoint).await?;
+                            debug!("Connected to {}", endpoint);
+                            let mut local = fut.await?;
+                            debug!("Forwarding data");
+                            copy_bidirectional(&mut local, &mut remote).await?;
+                            debug!("Done processing connection");
+
+                            Ok::<_, anyhow::Error>(())
+                        }
+                        .await;
+
+                        if let Err(err) = result {
+                            warn!("Error happened when processing a connection: {}", err)
+                        } else {
+                            debug!("Successfully processed connection");
+                        }
+                    });
+                }
+
+                Ok::<_, anyhow::Error>(())
+            };
+
+            let abortable = Abortable::new(listen_fut, reg);
+
+            let result = abortable.await;
+
+            if route_traffic {
+                for c in config.acceptors.iter() {
+                    match c {
+                        AcceptorConfig::Socks5 { .. } => {
+                            privilege_handler.set_socks5_proxy(None).await?
+                        }
+                        AcceptorConfig::Simplex { .. } => {}
+                        AcceptorConfig::Http { .. } => {
+                            privilege_handler.set_http_proxy(None).await?
+                        }
+                        AcceptorConfig::Tun { .. } => privilege_handler.set_dns(None).await?,
+                    }
+                }
             }
-        }
 
-        Ok(())
+            match result {
+                Ok(res) => res,
+                Err(_) => Ok(()),
+            }
+        };
+
+        (fut.boxed(), handle)
     }
 }

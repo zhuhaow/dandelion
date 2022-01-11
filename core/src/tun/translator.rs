@@ -15,29 +15,6 @@ use std::{
     time::Duration,
 };
 
-pub struct TranslatorConfig {
-    listening_addr: SocketAddrV4,
-    ips: Vec<Ipv4Addr>,
-    ports: Range<u16>,
-    ip_ttl: Duration,
-}
-
-impl TranslatorConfig {
-    pub fn new(
-        listening_addr: SocketAddrV4,
-        ips: Vec<Ipv4Addr>,
-        ports: Range<u16>,
-        ip_ttl: Duration,
-    ) -> Self {
-        Self {
-            listening_addr,
-            ips,
-            ports,
-            ip_ttl,
-        }
-    }
-}
-
 // TODO: Support IPv6
 pub struct Translator {
     listening_addr: SocketAddrV4,
@@ -48,13 +25,18 @@ pub struct Translator {
 }
 
 impl Translator {
-    pub fn new(config: TranslatorConfig) -> Self {
+    pub fn new(
+        listening_addr: SocketAddrV4,
+        ips: Vec<Ipv4Addr>,
+        ports: Range<u16>,
+        ip_ttl: Duration,
+    ) -> Self {
         Self {
-            listening_addr: config.listening_addr,
-            real_source_to_fake_map: ExpiringHashMap::new(config.ip_ttl, true),
-            fake_to_real_source_map: ExpiringHashMap::new(config.ip_ttl, true),
-            fake_ips: config.ips,
-            fake_port_range: config.ports,
+            listening_addr,
+            real_source_to_fake_map: ExpiringHashMap::new(ip_ttl, true),
+            fake_to_real_source_map: ExpiringHashMap::new(ip_ttl, true),
+            fake_ips: ips,
+            fake_port_range: ports,
         }
     }
 
@@ -145,6 +127,10 @@ impl Translator {
 
             Ok(response.freeze())
         }
+    }
+
+    pub fn look_up_source(&mut self, addr: &SocketAddrV4) -> Option<SocketAddrV4> {
+        self.fake_to_real_source_map.get(addr).map(|p| p.1.clone())
     }
 
     fn clear_expired(&mut self) {

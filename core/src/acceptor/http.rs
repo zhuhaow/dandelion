@@ -18,7 +18,7 @@ use tokio::{
 };
 use tower::ServiceExt;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Default)]
 pub struct HttpAcceptor {}
 
 #[async_trait::async_trait]

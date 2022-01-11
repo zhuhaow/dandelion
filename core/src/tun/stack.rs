@@ -1,19 +1,21 @@
-use super::{
-    device::Device, dns::FakeDns, ipv4_addr_to_socketaddr, translator::Translator, TranslatorConfig,
-};
-use crate::Result;
+use super::{device::Device, dns::FakeDns, translator::Translator};
+use crate::{acceptor::Acceptor, io::Io, tun::acceptor::TunAcceptor, Result};
 use anyhow::ensure;
 use bytes::{Bytes, BytesMut};
-use futures::{stream::SplitSink, SinkExt, StreamExt};
-
+use futures::{future, stream::SplitSink, Future, FutureExt, SinkExt, Stream, StreamExt};
+use ipnetwork::Ipv4Network;
 use pnet_packet::{
     ip::IpNextHeaderProtocols,
     ipv4::{checksum, Ipv4Packet, MutableIpv4Packet},
     udp::{ipv4_checksum, MutableUdpPacket, UdpPacket},
     MutablePacket, Packet,
 };
-use std::{net::SocketAddr, sync::Arc};
-use tokio::sync::Mutex;
+use std::{net::SocketAddrV4, ops::Range, sync::Arc, time::Duration};
+use tokio::{
+    net::{TcpListener, TcpStream},
+    select,
+    sync::Mutex,
+};
 use tokio_util::codec::Framed;
 use trust_dns_client::{
     op::Message,
@@ -21,48 +23,82 @@ use trust_dns_client::{
 };
 use tun::{TunPacket, TunPacketCodec};
 
-pub async fn run_stack(
+pub async fn create_stack(
     device: Device,
-    dns_server: FakeDns,
-    fake_dns_server_addr: SocketAddr,
-    translator_config: TranslatorConfig,
-    mtu: usize,
-) -> Result<()> {
-    let (sink, stream) = device.into_framed(mtu).split();
+    subnet: Ipv4Network,
+    listening_addr: SocketAddrV4,
+) -> Result<(impl Future<Output = ()>, impl Acceptor<TcpStream>)> {
+    // It's easy to make them configurable but we don't need it yet.
+    static MTU: usize = 1500;
+    static DNS_TTL: Duration = Duration::from_secs(10);
+    static IP_TTL: Duration = Duration::from_secs(180);
+    static FAKE_SNAT_IP_POOL_SIZE: usize = 10;
+    static FAKE_SNAT_PORT_RANGE: Range<u16> = 1024..65535;
+    static DNS_PORT: u16 = 53;
 
-    let stack_impl = StackImpl::new(
-        Arc::new(Mutex::new(sink)),
-        dns_server,
-        fake_dns_server_addr,
-        translator_config,
-        mtu,
+    ensure!(
+        subnet.size() >= 2 ^ 16,
+        "Subnet is too small. The tun needs a block at least /16."
     );
 
-    stream
-        .for_each_concurrent(10, |p| async {
-            let result: Result<()> = async {
-                let p = p?;
-                stack_impl.input(p.get_bytes()).await?;
-                Ok(())
-            }
-            .await;
+    let mut iter = subnet.into_iter();
 
-            if let Err(err) = result {
-                log::info!(
-                    "Error happened when handing packets from TUN interface: {}",
-                    err
-                );
-            }
-        })
-        .await;
+    let dns_addr = (&mut iter).next().unwrap();
 
-    Ok(())
+    let fake_snap_ip_pool = (&mut iter).take(FAKE_SNAT_IP_POOL_SIZE).collect::<_>();
+
+    let dns_server =
+        Arc::new(FakeDns::new((dns_addr.clone(), DNS_PORT).into(), iter, DNS_TTL).await?);
+
+    let translator = Arc::new(Mutex::new(Translator::new(
+        listening_addr,
+        fake_snap_ip_pool,
+        FAKE_SNAT_PORT_RANGE.clone(),
+        IP_TTL,
+    )));
+
+    let (sink, stream) = device.into_framed(MTU).split();
+
+    let dns_server_clone = dns_server.clone();
+    let dns_addr_clone = dns_addr.clone();
+    let translator_clone = translator.clone();
+    let packet_fut = async move {
+        let stack_impl = StackImpl::new(
+            Arc::new(Mutex::new(sink)),
+            dns_server_clone,
+            SocketAddrV4::new(dns_addr_clone, DNS_PORT),
+            translator_clone,
+            MTU,
+        );
+
+        stream
+            .for_each_concurrent(10, |p| async {
+                let result: Result<()> = async {
+                    let p = p?;
+                    stack_impl.input(p.get_bytes()).await?;
+                    Ok(())
+                }
+                .await;
+
+                if let Err(err) = result {
+                    log::info!(
+                        "Error happened when handing packets from TUN interface: {}",
+                        err
+                    );
+                }
+            })
+            .await
+    };
+
+    let acceptor = TunAcceptor::new(dns_server, translator);
+
+    Ok((packet_fut, acceptor))
 }
 
 struct StackImpl {
     sink: Arc<Mutex<SplitSink<Framed<Device, TunPacketCodec>, TunPacket>>>,
-    dns_server: FakeDns,
-    fake_dns_server_addr: SocketAddr,
+    dns_server: Arc<FakeDns>,
+    fake_dns_server_addr: SocketAddrV4,
     translator: Arc<Mutex<Translator>>,
     mtu: usize,
 }
@@ -70,16 +106,16 @@ struct StackImpl {
 impl StackImpl {
     fn new(
         sink: Arc<Mutex<SplitSink<Framed<Device, TunPacketCodec>, TunPacket>>>,
-        dns_server: FakeDns,
-        fake_dns_server_addr: SocketAddr,
-        translator_config: TranslatorConfig,
+        dns_server: Arc<FakeDns>,
+        fake_dns_server_addr: SocketAddrV4,
+        translator: Arc<Mutex<Translator>>,
         mtu: usize,
     ) -> Self {
         Self {
             sink,
             dns_server,
             fake_dns_server_addr,
-            translator: Arc::new(Mutex::new(Translator::new(translator_config))),
+            translator,
             mtu,
         }
     }
@@ -92,7 +128,7 @@ impl StackImpl {
             let udp_packet = UdpPacket::new(packet.payload())
                 .ok_or_else(|| anyhow::anyhow!("Not a valid UDP packet"))?;
 
-            if ipv4_addr_to_socketaddr(packet.get_destination(), udp_packet.get_destination())
+            if SocketAddrV4::new(packet.get_destination(), udp_packet.get_destination())
                 == self.fake_dns_server_addr
             {
                 self.handle_dns(&packet, &udp_packet).await?;

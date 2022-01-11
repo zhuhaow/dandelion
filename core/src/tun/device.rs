@@ -3,7 +3,7 @@
 use super::route::add_route_for_device;
 use crate::Result;
 use futures::ready;
-use ipnetwork::IpNetwork;
+use ipnetwork::Ipv4Network;
 use std::{
     io::{self, IoSlice, Read, Write},
     mem,
@@ -19,7 +19,7 @@ use tun::{configure, create, Device as TunDevice, Layer, TunPacketCodec};
 ///
 /// We will send this fd with XPC so the unprivileged app can create tun
 /// interface.
-pub fn create_tun_as_raw_fd(subnet: IpNetwork) -> Result<RawFd> {
+pub fn create_tun_as_raw_fd(subnet: Ipv4Network) -> Result<RawFd> {
     let mut config = configure();
     config
         .layer(Layer::L3)
@@ -41,7 +41,7 @@ pub struct Device {
 }
 
 impl Device {
-    pub fn new(subnet: IpNetwork) -> Result<Self> {
+    pub fn new(subnet: Ipv4Network) -> Result<Self> {
         let fd = create_tun_as_raw_fd(subnet)?;
 
         Self::from_raw_fd(fd)

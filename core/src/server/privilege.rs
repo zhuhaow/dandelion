@@ -1,7 +1,7 @@
 use crate::tun::device::Device;
 use crate::Result;
 use anyhow::bail;
-use ipnetwork::IpNetwork;
+use ipnetwork::Ipv4Network;
 use std::net::SocketAddr;
 
 // Delegate the actions that we cannot do with normal permission to external
@@ -10,7 +10,7 @@ use std::net::SocketAddr;
 pub trait PrivilegeHandler {
     async fn set_http_proxy(&self, addr: Option<SocketAddr>) -> Result<()>;
     async fn set_socks5_proxy(&self, addr: Option<SocketAddr>) -> Result<()>;
-    async fn create_tun_interface(&self, subnet: IpNetwork) -> Result<Device>;
+    async fn create_tun_interface(&self, subnet: &Ipv4Network) -> Result<Device>;
     async fn set_dns(&self, addr: Option<SocketAddr>) -> Result<()>;
 }
 
@@ -27,7 +27,7 @@ impl PrivilegeHandler for NoPrivilegeHandler {
         bail!("No permission");
     }
 
-    async fn create_tun_interface(&self, subnet: IpNetwork) -> Result<Device> {
+    async fn create_tun_interface(&self, subnet: &Ipv4Network) -> Result<Device> {
         bail!("No permission");
     }
 

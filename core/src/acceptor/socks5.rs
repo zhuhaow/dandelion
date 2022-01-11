@@ -5,7 +5,7 @@ use futures::{Future, FutureExt};
 use std::net::{IpAddr, SocketAddr};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Socks5Acceptor {}
 
 #[async_trait::async_trait]

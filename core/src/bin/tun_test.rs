@@ -5,7 +5,7 @@ use specht2_core::Result;
 async fn main() -> Result<()> {
     use std::{sync::Arc, time::Duration};
 
-    use ipnetwork::IpNetwork;
+    use ipnetwork::Ipv4Network;
     use specht2_core::tun::{device::Device, dns::FakeDns, stack::run_stack, TranslatorConfig};
 
     flexi_logger::Logger::try_with_env()
@@ -15,7 +15,7 @@ async fn main() -> Result<()> {
 
     let device = Device::new("10.128.0.1/12".parse().unwrap())?;
 
-    let ip_block: IpNetwork = "10.128.0.1/12".parse().unwrap();
+    let ip_block: Ipv4Network = "10.128.0.1/12".parse().unwrap();
     let mut ip_iter = ip_block.into_iter();
 
     let fake_ips = (&mut ip_iter)

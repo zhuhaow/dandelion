@@ -1,10 +1,16 @@
 use crate::Result;
 use anyhow::{bail, ensure, Context};
-use ipnetwork::IpNetwork;
+use ipnetwork::Ipv4Network;
 use nix::unistd::{close, write};
 use os_socketaddr::OsSocketAddr;
 use scopeguard::guard;
-use std::{ffi::CStr, mem, net::SocketAddr, os::unix::prelude::AsRawFd, slice::from_raw_parts};
+use std::{
+    ffi::CStr,
+    mem,
+    net::{SocketAddr, SocketAddrV4},
+    os::unix::prelude::AsRawFd,
+    slice::from_raw_parts,
+};
 
 // From https://github.com/shadowsocks/shadowsocks-rust/blob/master/crates/shadowsocks-service/src/local/tun/sys/unix/apple/macos.rs
 
@@ -63,12 +69,7 @@ struct rt_msg {
     netmask: libc::sockaddr_in,
 }
 
-pub fn add_route_for_device(name: &str, route: &IpNetwork) -> Result<()> {
-    ensure!(
-        route.is_ipv4(),
-        "Only support adding route for IPV4 for now."
-    );
-
+pub fn add_route_for_device(name: &str, route: &Ipv4Network) -> Result<()> {
     let mut rtmsg: rt_msg = unsafe { mem::zeroed() };
     rtmsg.rtm.rtm_type = libc::RTM_ADD as libc::c_uchar;
     rtmsg.rtm.rtm_flags = libc::RTF_UP | libc::RTF_STATIC;
@@ -80,7 +81,7 @@ pub fn add_route_for_device(name: &str, route: &IpNetwork) -> Result<()> {
         rtmsg.rtm.rtm_pid = libc::getpid();
     }
 
-    let addr_sockaddr: OsSocketAddr = SocketAddr::new(route.ip(), 0).into();
+    let addr_sockaddr: OsSocketAddr = SocketAddr::V4(SocketAddrV4::new(route.ip(), 0)).into();
     unsafe {
         std::ptr::copy_nonoverlapping(
             addr_sockaddr.as_ptr() as *mut libc::sockaddr_in,
@@ -90,7 +91,7 @@ pub fn add_route_for_device(name: &str, route: &IpNetwork) -> Result<()> {
     }
     rtmsg.dst.sin_len = std::mem::size_of_val(&rtmsg.dst) as u8;
 
-    let netmask_sockaddr: OsSocketAddr = SocketAddr::new(route.mask(), 0).into();
+    let netmask_sockaddr: OsSocketAddr = SocketAddr::V4(SocketAddrV4::new(route.mask(), 0)).into();
     unsafe {
         std::ptr::copy_nonoverlapping(
             netmask_sockaddr.as_ptr() as *mut libc::sockaddr_in,

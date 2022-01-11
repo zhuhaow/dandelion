@@ -1,9 +1,9 @@
 use crate::{utils::expiring_hash::ExpiringHashMap, Result};
 use anyhow::bail;
-use ipnetwork::IpNetworkIterator;
+use ipnetwork::{IpNetworkIterator, Ipv4NetworkIterator};
 use std::{
     collections::LinkedList,
-    net::{IpAddr, SocketAddr},
+    net::{IpAddr, Ipv4Addr, SocketAddr},
     sync::Arc,
     time::Duration,
 };
@@ -20,21 +20,27 @@ use trust_dns_proto::{
 };
 
 // Only IPv4 is supported for now.
-// TODO: Add IPv6 support.
+//
+// TODO: Maybe add IPv6 support. IPv6 may not be necessary since currently it's
+// not working only in ipv6-only mode.
 pub struct FakeDns {
     sender: AsyncClient,
     pool: Arc<Mutex<DnsFakeIpPool>>,
 }
 
 impl FakeDns {
-    pub async fn new(server: SocketAddr, ip_range: IpNetworkIterator) -> Result<Self> {
+    pub async fn new(
+        server: SocketAddr,
+        ip_range: Ipv4NetworkIterator,
+        ttl: Duration,
+    ) -> Result<Self> {
         let stream = UdpClientStream::<UdpSocket>::new(server);
         let (client, bg) = AsyncClient::connect(stream).await?;
         tokio::spawn(bg);
 
         Ok(Self {
             sender: client,
-            pool: Arc::new(Mutex::new(DnsFakeIpPool::new(ip_range))),
+            pool: Arc::new(Mutex::new(DnsFakeIpPool::new(ip_range, ttl))),
         })
     }
 
@@ -53,10 +59,7 @@ impl FakeDns {
                 let mut response = request.clone();
                 response.set_message_type(MessageType::Response);
 
-                let rdata = match ip {
-                    IpAddr::V4(ip) => RData::A(ip),
-                    IpAddr::V6(ip) => RData::AAAA(ip),
-                };
+                let rdata = RData::A(ip);
 
                 response.add_answer(Record::from_rdata(domain.clone(), pool.ttl() as u32, rdata));
 
@@ -78,23 +81,23 @@ impl FakeDns {
         true
     }
 
-    async fn _reverse_lookup(&self, addr: &IpAddr) -> Option<String> {
+    pub async fn reverse_lookup(&self, addr: &Ipv4Addr) -> Option<String> {
         self.pool.lock().await.map.get(addr).map(String::clone)
     }
 }
 
 struct DnsFakeIpPool {
-    fake_ip_pool: LinkedList<IpAddr>,
-    ip_iter: IpNetworkIterator,
-    map: ExpiringHashMap<IpAddr, String>,
+    fake_ip_pool: LinkedList<Ipv4Addr>,
+    ip_iter: Ipv4NetworkIterator,
+    map: ExpiringHashMap<Ipv4Addr, String>,
 }
 
 impl DnsFakeIpPool {
-    fn new(ip_range: IpNetworkIterator) -> Self {
+    fn new(ip_range: Ipv4NetworkIterator, ttl: Duration) -> Self {
         Self {
             fake_ip_pool: Default::default(),
             ip_iter: ip_range,
-            map: ExpiringHashMap::new(Duration::from_secs(15), true),
+            map: ExpiringHashMap::new(ttl.saturating_add(Duration::from_secs(5)), true),
         }
     }
 
@@ -102,7 +105,7 @@ impl DnsFakeIpPool {
         self.map.get_ttl().as_secs().saturating_sub(5)
     }
 
-    fn get_fake_ip(&mut self, domain: String) -> Result<IpAddr> {
+    fn get_fake_ip(&mut self, domain: String) -> Result<Ipv4Addr> {
         let ip = match self.fake_ip_pool.pop_front() {
             Some(ip) => ip,
             None => {
