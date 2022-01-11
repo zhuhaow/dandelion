@@ -53,8 +53,9 @@ async fn main() -> Result<()> {
 
     let config: ServerConfig = ron::de::from_str(&read_to_string(path)?)?;
 
-    Server::new(config, NoPrivilegeHandler::default())
-        .serve(false)
-        .await?;
+    let (fut, _) = Server::new(config, NoPrivilegeHandler::default(), false).serve();
+
+    fut.await?;
+
     Ok(())
 }
