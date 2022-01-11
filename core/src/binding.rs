@@ -5,6 +5,7 @@ use crate::{
     server::{config::ServerConfig, privilege::PrivilegeHandler, Server},
     tun::device::{create_tun_as_raw_fd, Device},
 };
+use futures::future::AbortHandle;
 use ipnetwork::Ipv4Network;
 use rich_phantoms::PhantomInvariantAlwaysSendSync;
 use std::{
@@ -17,7 +18,7 @@ use std::{
     thread,
 };
 use tokio::sync::oneshot::Sender;
-use tokio::{runtime::Builder, select, sync::oneshot};
+use tokio::{runtime::Builder, sync::oneshot};
 
 // Contains information about proxy server listening. If addr is nil, it means
 // there is no server info.
@@ -120,19 +121,22 @@ impl Drop for Context {
 #[no_mangle]
 pub unsafe extern "C" fn specht2_start(
     config_path: NonNull<c_char>,
+    route_traffic: bool,
     context: Context,
 ) -> NonNull<c_void> {
     let path_string = CStr::from_ptr(config_path.as_ptr())
         .to_string_lossy()
         .into_owned();
     let path = PathBuf::from(path_string);
-    let (tx, rx) = oneshot::channel::<()>();
 
     #[cfg(not(target_os = "windows"))]
     {
         use fdlimit::raise_fd_limit;
         raise_fd_limit();
     }
+
+    let (handle, reg) = AbortHandle::new_pair();
+
     thread::spawn(move || {
         let runtime = Builder::new_multi_thread()
             .enable_io()
@@ -145,25 +149,22 @@ pub unsafe extern "C" fn specht2_start(
         let result = runtime.block_on(async move {
             let config: ServerConfig = ron::de::from_str(&read_to_string(path)?)?;
 
-            let server = Server::new(config, context_ref.to_privilege_handler());
+            let server = Server::new(config, context_ref.to_privilege_handler(), route_traffic);
 
-            select! {
-                result = server.serve(false) => result,
-                _ = rx => Ok(()),
-            }
+            server.serve(reg).await
         });
 
         context.done(result.err().map(|e| e.to_string()));
     });
 
-    let tx = Box::into_raw(Box::new(tx));
-    NonNull::new_unchecked(tx as *mut c_void)
+    let handle = Box::into_raw(Box::new(handle));
+    NonNull::new_unchecked(handle as *mut c_void)
 }
 
 #[no_mangle]
-pub extern "C" fn specht2_stop(sender: NonNull<c_void>) -> bool {
-    let sender = unsafe { Box::from_raw(sender.as_ptr() as *mut oneshot::Sender<()>) };
-    sender.send(()).is_ok()
+pub extern "C" fn specht2_stop(handle: NonNull<c_void>) {
+    let handle = unsafe { Box::from_raw(handle.as_ptr() as *mut AbortHandle) };
+    handle.abort()
 }
 
 #[no_mangle]
@@ -212,6 +213,7 @@ struct PrivilegeCallbackHandler<'a> {
 }
 
 unsafe impl Sync for PrivilegeCallbackHandler<'_> {}
+unsafe impl Send for PrivilegeCallbackHandler<'_> {}
 
 macro_rules! handler_impl {
     ($struct_name:ident,
@@ -291,7 +293,7 @@ impl PrivilegeHandler for PrivilegeCallbackHandler<'_> {
             };
         }
 
-        rx.await.unwrap().and_then(|fd| Device::from_raw_fd(fd))
+        rx.await.unwrap().and_then(Device::from_raw_fd)
     }
 
     async fn set_dns(&self, addr: Option<SocketAddr>) -> Result<()> {

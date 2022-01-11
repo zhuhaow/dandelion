@@ -1,5 +1,5 @@
 pub mod acceptor;
-// pub mod binding;
+pub mod binding;
 pub mod connector;
 pub mod endpoint;
 pub mod geoip;

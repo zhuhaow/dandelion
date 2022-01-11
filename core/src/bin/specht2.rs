@@ -1,3 +1,4 @@
+use futures::future::AbortHandle;
 use specht2_core::{
     server::{config::ServerConfig, privilege::NoPrivilegeHandler, Server},
     Result,
@@ -52,10 +53,11 @@ async fn main() -> Result<()> {
         ))?;
 
     let config: ServerConfig = ron::de::from_str(&read_to_string(path)?)?;
+    let (_, reg) = AbortHandle::new_pair();
 
-    let (fut, _) = Server::new(config, NoPrivilegeHandler::default(), false).serve();
-
-    fut.await?;
+    Server::new(config, NoPrivilegeHandler::default(), false)
+        .serve(reg)
+        .await?;
 
     Ok(())
 }

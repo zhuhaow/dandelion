@@ -1277,6 +1277,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "rich-phantoms"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e57d6423edb16dba439ca95583445237bd63d292a05bec1d24408f896f1c55c1"
+
+[[package]]
 name = "ron"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1518,6 +1524,7 @@ dependencies = [
  "rand",
  "regex",
  "reqwest",
+ "rich-phantoms",
  "ron",
  "rstest",
  "scopeguard",
