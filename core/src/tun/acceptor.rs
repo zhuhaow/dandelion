@@ -4,6 +4,7 @@ use crate::{
     acceptor::{Acceptor, HandshakeResult},
     endpoint::Endpoint,
     io::Io,
+    resolver::Resolver,
 };
 use anyhow::bail;
 use async_trait::async_trait;
@@ -11,13 +12,13 @@ use futures::FutureExt;
 use std::sync::Arc;
 use tokio::{net::TcpStream, sync::Mutex};
 
-pub struct TunAcceptor {
-    dns_server: Arc<FakeDns>,
+pub struct TunAcceptor<R: Resolver> {
+    dns_server: Arc<FakeDns<R>>,
     translator: Arc<Mutex<Translator>>,
 }
 
-impl TunAcceptor {
-    pub fn new(dns_server: Arc<FakeDns>, translator: Arc<Mutex<Translator>>) -> Self {
+impl<R: Resolver> TunAcceptor<R> {
+    pub fn new(dns_server: Arc<FakeDns<R>>, translator: Arc<Mutex<Translator>>) -> Self {
         Self {
             dns_server,
             translator,
@@ -26,7 +27,7 @@ impl TunAcceptor {
 }
 
 #[async_trait]
-impl Acceptor<TcpStream> for TunAcceptor {
+impl<R: Resolver> Acceptor<TcpStream> for TunAcceptor<R> {
     async fn do_handshake(&self, io: TcpStream) -> HandshakeResult {
         let remote_addr = io.peer_addr()?;
         let addr = match remote_addr {

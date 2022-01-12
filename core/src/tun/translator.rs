@@ -1,4 +1,3 @@
-use super::dns::FakeDns;
 use crate::{utils::expiring_hash::ExpiringHashMap, Result};
 use anyhow::bail;
 use bytes::{Bytes, BytesMut};
@@ -40,11 +39,7 @@ impl Translator {
         }
     }
 
-    pub fn translate<'a>(
-        &mut self,
-        inbound_packet: &'a Ipv4Packet<'a>,
-        _dns: &'a FakeDns,
-    ) -> Result<Bytes> {
+    pub fn translate<'a>(&mut self, inbound_packet: &'a Ipv4Packet<'a>) -> Result<Bytes> {
         // We don't check if the target is in the fake ip subnet since we won't
         // see them otherwise.
         //

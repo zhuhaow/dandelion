@@ -61,58 +61,68 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
             route_traffic,
         } = self;
 
+        if config.tun_enabled() && config.resolver.is_system() {
+            bail!("Cannot use system resolver with TUN")
+        }
+
         let mut task_handles = Handles::default();
+        let resolver = config.resolver.get_resolver().await?;
 
         let privilege_handler_ref = &privilege_handler;
-        let streams = try_join_all(config.acceptors.iter().map(|c| async move {
-            let listener_stream = TcpListenerStream::new(TcpListener::bind(c.server_addr()).await?)
-                .map_err(Into::<anyhow::Error>::into);
+        let streams = try_join_all(config.acceptors.iter().map(|c| {
+            let resolver = resolver.clone();
+            async move {
+                let listener_stream =
+                    TcpListenerStream::new(TcpListener::bind(c.server_addr()).await?)
+                        .map_err(Into::<anyhow::Error>::into);
 
-            match c {
-                AcceptorConfig::Socks5 { .. } => Ok((
-                    listener_stream,
-                    Arc::new(Socks5Acceptor::default()).as_dyn_acceptor(),
-                    None,
-                )),
-                AcceptorConfig::Simplex {
-                    path,
-                    secret_key,
-                    secret_value,
-                    ..
-                } => Ok((
-                    listener_stream,
-                    Arc::new(SimplexAcceptor::new(Config::new(
-                        path.to_string(),
-                        (secret_key.to_string(), secret_value.to_string()),
-                    )))
-                    .as_dyn_acceptor(),
-                    None,
-                )),
-                AcceptorConfig::Http { .. } => Ok((
-                    listener_stream,
-                    Arc::new(HttpAcceptor::default()).as_dyn_acceptor(),
-                    None,
-                )),
-                AcceptorConfig::Tun {
-                    listen_addr,
-                    subnet,
-                } => {
-                    let device = privilege_handler_ref.create_tun_interface(subnet).await?;
-
-                    let addr = match listen_addr {
-                        std::net::SocketAddr::V4(addr) => addr,
-                        std::net::SocketAddr::V6(_) => {
-                            bail!("Do not support Ipv6 for tun yet")
-                        }
-                    };
-
-                    let (fut, acceptor) = create_stack(device, *subnet, *addr).await?;
-
-                    Ok((
+                match c {
+                    AcceptorConfig::Socks5 { .. } => Ok((
                         listener_stream,
-                        Arc::new(acceptor).as_dyn_acceptor(),
-                        Some(fut),
-                    ))
+                        Arc::new(Socks5Acceptor::default()).as_dyn_acceptor(),
+                        None,
+                    )),
+                    AcceptorConfig::Simplex {
+                        path,
+                        secret_key,
+                        secret_value,
+                        ..
+                    } => Ok((
+                        listener_stream,
+                        Arc::new(SimplexAcceptor::new(Config::new(
+                            path.to_string(),
+                            (secret_key.to_string(), secret_value.to_string()),
+                        )))
+                        .as_dyn_acceptor(),
+                        None,
+                    )),
+                    AcceptorConfig::Http { .. } => Ok((
+                        listener_stream,
+                        Arc::new(HttpAcceptor::default()).as_dyn_acceptor(),
+                        None,
+                    )),
+                    AcceptorConfig::Tun {
+                        listen_addr,
+                        subnet,
+                    } => {
+                        let device = privilege_handler_ref.create_tun_interface(subnet).await?;
+
+                        let addr = match listen_addr {
+                            std::net::SocketAddr::V4(addr) => addr,
+                            std::net::SocketAddr::V6(_) => {
+                                bail!("Do not support Ipv6 for tun yet")
+                            }
+                        };
+
+                        let (fut, acceptor) =
+                            create_stack(device, *subnet, resolver, *addr).await?;
+
+                        Ok((
+                            listener_stream,
+                            Arc::new(acceptor).as_dyn_acceptor(),
+                            Some(fut),
+                        ))
+                    }
                 }
             }
         }))
@@ -129,8 +139,6 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
         });
 
         let mut listeners = select_all(streams);
-
-        let resolver = config.resolver.get_resolver();
 
         let connector = Arc::new(config.connector.get_connector(resolver).await?);
 

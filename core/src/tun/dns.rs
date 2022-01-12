@@ -1,45 +1,26 @@
-use crate::{utils::expiring_hash::ExpiringHashMap, Result};
+use crate::{resolver::Resolver, utils::expiring_hash::ExpiringHashMap, Result};
 use anyhow::bail;
 use ipnetwork::Ipv4NetworkIterator;
-use std::{
-    collections::LinkedList,
-    net::{Ipv4Addr, SocketAddr},
-    sync::Arc,
-    time::Duration,
-};
-use tokio::{net::UdpSocket, sync::Mutex};
+use std::{collections::LinkedList, net::Ipv4Addr, sync::Arc, time::Duration};
+use tokio::sync::Mutex;
 use trust_dns_client::{
-    client::AsyncClient,
     op::{Message, MessageType},
     rr::{RData, Record},
-    udp::UdpClientStream,
-};
-use trust_dns_proto::{
-    xfer::{DnsRequest, DnsRequestOptions},
-    DnsHandle,
 };
 
 // Only IPv4 is supported for now.
 //
 // TODO: Maybe add IPv6 support. IPv6 may not be necessary since currently it's
 // not working only in ipv6-only mode.
-pub struct FakeDns {
-    sender: AsyncClient,
+pub struct FakeDns<R: Resolver> {
+    server: R,
     pool: Arc<Mutex<DnsFakeIpPool>>,
 }
 
-impl FakeDns {
-    pub async fn new(
-        server: SocketAddr,
-        ip_range: Ipv4NetworkIterator,
-        ttl: Duration,
-    ) -> Result<Self> {
-        let stream = UdpClientStream::<UdpSocket>::new(server);
-        let (client, bg) = AsyncClient::connect(stream).await?;
-        tokio::spawn(bg);
-
+impl<R: Resolver> FakeDns<R> {
+    pub async fn new(server: R, ip_range: Ipv4NetworkIterator, ttl: Duration) -> Result<Self> {
         Ok(Self {
-            sender: client,
+            server,
             pool: Arc::new(Mutex::new(DnsFakeIpPool::new(ip_range, ttl))),
         })
     }
@@ -67,12 +48,7 @@ impl FakeDns {
             }
         }
 
-        Ok(self
-            .sender
-            .clone()
-            .send(DnsRequest::new(request, DnsRequestOptions::default()))
-            .await?
-            .into())
+        Ok(self.server.lookup_raw(request).await?)
     }
 
     // TODO: We should support a suffix to query real IP address. E.g.,

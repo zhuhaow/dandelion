@@ -20,7 +20,7 @@ use crate::{
     },
     endpoint::Endpoint,
     geoip::Source,
-    resolver::{system::SystemResolver, Resolver},
+    resolver::{system::SystemResolver, udp::UdpResolver, Resolver},
     simplex::Config,
     Result,
 };
@@ -39,15 +39,29 @@ pub struct ServerConfig {
     pub resolver: ResolverConfig,
 }
 
+impl ServerConfig {
+    pub fn tun_enabled(&self) -> bool {
+        self.acceptors
+            .iter()
+            .any(|a| matches!(a, &AcceptorConfig::Tun { .. }))
+    }
+}
+
 #[derive(Debug, Deserialize)]
 pub enum ResolverConfig {
     System,
+    Udp(SocketAddr),
 }
 
 impl ResolverConfig {
-    pub fn get_resolver(&self) -> Arc<dyn Resolver> {
+    pub fn is_system(&self) -> bool {
+        matches!(self, &ResolverConfig::System)
+    }
+
+    pub async fn get_resolver(&self) -> Result<Arc<dyn Resolver>> {
         match self {
-            ResolverConfig::System => Arc::new(SystemResolver::new()),
+            ResolverConfig::System => Ok(Arc::new(SystemResolver::new())),
+            ResolverConfig::Udp(addr) => Ok(Arc::new(UdpResolver::new(*addr).await?)),
         }
     }
 }
@@ -283,7 +297,7 @@ mod test {
 
         let factory_result = config
             .connector
-            .get_connector(config.resolver.get_resolver())
+            .get_connector(config.resolver.get_resolver().await?)
             .await;
 
         if success {

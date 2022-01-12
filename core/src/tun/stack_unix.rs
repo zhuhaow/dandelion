@@ -4,7 +4,7 @@ use super::{
     dns::FakeDns,
     translator::Translator,
 };
-use crate::{acceptor::Acceptor, tun::acceptor::TunAcceptor, Result};
+use crate::{acceptor::Acceptor, resolver::Resolver, tun::acceptor::TunAcceptor, Result};
 use anyhow::ensure;
 use bytes::{Bytes, BytesMut};
 use futures::{stream::SplitSink, Future, SinkExt, StreamExt};
@@ -23,9 +23,10 @@ use trust_dns_client::{
     serialize::binary::{BinDecodable, BinEncodable, BinEncoder},
 };
 
-pub async fn create_stack(
+pub async fn create_stack<R: Resolver>(
     device: Device,
     subnet: Ipv4Network,
+    resolver: R,
     listening_addr: SocketAddrV4,
 ) -> Result<(impl Future<Output = ()>, impl Acceptor<TcpStream>)> {
     // It's easy to make them configurable but we don't need it yet.
@@ -47,7 +48,7 @@ pub async fn create_stack(
 
     let fake_snap_ip_pool = (&mut iter).take(FAKE_SNAT_IP_POOL_SIZE).collect::<_>();
 
-    let dns_server = Arc::new(FakeDns::new((dns_addr, DNS_PORT).into(), iter, DNS_TTL).await?);
+    let dns_server = Arc::new(FakeDns::new(resolver, iter, DNS_TTL).await?);
 
     let translator = Arc::new(Mutex::new(Translator::new(
         listening_addr,
@@ -94,18 +95,18 @@ pub async fn create_stack(
     Ok((packet_fut, acceptor))
 }
 
-struct StackImpl {
+struct StackImpl<R: Resolver> {
     sink: Arc<Mutex<SplitSink<Framed<Device, TunPacketCodec>, TunPacket>>>,
-    dns_server: Arc<FakeDns>,
+    dns_server: Arc<FakeDns<R>>,
     fake_dns_server_addr: SocketAddrV4,
     translator: Arc<Mutex<Translator>>,
     mtu: usize,
 }
 
-impl StackImpl {
+impl<R: Resolver> StackImpl<R> {
     fn new(
         sink: Arc<Mutex<SplitSink<Framed<Device, TunPacketCodec>, TunPacket>>>,
-        dns_server: Arc<FakeDns>,
+        dns_server: Arc<FakeDns<R>>,
         fake_dns_server_addr: SocketAddrV4,
         translator: Arc<Mutex<Translator>>,
         mtu: usize,
@@ -197,11 +198,7 @@ impl StackImpl {
     }
 
     async fn translate<'a>(&self, inbound_packet: &'a Ipv4Packet<'a>) -> Result<Bytes> {
-        let packet = self
-            .translator
-            .lock()
-            .await
-            .translate(inbound_packet, &self.dns_server)?;
+        let packet = self.translator.lock().await.translate(inbound_packet)?;
 
         Ok(packet)
     }

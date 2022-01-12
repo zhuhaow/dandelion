@@ -1,24 +1,19 @@
 use super::Resolver;
 use crate::Result;
 use dns_lookup::{getaddrinfo, lookup_host, AddrFamily, AddrInfoHints, SockType};
-use std::{
-    net::{IpAddr, Ipv4Addr, Ipv6Addr},
-    vec::IntoIter,
-};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
 #[derive(Debug, Default, Clone)]
 pub struct SystemResolver {}
 
 #[async_trait::async_trait]
 impl Resolver for SystemResolver {
-    async fn lookup_ip(&self, name: &str) -> Result<IntoIter<IpAddr>> {
+    async fn lookup_ip(&self, name: &str) -> Result<Vec<IpAddr>> {
         let name = name.to_owned();
-        Ok(tokio::task::spawn_blocking(move || lookup_host(&name))
-            .await??
-            .into_iter())
+        Ok(tokio::task::spawn_blocking(move || lookup_host(&name)).await??)
     }
 
-    async fn lookup_ipv4(&self, name: &str) -> Result<IntoIter<Ipv4Addr>> {
+    async fn lookup_ipv4(&self, name: &str) -> Result<Vec<Ipv4Addr>> {
         // We won't error out if we see an ipv6 address.
         Ok(self
             .lookup(name, AddrFamily::Inet)
@@ -28,11 +23,10 @@ impl Resolver for SystemResolver {
                 IpAddr::V4(ip_) => Some(ip_),
                 IpAddr::V6(_) => None,
             })
-            .collect::<Vec<_>>()
-            .into_iter())
+            .collect::<Vec<_>>())
     }
 
-    async fn lookup_ipv6(&self, name: &str) -> Result<IntoIter<Ipv6Addr>> {
+    async fn lookup_ipv6(&self, name: &str) -> Result<Vec<Ipv6Addr>> {
         Ok(self
             .lookup(name, AddrFamily::Inet6)
             .await?
@@ -41,8 +35,7 @@ impl Resolver for SystemResolver {
                 IpAddr::V4(_) => None,
                 IpAddr::V6(ip_) => Some(ip_),
             })
-            .collect::<Vec<_>>()
-            .into_iter())
+            .collect::<Vec<_>>())
     }
 }
 
@@ -83,7 +76,7 @@ mod tests {
         let resolver = SystemResolver::new();
 
         let result = resolver.lookup_ip(host).await.unwrap();
-        assert!(result.len() > 0);
+        assert!(!result.is_empty());
     }
 
     #[rstest]
@@ -104,7 +97,7 @@ mod tests {
         let resolver = SystemResolver::new();
 
         let result = resolver.lookup_ipv4(host).await.unwrap();
-        assert!(result.len() > 0);
+        assert!(!result.is_empty());
 
         if let Some(expect) = expected {
             assert!(result
@@ -148,7 +141,7 @@ mod tests {
         let resolver = SystemResolver::new();
 
         let result = resolver.lookup_ipv6(host).await.unwrap();
-        assert!(result.len() > 0);
+        assert!(!result.is_empty());
 
         if let Some(expect) = expected {
             assert!(result

@@ -50,8 +50,8 @@ impl<R: Resolver> Connector for TcpConnector<R> {
 // connectivity, it may be better if we prefer IPv4 connection.
 #[pin_project::pin_project]
 struct HappyEyeballConnector<'a> {
-    ipv4_future: Pin<Box<dyn FusedFuture<Output = Result<IntoIter<Ipv4Addr>>> + Send + 'a>>,
-    ipv6_future: Pin<Box<dyn FusedFuture<Output = Result<IntoIter<Ipv6Addr>>> + Send + 'a>>,
+    ipv4_future: Pin<Box<dyn FusedFuture<Output = Result<Vec<Ipv4Addr>>> + Send + 'a>>,
+    ipv6_future: Pin<Box<dyn FusedFuture<Output = Result<Vec<Ipv6Addr>>> + Send + 'a>>,
     ips: IntoIter<IpAddr>,
     ip_count: usize,
     connections: Vec<Pin<Box<dyn FusedFuture<Output = Result<TcpStream>> + Send + 'static>>>,
@@ -97,7 +97,7 @@ impl<'a> Future for HappyEyeballConnector<'a> {
                 *this.ip_count += addrs.len();
                 *this.ips = this
                     .ips
-                    .interleave(addrs.map(Into::into))
+                    .interleave(addrs.into_iter().map(Into::into))
                     .collect_vec()
                     .into_iter();
             };
@@ -109,7 +109,7 @@ impl<'a> Future for HappyEyeballConnector<'a> {
                 *this.ip_count += addrs.len();
                 *this.ips = this
                     .ips
-                    .interleave(addrs.map(Into::into))
+                    .interleave(addrs.into_iter().map(Into::into))
                     .collect_vec()
                     .into_iter();
             };
