@@ -1,7 +1,9 @@
 // See https://www.nickwilcox.com/blog/recipe_swift_rust_callback/
 
 use crate::server::{config::ServerConfig, privilege::PrivilegeHandler, Server};
-use crate::tun::device::{create_tun_as_raw_fd, Device};
+use crate::tun::device::{
+    create_tun_as_raw_handle, Device, RawDeviceHandle, INVALID_DEVICE_HANDLE,
+};
 use crate::Result;
 use futures::future::AbortHandle;
 use ipnetwork::Ipv4Network;
@@ -10,7 +12,7 @@ use std::{
     ffi::{c_void, CStr, CString},
     fs::read_to_string,
     net::SocketAddr,
-    os::{raw::c_char, unix::prelude::RawFd},
+    os::raw::c_char,
     path::PathBuf,
     ptr::{null, NonNull},
     thread,
@@ -58,7 +60,7 @@ pub struct Context {
     set_http_proxy_handler: ExternalServerHandler,
     set_socks5_proxy_handler: ExternalServerHandler,
     set_dns_handler: ExternalServerHandler,
-    create_tun_interface_handler: ExternalPayloadHandler<RawFd>,
+    create_tun_interface_handler: ExternalPayloadHandler<RawDeviceHandle>,
     // The char ptr points to an error string if there is an error. If it's
     // null, then the action completes successfully. The callback should copy
     // the error string immediately if needed since it will be released after
@@ -166,17 +168,17 @@ pub extern "C" fn specht2_stop(handle: NonNull<c_void>) {
 }
 
 #[no_mangle]
-pub extern "C" fn specht2_create_tun(subnet: NonNull<c_char>) -> RawFd {
+pub extern "C" fn specht2_create_tun(subnet: NonNull<c_char>) -> RawDeviceHandle {
     let subnet_string = unsafe { CStr::from_ptr(subnet.as_ptr()) }
         .to_string_lossy()
         .into_owned();
 
     let subnet = match subnet_string.parse() {
         Ok(subnet) => subnet,
-        Err(_) => return -1,
+        Err(_) => return INVALID_DEVICE_HANDLE,
     };
 
-    create_tun_as_raw_fd(subnet).unwrap_or(-1)
+    create_tun_as_raw_handle(subnet).unwrap_or(INVALID_DEVICE_HANDLE)
 }
 
 extern "C" fn handler_callback(sender: NonNull<c_void>, err_ptr: *const c_char) {
@@ -190,10 +192,10 @@ extern "C" fn handler_callback(sender: NonNull<c_void>, err_ptr: *const c_char) 
 
 extern "C" fn rawfd_handler_callback(
     sender: NonNull<c_void>,
-    rawfd: RawFd,
+    rawfd: RawDeviceHandle,
     err_ptr: *const c_char,
 ) {
-    let tx = unsafe { Box::from_raw(sender.as_ptr() as *mut Sender<Result<RawFd>>) };
+    let tx = unsafe { Box::from_raw(sender.as_ptr() as *mut Sender<Result<RawDeviceHandle>>) };
 
     let _ = match unsafe { parse_error(err_ptr) } {
         Some(err) => tx.send(Err(err)),
@@ -205,7 +207,7 @@ struct PrivilegeCallbackHandler<'a> {
     callback_data: NonNull<c_void>,
     set_http_proxy_handler: ExternalServerHandler,
     set_socks5_proxy_handler: ExternalServerHandler,
-    create_tun_interface_handler: ExternalPayloadHandler<RawFd>,
+    create_tun_interface_handler: ExternalPayloadHandler<RawDeviceHandle>,
     set_dns_handler: ExternalServerHandler,
     _marker: PhantomInvariantAlwaysSendSync<&'a ()>,
 }
@@ -274,7 +276,7 @@ impl PrivilegeHandler for PrivilegeCallbackHandler<'_> {
     }
 
     async fn create_tun_interface(&self, subnet: &Ipv4Network) -> Result<Device> {
-        let (tx, rx) = oneshot::channel::<Result<RawFd>>();
+        let (tx, rx) = oneshot::channel::<Result<RawDeviceHandle>>();
 
         {
             let tx = Box::into_raw(Box::new(tx));
@@ -291,7 +293,7 @@ impl PrivilegeHandler for PrivilegeCallbackHandler<'_> {
             };
         }
 
-        rx.await.unwrap().and_then(Device::from_raw_fd)
+        rx.await.unwrap().and_then(Device::from_raw_device_handle)
     }
 
     async fn set_dns(&self, addr: Option<SocketAddr>) -> Result<()> {

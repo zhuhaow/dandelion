@@ -1,9 +1,14 @@
 pub mod acceptor;
-mod codec;
-pub mod device;
-pub mod dns;
-pub mod stack;
+mod dns;
 mod translator;
 
-#[cfg(target_os = "macos")]
-mod route;
+#[cfg_attr(unix, path = "device_unix.rs")]
+#[cfg_attr(windows, path = "device_win.rs")]
+pub mod device;
+#[cfg_attr(unix, path = "stack_unix.rs")]
+#[cfg_attr(windows, path = "stack_win.rs")]
+pub mod stack;
+
+// This is cross-platform, but we only need it for unix.
+#[cfg(unix)]
+mod codec;
