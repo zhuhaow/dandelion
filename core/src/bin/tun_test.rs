@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use ipnetwork::Ipv4Network;
 use log::{debug, warn};
@@ -11,7 +12,7 @@ use specht2_core::Result;
 use tokio::io::copy_bidirectional;
 use tokio::net::TcpListener;
 
-#[tokio::main]
+#[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<()> {
     flexi_logger::Logger::try_with_env()
         .unwrap()
@@ -22,7 +23,13 @@ async fn main() -> Result<()> {
 
     let ip_block: Ipv4Network = "10.128.0.1/12".parse().unwrap();
 
-    let resolver = Arc::new(UdpResolver::new("114.114.114.114:53".parse().unwrap()).await?);
+    let resolver = Arc::new(
+        UdpResolver::new(
+            "114.114.114.114:53".parse().unwrap(),
+            Duration::from_secs(5),
+        )
+        .await?,
+    );
 
     let stack = create_stack(
         device,

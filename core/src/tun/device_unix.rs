@@ -2,6 +2,7 @@
 
 use super::codec::TunPacketCodec;
 use crate::Result;
+use anyhow::ensure;
 use futures::ready;
 use ipnetwork::Ipv4Network;
 use std::{
@@ -9,10 +10,10 @@ use std::{
     mem,
     os::unix::prelude::{AsRawFd, IntoRawFd, RawFd},
     pin::Pin,
+    sync::Arc,
     task::{Context, Poll},
 };
-use tokio::io::{unix::AsyncFd, AsyncRead, AsyncWrite, ReadBuf};
-use tokio_util::codec::Framed;
+use tokio::io::{unix::AsyncFd, AsyncRead, ReadBuf};
 use tun::{configure, create, Layer};
 
 pub type RawDeviceHandle = RawFd;
@@ -59,8 +60,71 @@ pub fn create_tun_as_raw_handle(subnet: Ipv4Network) -> Result<RawDeviceHandle> 
     Ok(device.into_raw_fd())
 }
 
+#[derive(Clone)]
+struct OwnedFd(Arc<RawFd>);
+
+impl AsRawFd for OwnedFd {
+    fn as_raw_fd(&self) -> RawFd {
+        *self.0
+    }
+}
+
+impl Drop for OwnedFd {
+    fn drop(&mut self) {
+        unsafe {
+            if *self.0 >= 0 {
+                libc::close(*self.0);
+            }
+        }
+    }
+}
+
+// Try to avoid mut since syscall is already thread-safe.
 pub struct Device {
-    inner: AsyncFd<Tun>,
+    inner: AsyncFd<OwnedFd>,
+}
+
+pub struct DeviceWriter {
+    inner: OwnedFd,
+}
+
+// We don't implement Write since that would need self to be mut &.
+impl DeviceWriter {
+    // We need to send one packet at a time so if the content is not send as
+    // whole it's an error.
+    pub fn write(&self, buf: &[u8]) -> Result<()> {
+        unsafe {
+            let amount = libc::write(self.inner.as_raw_fd(), buf.as_ptr() as *const _, buf.len());
+
+            if amount < 0 {
+                return Err(io::Error::last_os_error())?;
+            }
+
+            ensure!(amount as usize == buf.len(), "Cannot send whole packet");
+
+            Ok(())
+        }
+    }
+
+    pub fn write_vectored(&self, bufs: &[io::IoSlice<'_>]) -> Result<()> {
+        unsafe {
+            let mut msg: libc::msghdr = mem::zeroed();
+            // msg.msg_name = NULL
+            // msg.msg_namelen = 0
+            msg.msg_iov = bufs.as_ptr() as *mut _;
+            msg.msg_iovlen = bufs.len().min(libc::c_int::MAX as usize) as _;
+
+            let n = libc::sendmsg(self.inner.as_raw_fd(), &msg, 0);
+            if n < 0 {
+                return Err(io::Error::last_os_error())?;
+            }
+
+            // We don't check if the content is send in whole as that would need
+            // extra computation and there is nothing we can do even if
+            // there is error.
+            Ok(())
+        }
+    }
 }
 
 impl Device {
@@ -72,25 +136,20 @@ impl Device {
 
     pub fn from_raw_device_handle(fd: RawDeviceHandle) -> Result<Self> {
         Ok(Self {
-            inner: AsyncFd::new(Tun { inner: fd })?,
+            inner: AsyncFd::new(OwnedFd(Arc::new(fd)))?,
         })
     }
 
-    pub fn into_framed(self, mtu: usize) -> Framed<Self, TunPacketCodec> {
-        let codec = TunPacketCodec::new(true, mtu as i32);
-        Framed::new(self, codec)
+    pub fn get_writer(&self) -> DeviceWriter {
+        DeviceWriter {
+            inner: self.inner.get_ref().clone(),
+        }
     }
 }
 
 impl AsRawFd for Device {
     fn as_raw_fd(&self) -> RawFd {
         self.inner.as_raw_fd()
-    }
-}
-
-impl IntoRawFd for Device {
-    fn into_raw_fd(self) -> RawFd {
-        self.inner.into_inner().inner
     }
 }
 
@@ -111,68 +170,10 @@ impl AsyncRead for Device {
     }
 }
 
-impl AsyncWrite for Device {
-    fn poll_write(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &[u8],
-    ) -> Poll<io::Result<usize>> {
-        loop {
-            let mut guard = ready!(self.inner.poll_write_ready_mut(cx))?;
-            match guard.try_io(|inner| inner.get_mut().write(buf)) {
-                Ok(res) => return Poll::Ready(res),
-                Err(_wb) => continue,
-            }
-        }
-    }
-
-    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        loop {
-            let mut guard = ready!(self.inner.poll_write_ready_mut(cx))?;
-            match guard.try_io(|inner| inner.get_mut().flush()) {
-                Ok(res) => return Poll::Ready(res),
-                Err(_wb) => continue,
-            }
-        }
-    }
-
-    fn poll_shutdown(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<io::Result<()>> {
-        Poll::Ready(Ok(()))
-    }
-
-    fn poll_write_vectored(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        bufs: &[IoSlice<'_>],
-    ) -> Poll<Result<usize, io::Error>> {
-        loop {
-            let mut guard = ready!(self.inner.poll_write_ready_mut(cx))?;
-            match guard.try_io(|inner| inner.get_mut().write_vectored(bufs)) {
-                Ok(res) => return Poll::Ready(res),
-                Err(_wb) => continue,
-            }
-        }
-    }
-
-    fn is_write_vectored(&self) -> bool {
-        true
-    }
-}
-
-struct Tun {
-    inner: RawFd,
-}
-
-impl AsRawFd for Tun {
-    fn as_raw_fd(&self) -> RawFd {
-        self.inner
-    }
-}
-
-impl Read for Tun {
+impl Read for OwnedFd {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         unsafe {
-            let amount = libc::read(self.inner, buf.as_mut_ptr() as *mut _, buf.len());
+            let amount = libc::read(self.as_raw_fd(), buf.as_mut_ptr() as *mut _, buf.len());
 
             if amount < 0 {
                 return Err(io::Error::last_os_error());
@@ -190,63 +191,12 @@ impl Read for Tun {
             msg.msg_iov = bufs.as_mut_ptr().cast();
             msg.msg_iovlen = bufs.len().min(libc::c_int::MAX as usize) as _;
 
-            let n = libc::recvmsg(self.inner, &mut msg, 0);
+            let n = libc::recvmsg(self.as_raw_fd(), &mut msg, 0);
             if n < 0 {
                 return Err(io::Error::last_os_error());
             }
 
             Ok(n as usize)
-        }
-    }
-}
-
-impl Write for Tun {
-    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        unsafe {
-            let amount = libc::write(self.inner, buf.as_ptr() as *const _, buf.len());
-
-            if amount < 0 {
-                return Err(io::Error::last_os_error());
-            }
-
-            Ok(amount as usize)
-        }
-    }
-
-    fn flush(&mut self) -> io::Result<()> {
-        Ok(())
-    }
-
-    fn write_vectored(&mut self, bufs: &[io::IoSlice<'_>]) -> io::Result<usize> {
-        unsafe {
-            let mut msg: libc::msghdr = mem::zeroed();
-            // msg.msg_name = NULL
-            // msg.msg_namelen = 0
-            msg.msg_iov = bufs.as_ptr() as *mut _;
-            msg.msg_iovlen = bufs.len().min(libc::c_int::MAX as usize) as _;
-
-            let n = libc::sendmsg(self.inner, &msg, 0);
-            if n < 0 {
-                return Err(io::Error::last_os_error());
-            }
-
-            Ok(n as usize)
-        }
-    }
-}
-
-impl IntoRawFd for Tun {
-    fn into_raw_fd(self) -> RawFd {
-        self.inner
-    }
-}
-
-impl Drop for Tun {
-    fn drop(&mut self) {
-        unsafe {
-            if self.inner >= 0 {
-                libc::close(self.inner);
-            }
         }
     }
 }

@@ -47,10 +47,14 @@ impl ServerConfig {
     }
 }
 
+#[serde_as]
 #[derive(Debug, Deserialize)]
 pub enum ResolverConfig {
     System,
-    Udp(SocketAddr),
+    Udp(
+        SocketAddr,
+        #[serde_as(as = "DurationMilliSeconds")] Duration,
+    ),
 }
 
 impl ResolverConfig {
@@ -61,7 +65,9 @@ impl ResolverConfig {
     pub async fn get_resolver(&self) -> Result<Arc<dyn Resolver>> {
         match self {
             ResolverConfig::System => Ok(Arc::new(SystemResolver::new())),
-            ResolverConfig::Udp(addr) => Ok(Arc::new(UdpResolver::new(*addr).await?)),
+            ResolverConfig::Udp(addr, timeout) => {
+                Ok(Arc::new(UdpResolver::new(*addr, *timeout).await?))
+            }
         }
     }
 }

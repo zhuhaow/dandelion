@@ -1,5 +1,4 @@
 use super::{dns::FakeDns, translator::Translator};
-
 use crate::{
     acceptor::{Acceptor, HandshakeResult},
     endpoint::Endpoint,
@@ -9,6 +8,7 @@ use crate::{
 use anyhow::bail;
 use async_trait::async_trait;
 use futures::FutureExt;
+use log::debug;
 use std::sync::Arc;
 use tokio::{net::TcpStream, sync::Mutex};
 

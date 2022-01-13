@@ -39,7 +39,7 @@ impl Translator {
         }
     }
 
-    pub fn translate<'a>(&mut self, inbound_packet: &'a Ipv4Packet<'a>) -> Result<Bytes> {
+    pub fn translate<'a>(&mut self, inbound_packet: &'a mut MutableIpv4Packet<'a>) -> Result<()> {
         // We don't check if the target is in the fake ip subnet since we won't
         // see them otherwise.
         //
@@ -69,11 +69,9 @@ impl Translator {
                     .real_source_to_fake_map
                     .get(&(*real_dest, *real_source));
 
-                let mut response = BytesMut::from(inbound_packet.packet());
-                let mut outbound = MutableIpv4Packet::new(response.as_mut()).unwrap();
-                update_packet(&mut outbound, real_source, real_dest);
+                update_packet(inbound_packet, real_source, real_dest);
 
-                Ok(response.freeze())
+                Ok(())
             } else {
                 bail!(
                     "Failed to find mapping for address {}",
@@ -116,11 +114,9 @@ impl Translator {
                 },
             };
 
-            let mut response = BytesMut::from(inbound_packet.packet());
-            let mut outbound = MutableIpv4Packet::new(response.as_mut()).unwrap();
-            update_packet(&mut outbound, &fake_source, &self.listening_addr);
+            update_packet(inbound_packet, &fake_source, &self.listening_addr);
 
-            Ok(response.freeze())
+            Ok(())
         }
     }
 

@@ -1,13 +1,18 @@
 use super::{
-    codec::{TunPacket, TunPacketCodec},
-    device::Device,
+    codec::TunPacket,
+    device::{Device, DeviceWriter},
     dns::FakeDns,
     translator::Translator,
 };
-use crate::{acceptor::Acceptor, resolver::Resolver, tun::acceptor::TunAcceptor, Result};
+use crate::{
+    acceptor::Acceptor,
+    resolver::Resolver,
+    tun::{acceptor::TunAcceptor, codec::TunPacketCodec},
+    Result,
+};
 use anyhow::ensure;
 use bytes::{Bytes, BytesMut};
-use futures::{stream::SplitSink, Future, SinkExt, StreamExt};
+use futures::{Future, StreamExt};
 use ipnetwork::Ipv4Network;
 use log::debug;
 use pnet_packet::{
@@ -18,27 +23,28 @@ use pnet_packet::{
 };
 use std::{net::SocketAddrV4, ops::Range, sync::Arc, time::Duration};
 use tokio::{
+    io::AsyncReadExt,
     net::TcpStream,
     sync::{
-        mpsc::{channel, Receiver, Sender},
+        mpsc::{channel, Sender},
         Mutex,
     },
 };
-use tokio_stream::wrappers::ReceiverStream;
+use tokio_util::codec::{BytesCodec, FramedRead};
 use trust_dns_client::{
     op::Message,
     serialize::binary::{BinDecodable, BinEncodable, BinEncoder},
 };
 
 pub async fn create_stack<R: Resolver>(
-    device: Device,
+    mut device: Device,
     subnet: Ipv4Network,
     resolver: R,
     listening_addr: SocketAddrV4,
 ) -> Result<(impl Future<Output = ()>, impl Acceptor<TcpStream>)> {
     // It's easy to make them configurable but we don't need it yet.
     static MTU: usize = 1500;
-    static DNS_TTL: Duration = Duration::from_secs(10);
+    static DNS_TTL: Duration = Duration::from_secs(120);
     static IP_TTL: Duration = Duration::from_secs(180);
     static FAKE_SNAT_IP_POOL_SIZE: usize = 10;
     static FAKE_SNAT_PORT_RANGE: Range<u16> = 1024..65535;
@@ -68,47 +74,53 @@ pub async fn create_stack<R: Resolver>(
         IP_TTL,
     )));
 
-    let (mut sink, stream) = device.into_framed(MTU).split();
-
     let dns_server_clone = dns_server.clone();
     let translator_clone = translator.clone();
 
     debug!("DNS listening on {}", dns_ip);
 
-    let (tx, mut rx) = channel(100);
-    // The task finishes when tx is dropped.
-    tokio::spawn(async move {
-        while let Some(packet) = rx.recv().await {
-            sink.send(packet).await;
-        }
-    });
-
     let packet_fut = async move {
+        let writer = device.get_writer();
+
         let stack_impl = StackImpl::new(
-            tx,
+            writer,
             dns_server_clone,
             SocketAddrV4::new(dns_ip, DNS_PORT),
             translator_clone,
             MTU,
         );
 
-        stream
-            .for_each_concurrent(10, |p| async {
-                let result: Result<()> = async {
-                    let p = p?;
-                    stack_impl.input(p.get_bytes()).await?;
-                    Ok(())
-                }
-                .await;
+        async_stream::stream! {
+            loop {
+                let mut byte = BytesMut::new();
+                byte.resize(MTU + 4, 0);
+                let len = match device.read(byte.as_mut()).await {
+                    Ok(len) => len,
+                    Err(err) => {
+                        yield Err(err);
+                        break;
+                    }
+                };
+                byte.truncate(len);
+                yield Ok(byte);
+            }
+        }
+        .for_each_concurrent(None, |p| async {
+            let result: Result<()> = async {
+                let p = p?;
+                stack_impl.input(p).await?;
+                Ok(())
+            }
+            .await;
 
-                if let Err(err) = result {
-                    log::info!(
-                        "Error happened when handing packets from TUN interface: {}",
-                        err
-                    );
-                }
-            })
-            .await
+            if let Err(err) = result {
+                log::info!(
+                    "Error happened when handing packets from TUN interface: {}",
+                    err
+                );
+            }
+        })
+        .await
     };
 
     let acceptor = TunAcceptor::new(dns_server, translator);
@@ -117,7 +129,7 @@ pub async fn create_stack<R: Resolver>(
 }
 
 struct StackImpl<R: Resolver> {
-    sender: Sender<TunPacket>,
+    writer: DeviceWriter,
     dns_server: Arc<FakeDns<R>>,
     fake_dns_server_addr: SocketAddrV4,
     translator: Arc<Mutex<Translator>>,
@@ -126,14 +138,14 @@ struct StackImpl<R: Resolver> {
 
 impl<R: Resolver> StackImpl<R> {
     fn new(
-        sender: Sender<TunPacket>,
+        writer: DeviceWriter,
         dns_server: Arc<FakeDns<R>>,
         fake_dns_server_addr: SocketAddrV4,
         translator: Arc<Mutex<Translator>>,
         mtu: usize,
     ) -> Self {
         Self {
-            sender,
+            writer,
             dns_server,
             fake_dns_server_addr,
             translator,
@@ -141,10 +153,12 @@ impl<R: Resolver> StackImpl<R> {
         }
     }
 
-    async fn input(&self, packet_buf: &[u8]) -> Result<()> {
+    async fn input(&self, mut tun_buf: BytesMut) -> Result<()> {
         debug!("Got new packet input");
 
-        let packet = Ipv4Packet::new(packet_buf)
+        let packet_buf = &mut tun_buf[4..];
+
+        let mut packet = MutableIpv4Packet::new(packet_buf)
             .ok_or_else(|| anyhow::anyhow!("Not a valid Ipv4 packet"))?;
 
         if packet.get_next_level_protocol() == IpNextHeaderProtocols::Udp {
@@ -154,10 +168,11 @@ impl<R: Resolver> StackImpl<R> {
             if SocketAddrV4::new(packet.get_destination(), udp_packet.get_destination())
                 == self.fake_dns_server_addr
             {
-                self.handle_dns(&packet, &udp_packet).await?;
+                self.handle_dns(&packet.to_immutable(), &udp_packet).await?;
             }
         } else {
-            self.send(self.translate(&packet).await?).await?;
+            self.translate(&mut packet).await?;
+            self.send(&tun_buf.freeze())?;
         }
 
         Ok(())
@@ -171,7 +186,9 @@ impl<R: Resolver> StackImpl<R> {
     ) -> Result<()> {
         debug!("Got a dns request");
         let dns_request = Message::from_bytes(inbound_udp_packet.payload())?;
+        debug!("Locking DNS");
         let dns_response = self.dns_server.handle(dns_request).await?;
+        debug!("Released DNS");
         debug!("Got response for fake dns server");
         let mut dns_response_buf = Vec::new();
         let mut encoder = BinEncoder::new(&mut dns_response_buf);
@@ -189,9 +206,12 @@ impl<R: Resolver> StackImpl<R> {
         );
 
         let mut response = BytesMut::new();
-        response.resize(totol_len, 0);
+        response.resize(totol_len + 4, 0);
 
-        let mut ipv4_packet = MutableIpv4Packet::new(response.as_mut()).unwrap();
+        response[3] = libc::PF_INET as u8;
+
+        let response_buf = &mut response[4..];
+        let mut ipv4_packet = MutableIpv4Packet::new(response_buf).unwrap();
         ipv4_packet.set_version(4);
         // We don't have any options.
         ipv4_packet.set_header_length(MutableIpv4Packet::minimum_packet_size() as u8 / 4);
@@ -217,22 +237,21 @@ impl<R: Resolver> StackImpl<R> {
             &inbound_packet.get_source(),
         ));
 
-        self.send(response.freeze()).await?;
+        self.send(&response.freeze())?;
 
         Ok(())
     }
 
-    async fn translate<'a>(&self, inbound_packet: &'a Ipv4Packet<'a>) -> Result<Bytes> {
-        let packet = self.translator.lock().await.translate(inbound_packet)?;
-
-        Ok(packet)
+    async fn translate<'a>(&self, inbound_packet: &'a mut MutableIpv4Packet<'a>) -> Result<()> {
+        debug!("Locking translator");
+        let result = self.translator.lock().await.translate(inbound_packet);
+        debug!("Released translator");
+        result
     }
 
-    async fn send(&self, packet: Bytes) -> Result<()> {
+    fn send(&self, packet: &Bytes) -> Result<()> {
         debug!("Writing packet to tun");
 
-        self.sender.send(TunPacket::new(packet.to_vec())).await?;
-
-        Ok(())
+        self.writer.write(packet.as_ref())
     }
 }
