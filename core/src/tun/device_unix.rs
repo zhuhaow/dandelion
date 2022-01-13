@@ -1,12 +1,11 @@
 // Derived from https://github.com/meh/rust-tun
 
-use super::codec::TunPacketCodec;
 use crate::Result;
 use anyhow::ensure;
 use futures::ready;
 use ipnetwork::Ipv4Network;
 use std::{
-    io::{self, IoSlice, Read, Write},
+    io::{self, Read},
     mem,
     os::unix::prelude::{AsRawFd, IntoRawFd, RawFd},
     pin::Pin,
@@ -97,7 +96,7 @@ impl DeviceWriter {
             let amount = libc::write(self.inner.as_raw_fd(), buf.as_ptr() as *const _, buf.len());
 
             if amount < 0 {
-                return Err(io::Error::last_os_error())?;
+                return Err(io::Error::last_os_error().into());
             }
 
             ensure!(amount as usize == buf.len(), "Cannot send whole packet");
@@ -116,7 +115,7 @@ impl DeviceWriter {
 
             let n = libc::sendmsg(self.inner.as_raw_fd(), &msg, 0);
             if n < 0 {
-                return Err(io::Error::last_os_error())?;
+                return Err(io::Error::last_os_error().into());
             }
 
             // We don't check if the content is send in whole as that would need

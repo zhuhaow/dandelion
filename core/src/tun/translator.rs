@@ -1,9 +1,9 @@
 use crate::{utils::expiring_hash::ExpiringHashMap, Result};
 use anyhow::bail;
-use bytes::{Bytes, BytesMut};
+
 use pnet_packet::{
     ip::IpNextHeaderProtocols,
-    ipv4::{checksum, Ipv4Packet, MutableIpv4Packet},
+    ipv4::{checksum, MutableIpv4Packet},
     tcp::{ipv4_checksum, MutableTcpPacket, TcpPacket},
     MutablePacket, Packet,
 };

@@ -4,7 +4,7 @@ use itertools::Itertools;
 use std::{
     net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
     str::FromStr,
-    time::{Duration, Instant},
+    time::Duration,
 };
 use tokio::{net::UdpSocket, time::timeout};
 use trust_dns_client::{

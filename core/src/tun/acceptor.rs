@@ -8,7 +8,7 @@ use crate::{
 use anyhow::bail;
 use async_trait::async_trait;
 use futures::FutureExt;
-use log::debug;
+
 use std::sync::Arc;
 use tokio::{net::TcpStream, sync::Mutex};
 

@@ -8,7 +8,3 @@ pub mod device;
 #[cfg_attr(unix, path = "stack_unix.rs")]
 #[cfg_attr(windows, path = "stack_win.rs")]
 pub mod stack;
-
-// This is cross-platform, but we only need it for unix.
-#[cfg(unix)]
-mod codec;

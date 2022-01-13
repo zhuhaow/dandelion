@@ -1,15 +1,9 @@
 use super::{
-    codec::TunPacket,
     device::{Device, DeviceWriter},
     dns::FakeDns,
     translator::Translator,
 };
-use crate::{
-    acceptor::Acceptor,
-    resolver::Resolver,
-    tun::{acceptor::TunAcceptor, codec::TunPacketCodec},
-    Result,
-};
+use crate::{acceptor::Acceptor, resolver::Resolver, tun::acceptor::TunAcceptor, Result};
 use anyhow::ensure;
 use bytes::{Bytes, BytesMut};
 use futures::{Future, StreamExt};
@@ -22,15 +16,8 @@ use pnet_packet::{
     MutablePacket, Packet,
 };
 use std::{net::SocketAddrV4, ops::Range, sync::Arc, time::Duration};
-use tokio::{
-    io::AsyncReadExt,
-    net::TcpStream,
-    sync::{
-        mpsc::{channel, Sender},
-        Mutex,
-    },
-};
-use tokio_util::codec::{BytesCodec, FramedRead};
+use tokio::{io::AsyncReadExt, net::TcpStream, sync::Mutex};
+
 use trust_dns_client::{
     op::Message,
     serialize::binary::{BinDecodable, BinEncodable, BinEncoder},
