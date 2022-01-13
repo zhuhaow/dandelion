@@ -9,6 +9,7 @@ use anyhow::ensure;
 use bytes::{Bytes, BytesMut};
 use futures::{stream::SplitSink, Future, SinkExt, StreamExt};
 use ipnetwork::Ipv4Network;
+use log::debug;
 use pnet_packet::{
     ip::IpNextHeaderProtocols,
     ipv4::{checksum, Ipv4Packet, MutableIpv4Packet},
@@ -16,8 +17,14 @@ use pnet_packet::{
     MutablePacket, Packet,
 };
 use std::{net::SocketAddrV4, ops::Range, sync::Arc, time::Duration};
-use tokio::{net::TcpStream, sync::Mutex};
-use tokio_util::codec::Framed;
+use tokio::{
+    net::TcpStream,
+    sync::{
+        mpsc::{channel, Receiver, Sender},
+        Mutex,
+    },
+};
+use tokio_stream::wrappers::ReceiverStream;
 use trust_dns_client::{
     op::Message,
     serialize::binary::{BinDecodable, BinEncodable, BinEncoder},
@@ -42,9 +49,13 @@ pub async fn create_stack<R: Resolver>(
         "Subnet is too small. The tun needs a block at least /16."
     );
 
+    let dns_ip = subnet.ip();
+
     let mut iter = subnet.into_iter();
 
-    let dns_addr = (&mut iter).next().unwrap();
+    (&mut iter).take_while(|ip| ip != &dns_ip).for_each(drop);
+
+    assert!(iter.next().is_some());
 
     let fake_snap_ip_pool = (&mut iter).take(FAKE_SNAT_IP_POOL_SIZE).collect::<_>();
 
@@ -57,16 +68,26 @@ pub async fn create_stack<R: Resolver>(
         IP_TTL,
     )));
 
-    let (sink, stream) = device.into_framed(MTU).split();
+    let (mut sink, stream) = device.into_framed(MTU).split();
 
     let dns_server_clone = dns_server.clone();
-    let dns_addr_clone = dns_addr;
     let translator_clone = translator.clone();
+
+    debug!("DNS listening on {}", dns_ip);
+
+    let (tx, mut rx) = channel(100);
+    // The task finishes when tx is dropped.
+    tokio::spawn(async move {
+        while let Some(packet) = rx.recv().await {
+            sink.send(packet).await;
+        }
+    });
+
     let packet_fut = async move {
         let stack_impl = StackImpl::new(
-            Arc::new(Mutex::new(sink)),
+            tx,
             dns_server_clone,
-            SocketAddrV4::new(dns_addr_clone, DNS_PORT),
+            SocketAddrV4::new(dns_ip, DNS_PORT),
             translator_clone,
             MTU,
         );
@@ -96,7 +117,7 @@ pub async fn create_stack<R: Resolver>(
 }
 
 struct StackImpl<R: Resolver> {
-    sink: Arc<Mutex<SplitSink<Framed<Device, TunPacketCodec>, TunPacket>>>,
+    sender: Sender<TunPacket>,
     dns_server: Arc<FakeDns<R>>,
     fake_dns_server_addr: SocketAddrV4,
     translator: Arc<Mutex<Translator>>,
@@ -105,14 +126,14 @@ struct StackImpl<R: Resolver> {
 
 impl<R: Resolver> StackImpl<R> {
     fn new(
-        sink: Arc<Mutex<SplitSink<Framed<Device, TunPacketCodec>, TunPacket>>>,
+        sender: Sender<TunPacket>,
         dns_server: Arc<FakeDns<R>>,
         fake_dns_server_addr: SocketAddrV4,
         translator: Arc<Mutex<Translator>>,
         mtu: usize,
     ) -> Self {
         Self {
-            sink,
+            sender,
             dns_server,
             fake_dns_server_addr,
             translator,
@@ -121,6 +142,8 @@ impl<R: Resolver> StackImpl<R> {
     }
 
     async fn input(&self, packet_buf: &[u8]) -> Result<()> {
+        debug!("Got new packet input");
+
         let packet = Ipv4Packet::new(packet_buf)
             .ok_or_else(|| anyhow::anyhow!("Not a valid Ipv4 packet"))?;
 
@@ -146,8 +169,10 @@ impl<R: Resolver> StackImpl<R> {
         // There is an issue in the type def require the T to be a ref.
         inbound_udp_packet: &'a UdpPacket<'a>,
     ) -> Result<()> {
+        debug!("Got a dns request");
         let dns_request = Message::from_bytes(inbound_udp_packet.payload())?;
         let dns_response = self.dns_server.handle(dns_request).await?;
+        debug!("Got response for fake dns server");
         let mut dns_response_buf = Vec::new();
         let mut encoder = BinEncoder::new(&mut dns_response_buf);
         dns_response.emit(&mut encoder)?;
@@ -204,11 +229,9 @@ impl<R: Resolver> StackImpl<R> {
     }
 
     async fn send(&self, packet: Bytes) -> Result<()> {
-        self.sink
-            .lock()
-            .await
-            .send(TunPacket::new(packet.to_vec()))
-            .await?;
+        debug!("Writing packet to tun");
+
+        self.sender.send(TunPacket::new(packet.to_vec())).await?;
 
         Ok(())
     }
