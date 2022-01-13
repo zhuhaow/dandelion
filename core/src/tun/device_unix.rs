@@ -30,12 +30,12 @@ pub fn create_tun_as_raw_handle(subnet: Ipv4Network) -> Result<RawDeviceHandle> 
     config
         .layer(Layer::L3)
         .address(subnet.ip())
-        // This is a bug, the netmask is not applied.
-        // But this won't prevent us from setting up routes.
         .netmask(subnet.mask())
         .up();
 
-    let device = create(&config)?;
+    let mut device = create(&config)?;
+    // This is a bug, the netmask is not applied. We need to apply again.
+    device.set_alias(subnet.ip(), subnet.broadcast(), subnet.mask())?;
 
     self::route::add_route_for_device(device.name(), &subnet)?;
 
