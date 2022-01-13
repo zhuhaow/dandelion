@@ -35,6 +35,6 @@ impl<R: Resolver + ?Sized> Resolver for Arc<R> {
     }
 
     async fn lookup_raw(&self, message: Message) -> Result<Message> {
-        self.lookup_raw(message).await
+        R::lookup_raw(self, message).await
     }
 }
