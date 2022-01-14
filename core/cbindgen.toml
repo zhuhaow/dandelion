@@ -1,5 +1,10 @@
 language = "C"
 
+[defines]
+"target_os = macos" = "__APPLE__"
+"target_os = linux" = "__linux__"
+"target_os = windows" = "_WIN32"
+
 [ptr]
 # An optional string to decorate all pointers that are
 # required to be non null. Nullability is inferred from the Rust type: `&T`,

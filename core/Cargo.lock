@@ -1522,6 +1522,7 @@ dependencies = [
  "async-trait",
  "byteorder",
  "bytes",
+ "cfg-if",
  "chrono",
  "dns-lookup",
  "env_logger",

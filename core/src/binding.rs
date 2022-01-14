@@ -1,9 +1,7 @@
 // See https://www.nickwilcox.com/blog/recipe_swift_rust_callback/
 
 use crate::server::{config::ServerConfig, privilege::PrivilegeHandler, Server};
-use crate::tun::device::{
-    create_tun_as_raw_handle, Device, RawDeviceHandle, INVALID_DEVICE_HANDLE,
-};
+use crate::tun::device::{create_tun_as_raw_handle, Device, INVALID_DEVICE_HANDLE};
 use crate::Result;
 use futures::future::AbortHandle;
 use ipnetwork::Ipv4Network;
@@ -19,6 +17,13 @@ use std::{
 };
 use tokio::sync::oneshot::Sender;
 use tokio::{runtime::Builder, sync::oneshot};
+
+// For some reason cbindgen cannot find the type def, so redefin it here.
+#[cfg(any(target_os = "macos", target_os = "linux"))]
+type RawDeviceHandle = std::os::raw::c_int;
+
+#[cfg(any(target_os = "windows"))]
+type RawDeviceHandle = u64;
 
 // Contains information about proxy server listening. If addr is nil, it means
 // there is no server info.
