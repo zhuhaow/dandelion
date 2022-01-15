@@ -63,8 +63,7 @@ class Server: ServiceInterface {
     }
 
     func setDns(endpoint: Endpoint?) async throws {
-        // TODO: Set DNS
-        return
+        try proxyHelper.updateDns(endpoint: endpoint)
     }
 
     func createTunInterface(subnet: String) async throws -> FileDescriptor {

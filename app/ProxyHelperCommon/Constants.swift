@@ -11,7 +11,7 @@ class Constants {
     static let helperMachLabel = "me.zhuhaow.Specht2.proxy-helper"
 
     // Bump this so the main app will update the XPC service
-    static let version = "6"
+    static let version = "9"
 
     static let serviceCodeSignRequirements = "identifier \"\(Constants.helperMachLabel)\"" +
         " and anchor apple generic and certificate leaf[subject.OU] = \"H5443445N6\""

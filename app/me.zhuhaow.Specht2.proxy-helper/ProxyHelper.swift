@@ -35,7 +35,7 @@ class ProxyHelper: NSObject {
     }
 
     func updateSocks5Proxy(endpoint: Endpoint?) throws {
-        try updateProxyConfigure { dic in
+        try updateConfigure(type: kSCNetworkProtocolTypeProxies) { dic in
             if let endpoint = endpoint {
                 dic[kCFNetworkProxiesSOCKSProxy as String] = endpoint.connectableAddr as AnyObject
                 dic[kCFNetworkProxiesSOCKSEnable as String] = 1 as AnyObject
@@ -49,7 +49,7 @@ class ProxyHelper: NSObject {
     }
 
     func updateHttpProxy(endpoint: Endpoint?) throws {
-        try updateProxyConfigure { dic in
+        try updateConfigure(type: kSCNetworkProtocolTypeProxies) { dic in
             if let endpoint = endpoint {
                 dic[kCFNetworkProxiesHTTPProxy as String] = endpoint.connectableAddr as AnyObject
                 dic[kCFNetworkProxiesHTTPEnable as String] = 1 as AnyObject
@@ -68,8 +68,17 @@ class ProxyHelper: NSObject {
         }
     }
 
-    // swiftlint:disable function_body_length cyclomatic_complexity
-    private func updateProxyConfigure(with: @escaping (inout NSMutableDictionary) -> Void) throws {
+    func updateDns(endpoint: Endpoint?) throws {
+        try updateConfigure(type: kSCNetworkProtocolTypeDNS) { dic in
+            if let endpoint = endpoint {
+                dic[kSCPropNetDNSServerAddresses] = [endpoint.connectableAddr] as NSArray as AnyObject
+            } else {
+                dic.removeObject(forKey: kSCPropNetDNSServerAddresses)
+            }
+        }
+    }
+
+    private func updateConfigure(type: CFString, with: @escaping (inout NSMutableDictionary) -> Void) throws {
         guard let prefRef = SCPreferencesCreateWithAuthorization(nil,
                                                                  Bundle.main.bundleIdentifier! as CFString,
                                                                  nil, authRef) else {
@@ -109,26 +118,22 @@ class ProxyHelper: NSObject {
         }
 
         for service in ethernetServices {
-            guard let protoc = SCNetworkServiceCopyProtocol(service, kSCNetworkProtocolTypeProxies) else {
-                NSLog("Error: Failed to obtain proxy settings for \(SCNetworkServiceGetName(service)!)")
+            guard let protoc = SCNetworkServiceCopyProtocol(service, type) else {
+                NSLog("Error: Failed to obtain \(type) settings for \(SCNetworkServiceGetName(service)!)")
                 continue
             }
 
-            guard let config = SCNetworkProtocolGetConfiguration(protoc) else {
-                NSLog("Error: Failed to obtain proxy settings for \(SCNetworkServiceGetName(service)!)")
-                continue
-            }
+            let config = SCNetworkProtocolGetConfiguration(protoc)
 
-            // swiftlint:disable force_cast
-            var dic = (config as NSDictionary).mutableCopy() as! NSMutableDictionary
+            var dic = (config as NSDictionary?)?.mutableCopy() as? NSMutableDictionary ?? NSMutableDictionary()
             with(&dic)
 
             guard SCNetworkProtocolSetConfiguration(protoc, dic as CFDictionary) else {
-                NSLog("Error: Failed to set proxy settings for \(SCNetworkServiceGetName(service)!)")
+                NSLog("Error: Failed to set \(type) settings for \(SCNetworkServiceGetName(service)!)")
                 continue
             }
 
-            NSLog("Set proxy settings for \(SCNetworkServiceGetName(service)!)")
+            NSLog("Set \(type) settings for \(SCNetworkServiceGetName(service)!)")
         }
 
         guard SCPreferencesCommitChanges(prefRef) else {
