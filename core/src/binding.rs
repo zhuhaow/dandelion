@@ -58,7 +58,7 @@ type ExternalPayloadHandler<T> = extern "C" fn(
 );
 
 #[repr(C)]
-pub struct Context {
+pub struct Specht2Context {
     data: NonNull<c_void>,
     // We do not own ServerInfo or anything inside of it. Copy the string
     // immediately before te callback is returned.
@@ -78,9 +78,9 @@ pub struct Context {
     done_handler: extern "C" fn(context_data: NonNull<c_void>, err_str: *const c_char),
 }
 
-unsafe impl Send for Context {}
+unsafe impl Send for Specht2Context {}
 
-impl Context {
+impl Specht2Context {
     fn to_privilege_handler(&self) -> PrivilegeCallbackHandler<'_> {
         PrivilegeCallbackHandler {
             callback_data: self.data,
@@ -109,7 +109,7 @@ impl Context {
     }
 }
 
-impl Drop for Context {
+impl Drop for Specht2Context {
     fn drop(&mut self) {
         // Use this to make sure we are calling `done`, not accidentally releasing it.
         panic!("Callback must be called")
@@ -127,7 +127,7 @@ impl Drop for Context {
 pub unsafe extern "C" fn specht2_start(
     config_path: NonNull<c_char>,
     route_traffic: bool,
-    context: Context,
+    context: Specht2Context,
 ) -> NonNull<c_void> {
     let path_string = CStr::from_ptr(config_path.as_ptr())
         .to_string_lossy()

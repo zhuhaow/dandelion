@@ -8,8 +8,8 @@
 import Foundation
 import SystemConfiguration
 
-class ProxyHelper: NSObject, ProxyHelperInterface {
-    let authRef: AuthorizationRef!
+class ProxyHelper: NSObject {
+    let authRef: AuthorizationRef
 
     override init() {
         var auth: AuthorizationRef?
@@ -25,7 +25,7 @@ class ProxyHelper: NSObject, ProxyHelperInterface {
             NSLog("Error: No authorization has been granted to modify network configuration.")
         }
 
-        authRef = auth
+        authRef = auth!
 
         super.init()
     }
@@ -34,28 +34,42 @@ class ProxyHelper: NSObject, ProxyHelperInterface {
         AuthorizationFree(authRef, AuthorizationFlags())
     }
 
-    // swiftlint:disable function_parameter_count
-    func setProxy(setSocks5: Bool, socks5Address: String, socks5Port: UInt16,
-                  setHttp: Bool, httpAddress: String, httpPort: UInt16) {
-        var socksEndpoint: Endpoint?
-        var httpEndpoint: Endpoint?
-
-        if setSocks5 {
-            socksEndpoint = Endpoint(addr: socks5Address, port: socks5Port)
+    func updateSocks5Proxy(endpoint: Endpoint?) throws {
+        try updateProxyConfigure { dic in
+            if let endpoint = endpoint {
+                dic[kCFNetworkProxiesSOCKSProxy as String] = endpoint.connectableAddr as AnyObject
+                dic[kCFNetworkProxiesSOCKSEnable as String] = 1 as AnyObject
+                dic[kCFNetworkProxiesSOCKSPort as String] = endpoint.port as AnyObject
+            } else {
+                dic[kCFNetworkProxiesSOCKSProxy as String] = "" as AnyObject
+                dic[kCFNetworkProxiesSOCKSEnable as String] = 0 as AnyObject
+                dic[kCFNetworkProxiesSOCKSPort as String] = 0 as AnyObject
+            }
         }
-
-        if setHttp {
-            httpEndpoint = Endpoint(addr: httpAddress, port: httpPort)
-        }
-
-        updateProxy(httpProxy: httpEndpoint, socksProxy: socksEndpoint)
     }
 
-    func currentVersion(completionHandler: @escaping (String) -> Void) {
-        completionHandler(Constants.version)
+    func updateHttpProxy(endpoint: Endpoint?) throws {
+        try updateProxyConfigure { dic in
+            if let endpoint = endpoint {
+                dic[kCFNetworkProxiesHTTPProxy as String] = endpoint.connectableAddr as AnyObject
+                dic[kCFNetworkProxiesHTTPEnable as String] = 1 as AnyObject
+                dic[kCFNetworkProxiesHTTPSProxy as String] = endpoint.connectableAddr as AnyObject
+                dic[kCFNetworkProxiesHTTPSEnable as String] = 1 as AnyObject
+                dic[kCFNetworkProxiesHTTPSPort as String] = endpoint.port as AnyObject
+                dic[kCFNetworkProxiesHTTPPort as String] = endpoint.port as AnyObject
+            } else {
+                dic[kCFNetworkProxiesHTTPProxy as String] = "" as AnyObject
+                dic[kCFNetworkProxiesHTTPEnable as String] = 0 as AnyObject
+                dic[kCFNetworkProxiesHTTPSProxy as String] = "" as AnyObject
+                dic[kCFNetworkProxiesHTTPSEnable as String] = 0 as AnyObject
+                dic[kCFNetworkProxiesHTTPSPort as String] = 0 as AnyObject
+                dic[kCFNetworkProxiesHTTPPort as String] = 0 as AnyObject
+            }
+        }
     }
 
-    private func updateProxy(httpProxy: Endpoint?, socksProxy: Endpoint?) {
+    // swiftlint:disable function_body_length cyclomatic_complexity
+    private func updateProxyConfigure(with: @escaping (inout NSMutableDictionary) -> Void) throws {
         guard let prefRef = SCPreferencesCreateWithAuthorization(nil,
                                                                  Bundle.main.bundleIdentifier! as CFString,
                                                                  nil, authRef) else {
@@ -100,9 +114,16 @@ class ProxyHelper: NSObject, ProxyHelperInterface {
                 continue
             }
 
-            let proxySettings = buildProxyConfig(httpProxy: httpProxy, socksProxy: socksProxy)
+            guard let config = SCNetworkProtocolGetConfiguration(protoc) else {
+                NSLog("Error: Failed to obtain proxy settings for \(SCNetworkServiceGetName(service)!)")
+                continue
+            }
 
-            guard SCNetworkProtocolSetConfiguration(protoc, proxySettings as CFDictionary) else {
+            // swiftlint:disable force_cast
+            var dic = (config as NSDictionary).mutableCopy() as! NSMutableDictionary
+            with(&dic)
+
+            guard SCNetworkProtocolSetConfiguration(protoc, dic as CFDictionary) else {
                 NSLog("Error: Failed to set proxy settings for \(SCNetworkServiceGetName(service)!)")
                 continue
             }
@@ -119,55 +140,5 @@ class ProxyHelper: NSObject, ProxyHelperInterface {
             NSLog("Error: Failed to apply preference change")
             return
         }
-    }
-
-    private func buildProxyConfig(httpProxy: Endpoint?, socksProxy: Endpoint?) -> NSDictionary {
-        var proxySettings: [String: AnyObject] = [:]
-        if let httpProxy = httpProxy {
-            proxySettings[kCFNetworkProxiesHTTPProxy as String] = httpProxy.addr as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPEnable as String] = 1 as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPSProxy as String] = httpProxy.addr as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPSEnable as String] = 1 as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPSPort as String] = httpProxy.port as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPPort as String] = httpProxy.port as AnyObject
-        } else {
-            proxySettings[kCFNetworkProxiesHTTPProxy as String] = "" as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPEnable as String] = 0 as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPSProxy as String] = "" as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPSEnable as String] = 0 as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPSPort as String] = 0 as AnyObject
-            proxySettings[kCFNetworkProxiesHTTPPort as String] = 0 as AnyObject
-        }
-
-        if let socksProxy = socksProxy {
-            proxySettings[kCFNetworkProxiesSOCKSProxy as String] = socksProxy.addr as AnyObject
-            proxySettings[kCFNetworkProxiesSOCKSEnable as String] = 1 as AnyObject
-            proxySettings[kCFNetworkProxiesSOCKSPort as String] = socksProxy.port as AnyObject
-        } else {
-            proxySettings[kCFNetworkProxiesSOCKSProxy as String] = "" as AnyObject
-            proxySettings[kCFNetworkProxiesSOCKSEnable as String] = 0 as AnyObject
-            proxySettings[kCFNetworkProxiesSOCKSPort as String] = 0 as AnyObject
-        }
-
-        proxySettings[kCFNetworkProxiesExceptionsList as String] = [
-                                                                    "192.168.0.0/16",
-                                                                    "10.0.0.0/8",
-                                                                    "172.16.0.0/12",
-                                                                    "127.0.0.1",
-                                                                    "localhost",
-                                                                    "*.local"
-                                                                    ] as AnyObject
-
-        return proxySettings as NSDictionary
-    }
-}
-
-private class Endpoint {
-    let addr: String
-    let port: UInt16
-
-    init(addr: String, port: UInt16) {
-        self.addr = addr
-        self.port = port
     }
 }

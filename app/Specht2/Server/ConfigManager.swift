@@ -68,23 +68,12 @@ class ConfigManager {
         }
 
         Defaults[.activeConfig] = name
-        server.run(name: name, configUrl: configUrl) { event in
-            switch event {
-            case .beforeStarted:
-                if Defaults[.manageProxy] {
-                    setProxy()
-                }
-            case .completed(let result):
-                if Defaults[.manageProxy] {
-                    setProxy()
-                }
-
-                switch result {
-                case .success:
-                    break
-                case .failure(let error):
-                    Alert.alert(message: error)
-                }
+        server.run(name: name, configUrl: configUrl, routeTraffic: isManagingProxy()) { result in
+            switch result {
+            case .success:
+                break
+            case .failure(let error):
+                Alert.alert(message: error)
             }
         }
     }
@@ -98,10 +87,10 @@ class ConfigManager {
         reloadConfigs()
     }
 
-    static func clearUp() {
-        if isManagingProxy() {
-            clearProxy()
-        }
+    static func blockShutdown() {
+        let sem = DispatchSemaphore(value: 0)
+        server.shutdownWith(semaphore: sem)
+        sem.wait()
     }
 
     static func isRunning() -> Bool {
@@ -114,21 +103,11 @@ class ConfigManager {
 
     static func toggleManagingProxy() {
         Defaults[.manageProxy] = !Defaults[.manageProxy]
-        // Either we were managing proxy and we need to reset the settings
-        // or we need to set proxy now.
-        if Defaults[.manageProxy] {
-            setProxy()
-        } else {
-            clearProxy()
+
+        // Restart the server so the proxy setting will be updated.
+        if let name = Defaults[.activeConfig], configs.keys.contains(name) {
+            run(name: name)
         }
-    }
-
-    private static func setProxy() {
-        Proxy.setProxy(socks5: server.socks5, http: server.http)
-    }
-
-    private static func clearProxy() {
-        Proxy.setProxy(socks5: nil, http: nil)
     }
 }
 

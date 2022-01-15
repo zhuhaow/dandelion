@@ -7,4 +7,6 @@
 
 import Foundation
 
-XpcServer().start()
+_ = Server()
+
+RunLoop.main.run()

@@ -17,14 +17,15 @@
 		36298E23276C9EDB00A90377 /* Update.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E22276C9EDB00A90377 /* Update.swift */; };
 		36298E3F2774891F00A90377 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E3E2774891F00A90377 /* main.swift */; };
 		36298E472774898C00A90377 /* me.zhuhaow.Specht2.proxy-helper in Copy XPC Services */ = {isa = PBXBuildFile; fileRef = 36298E3C2774891F00A90377 /* me.zhuhaow.Specht2.proxy-helper */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		36298E4B2774940200A90377 /* XpcServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E4A2774940200A90377 /* XpcServer.swift */; };
+		36298E4B2774940200A90377 /* Server.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E4A2774940200A90377 /* Server.swift */; };
 		36298E4E2774946B00A90377 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E4D2774946B00A90377 /* Constants.swift */; };
 		36298E4F2774946F00A90377 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E4D2774946B00A90377 /* Constants.swift */; };
 		36298E51277497E300A90377 /* ProxyHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E50277497E300A90377 /* ProxyHelper.swift */; };
-		36298E532774982F00A90377 /* ProxyHelperInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E522774982F00A90377 /* ProxyHelperInterface.swift */; };
-		36298E542774982F00A90377 /* ProxyHelperInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E522774982F00A90377 /* ProxyHelperInterface.swift */; };
-		36298E582775749E00A90377 /* Proxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E572775749E00A90377 /* Proxy.swift */; };
+		36298E532774982F00A90377 /* ServiceInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E522774982F00A90377 /* ServiceInterface.swift */; };
+		36298E542774982F00A90377 /* ServiceInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E522774982F00A90377 /* ServiceInterface.swift */; };
 		36298E5A2778181600A90377 /* String+LocalizedError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E592778181600A90377 /* String+LocalizedError.swift */; };
+		363FB8D627910ED50019C630 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363FB8D527910ED50019C630 /* Endpoint.swift */; };
+		363FB8D727910ED50019C630 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363FB8D527910ED50019C630 /* Endpoint.swift */; };
 		36A843682753B7AA00E6201D /* core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36A843672753B79E00E6201D /* core.a */; };
 		36B37984276846F700445DF6 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 36B37983276846F700445DF6 /* Sparkle */; };
 		36B379892768559200445DF6 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = 36B379882768559200445DF6 /* Defaults */; };
@@ -34,6 +35,10 @@
 		36DBECF6273CE96B00D4A0DB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBECF5273CE96B00D4A0DB /* AppDelegate.swift */; };
 		36DBECFA273CE96C00D4A0DB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36DBECF9273CE96C00D4A0DB /* Assets.xcassets */; };
 		36DBED08273CE96C00D4A0DB /* Specht2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36DBED07273CE96C00D4A0DB /* Specht2Tests.swift */; };
+		36FFDC492791C1C2009FB8F4 /* SwiftyXPC in Frameworks */ = {isa = PBXBuildFile; productRef = 36FFDC482791C1C2009FB8F4 /* SwiftyXPC */; };
+		36FFDC4B279260A9009FB8F4 /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FFDC4A279260A9009FB8F4 /* Service.swift */; };
+		36FFDC4D2792CB87009FB8F4 /* core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36A843672753B79E00E6201D /* core.a */; };
+		36FFDC502792CD0B009FB8F4 /* SwiftyXPC in Frameworks */ = {isa = PBXBuildFile; productRef = 36FFDC4F2792CD0B009FB8F4 /* SwiftyXPC */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -107,15 +112,14 @@
 		36298E3E2774891F00A90377 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		36298E4827748D8F00A90377 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		36298E4927748E3200A90377 /* launchd.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = launchd.plist; sourceTree = "<group>"; };
-		36298E4A2774940200A90377 /* XpcServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XpcServer.swift; sourceTree = "<group>"; };
+		36298E4A2774940200A90377 /* Server.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Server.swift; sourceTree = "<group>"; };
 		36298E4D2774946B00A90377 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		36298E50277497E300A90377 /* ProxyHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyHelper.swift; sourceTree = "<group>"; };
-		36298E522774982F00A90377 /* ProxyHelperInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProxyHelperInterface.swift; sourceTree = "<group>"; };
-		36298E552775725F00A90377 /* NSXPCConnection+AuditToken.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSXPCConnection+AuditToken.h"; sourceTree = "<group>"; };
+		36298E522774982F00A90377 /* ServiceInterface.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceInterface.swift; sourceTree = "<group>"; };
 		36298E562775728700A90377 /* bridge-header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "bridge-header.h"; sourceTree = "<group>"; };
-		36298E572775749E00A90377 /* Proxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Proxy.swift; sourceTree = "<group>"; };
 		36298E592778181600A90377 /* String+LocalizedError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+LocalizedError.swift"; sourceTree = "<group>"; };
 		36298E5F277F0FF000A90377 /* uninstall.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = uninstall.sh; sourceTree = "<group>"; };
+		363FB8D527910ED50019C630 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
 		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
 		36A843672753B79E00E6201D /* core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = core.a; path = Specht2/core.a; sourceTree = "<group>"; };
 		36AD80CE2780273B00417A11 /* Specht2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Specht2.entitlements; sourceTree = "<group>"; };
@@ -130,6 +134,7 @@
 		36DBED03273CE96C00D4A0DB /* Specht2Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Specht2Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		36DBED07273CE96C00D4A0DB /* Specht2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Specht2Tests.swift; sourceTree = "<group>"; };
 		36DBED3D273D0A7100D4A0DB /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
+		36FFDC4A279260A9009FB8F4 /* Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -137,6 +142,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				36FFDC502792CD0B009FB8F4 /* SwiftyXPC in Frameworks */,
+				36FFDC4D2792CB87009FB8F4 /* core.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,6 +161,7 @@
 				36B379892768559200445DF6 /* Defaults in Frameworks */,
 				36A843682753B7AA00E6201D /* core.a in Frameworks */,
 				36B37984276846F700445DF6 /* Sparkle in Frameworks */,
+				36FFDC492791C1C2009FB8F4 /* SwiftyXPC in Frameworks */,
 				36298E1D276AE1FC00A90377 /* Then in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -174,9 +182,8 @@
 				36298E3E2774891F00A90377 /* main.swift */,
 				36298E4827748D8F00A90377 /* Info.plist */,
 				36298E4927748E3200A90377 /* launchd.plist */,
-				36298E4A2774940200A90377 /* XpcServer.swift */,
+				36298E4A2774940200A90377 /* Server.swift */,
 				36298E50277497E300A90377 /* ProxyHelper.swift */,
-				36298E552775725F00A90377 /* NSXPCConnection+AuditToken.h */,
 				36298E562775728700A90377 /* bridge-header.h */,
 			);
 			path = "me.zhuhaow.Specht2.proxy-helper";
@@ -186,7 +193,8 @@
 			isa = PBXGroup;
 			children = (
 				36298E4D2774946B00A90377 /* Constants.swift */,
-				36298E522774982F00A90377 /* ProxyHelperInterface.swift */,
+				36298E522774982F00A90377 /* ServiceInterface.swift */,
+				363FB8D527910ED50019C630 /* Endpoint.swift */,
 			);
 			path = ProxyHelperCommon;
 			sourceTree = "<group>";
@@ -212,9 +220,9 @@
 		36298E5D27786E0900A90377 /* Server */ = {
 			isa = PBXGroup;
 			children = (
-				36298E572775749E00A90377 /* Proxy.swift */,
 				36298E17276A2E0700A90377 /* ConfigManager.swift */,
 				36298E20276B0B5900A90377 /* Server.swift */,
+				36FFDC4A279260A9009FB8F4 /* Service.swift */,
 			);
 			path = Server;
 			sourceTree = "<group>";
@@ -296,6 +304,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 36298E402774891F00A90377 /* Build configuration list for PBXNativeTarget "me.zhuhaow.Specht2.proxy-helper" */;
 			buildPhases = (
+				36FFDC4C2792B6EA009FB8F4 /* Generate binding header */,
+				36FFDC4E2792CBAC009FB8F4 /* ShellScript */,
 				36298E382774891F00A90377 /* Sources */,
 				36298E392774891F00A90377 /* Frameworks */,
 				36298E3A2774891F00A90377 /* CopyFiles */,
@@ -305,6 +315,9 @@
 			dependencies = (
 			);
 			name = "me.zhuhaow.Specht2.proxy-helper";
+			packageProductDependencies = (
+				36FFDC4F2792CD0B009FB8F4 /* SwiftyXPC */,
+			);
 			productName = "me.zhuhaow.proxy-helper";
 			productReference = 36298E3C2774891F00A90377 /* me.zhuhaow.Specht2.proxy-helper */;
 			productType = "com.apple.product-type.tool";
@@ -349,6 +362,7 @@
 				36B37983276846F700445DF6 /* Sparkle */,
 				36B379882768559200445DF6 /* Defaults */,
 				36298E1C276AE1FC00A90377 /* Then */,
+				36FFDC482791C1C2009FB8F4 /* SwiftyXPC */,
 			);
 			productName = Specht2;
 			productReference = 36DBECF2273CE96B00D4A0DB /* Specht2.app */;
@@ -410,6 +424,7 @@
 				36B37982276846F700445DF6 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				36B379852768523F00445DF6 /* XCRemoteSwiftPackageReference "Defaults" */,
 				36298E1B276AE04200A90377 /* XCRemoteSwiftPackageReference "Then" */,
+				36FFDC472791C1C2009FB8F4 /* XCRemoteSwiftPackageReference "SwiftyXPC" */,
 			);
 			productRefGroup = 36DBECF3273CE96B00D4A0DB /* Products */;
 			projectDirPath = "";
@@ -488,6 +503,42 @@
 			shellPath = /bin/sh;
 			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\n\"${SRCROOT}/bin/build_core.sh\"\n";
 		};
+		36FFDC4C2792B6EA009FB8F4 /* Generate binding header */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Generate binding header";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\ncd \"${SRCROOT}/../core\"\ncbindgen --output \"${SRCROOT}/me.zhuhaow.Specht2.proxy-helper/core.h\"\n";
+		};
+		36FFDC4E2792CBAC009FB8F4 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\n\"${SRCROOT}/bin/build_core.sh\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -495,10 +546,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				36298E4B2774940200A90377 /* XpcServer.swift in Sources */,
+				36298E4B2774940200A90377 /* Server.swift in Sources */,
 				36298E3F2774891F00A90377 /* main.swift in Sources */,
 				36298E51277497E300A90377 /* ProxyHelper.swift in Sources */,
-				36298E542774982F00A90377 /* ProxyHelperInterface.swift in Sources */,
+				36298E542774982F00A90377 /* ServiceInterface.swift in Sources */,
+				363FB8D727910ED50019C630 /* Endpoint.swift in Sources */,
 				36298E4E2774946B00A90377 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -516,11 +568,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				36298E14276A2BE300A90377 /* main.swift in Sources */,
+				36FFDC4B279260A9009FB8F4 /* Service.swift in Sources */,
 				36C7958D276A0A2500D3C5F2 /* TaskBarController.swift in Sources */,
 				36298E23276C9EDB00A90377 /* Update.swift in Sources */,
+				363FB8D627910ED50019C630 /* Endpoint.swift in Sources */,
 				36298E5A2778181600A90377 /* String+LocalizedError.swift in Sources */,
-				36298E582775749E00A90377 /* Proxy.swift in Sources */,
-				36298E532774982F00A90377 /* ProxyHelperInterface.swift in Sources */,
+				36298E532774982F00A90377 /* ServiceInterface.swift in Sources */,
 				36298E18276A2E0700A90377 /* ConfigManager.swift in Sources */,
 				36298E4F2774946F00A90377 /* Constants.swift in Sources */,
 				36DBECF6273CE96B00D4A0DB /* AppDelegate.swift in Sources */,
@@ -567,6 +620,10 @@
 				DEVELOPMENT_TEAM = H5443445N6;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/$(TARGET_NAME)/Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Specht2",
+				);
 				OTHER_LDFLAGS = (
 					"-sectcreate",
 					__TEXT,
@@ -589,6 +646,10 @@
 				DEVELOPMENT_TEAM = H5443445N6;
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/$(TARGET_NAME)/Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Specht2",
+				);
 				OTHER_LDFLAGS = (
 					"-sectcreate",
 					__TEXT,
@@ -973,6 +1034,14 @@
 				minimumVersion = 6.0.0;
 			};
 		};
+		36FFDC472791C1C2009FB8F4 /* XCRemoteSwiftPackageReference "SwiftyXPC" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CharlesJS/SwiftyXPC";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.4.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -990,6 +1059,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 36B379852768523F00445DF6 /* XCRemoteSwiftPackageReference "Defaults" */;
 			productName = Defaults;
+		};
+		36FFDC482791C1C2009FB8F4 /* SwiftyXPC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 36FFDC472791C1C2009FB8F4 /* XCRemoteSwiftPackageReference "SwiftyXPC" */;
+			productName = SwiftyXPC;
+		};
+		36FFDC4F2792CD0B009FB8F4 /* SwiftyXPC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 36FFDC472791C1C2009FB8F4 /* XCRemoteSwiftPackageReference "SwiftyXPC" */;
+			productName = SwiftyXPC;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
