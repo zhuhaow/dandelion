@@ -162,7 +162,7 @@ func createTunInterfaceHandler(_: UnsafeMutableRawPointer,
         do {
             let service = try await Service.getDefaultService()
             let fileDescriptor = try await service.createTunInterface(subnet: String.init(cString: subnet))
-            callback!(callbackData, fileDescriptor.rawValue, nil)
+            callback!(callbackData, fileDescriptor.dup(), nil)
         } catch {
             callback!(callbackData, -1, error.localizedDescription)
         }
@@ -177,7 +177,6 @@ func doneHandler(userdata: UnsafeMutableRawPointer, error: UnsafePointer<CChar>?
         return
     }
 
-    // The conversion should never fail
     wrappedClosure.closure(.failure(String.init(cString: err)))
 }
 

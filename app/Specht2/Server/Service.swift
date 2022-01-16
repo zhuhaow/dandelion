@@ -108,7 +108,7 @@ extension Service: ServiceInterface {
         try await connection.sendMessage(name: ServiceInterfaceMethodName.setDns, request: endpoint)
     }
 
-    func createTunInterface(subnet: String) async throws -> FileDescriptor {
+    func createTunInterface(subnet: String) async throws -> XPCFileDescriptor {
         return try await connection.sendMessage(name: ServiceInterfaceMethodName.createTunInterface, request: subnet)
     }
 

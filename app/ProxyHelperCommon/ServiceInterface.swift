@@ -7,13 +7,14 @@
 
 import Foundation
 import System
+import SwiftyXPC
 
 protocol ServiceInterface {
     func setSocks5Proxy(endpoint: Endpoint?) async throws
     func setHttpProxy(endpoint: Endpoint?) async throws
     func setDns(endpoint: Endpoint?) async throws
 
-    func createTunInterface(subnet: String) async throws -> FileDescriptor
+    func createTunInterface(subnet: String) async throws -> XPCFileDescriptor
 
     func currentVersion() async throws -> String
 }

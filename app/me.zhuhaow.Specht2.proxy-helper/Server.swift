@@ -46,7 +46,7 @@ class Server: ServiceInterface {
         try await setDns(endpoint: endpoint)
     }
 
-    func createTunInterfaceWrapper(_: XPCConnection, subnet: String) async throws -> FileDescriptor {
+    func createTunInterfaceWrapper(_: XPCConnection, subnet: String) async throws -> XPCFileDescriptor {
         try await createTunInterface(subnet: subnet)
     }
 
@@ -66,12 +66,16 @@ class Server: ServiceInterface {
         try proxyHelper.updateDns(endpoint: endpoint)
     }
 
-    func createTunInterface(subnet: String) async throws -> FileDescriptor {
+    func createTunInterface(subnet: String) async throws -> XPCFileDescriptor {
         let fileDescriptor = subnet.withCString {
             specht2_create_tun(UnsafeMutablePointer(mutating: $0))
         }
 
-        return FileDescriptor(rawValue: fileDescriptor)
+        let xpcFileDescriptor = XPCFileDescriptor(fileDescriptor: fileDescriptor)
+        
+        close(fileDescriptor)
+        
+        return xpcFileDescriptor
     }
 
     func currentVersion() async throws -> String {
