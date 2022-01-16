@@ -105,7 +105,7 @@ mod tests {
     async fn resolve() -> Result<()> {
         let resolver = UdpResolver::new(
             "114.114.114.114:53".parse().unwrap(),
-            Duration::from_secs(2),
+            Duration::from_secs(5),
         )
         .await?;
 
