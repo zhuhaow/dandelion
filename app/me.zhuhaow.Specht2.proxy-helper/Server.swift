@@ -16,6 +16,8 @@ class Server: ServiceInterface {
     let proxyHelper = ProxyHelper()
 
     init() {
+        XPCErrorRegistry.shared.registerDomain(nil, forErrorType: FfiError.self)
+
         // swiftlint:disable force_try
         listener = try! XPCListener(type: .machService(name: Constants.helperMachLabel),
                                     codeSigningRequirement: Constants.clientCodeSignRequirements)
@@ -67,15 +69,23 @@ class Server: ServiceInterface {
     }
 
     func createTunInterface(subnet: String) async throws -> XPCFileDescriptor {
+        NSLog("Creating tun interface for \(subnet)")
+        
         let fileDescriptor = subnet.withCString {
             specht2_create_tun(UnsafeMutablePointer(mutating: $0))
         }
-
-        let xpcFileDescriptor = XPCFileDescriptor(fileDescriptor: fileDescriptor)
+                
+        if fileDescriptor < 0 {
+            let error = takeFfiLastError()!
+            NSLog("Failed to create tun interface: \(error)")
+            throw error
+        }
         
-        close(fileDescriptor)
+        defer {
+            close(fileDescriptor)
+        }
         
-        return xpcFileDescriptor
+        return XPCFileDescriptor(fileDescriptor: fileDescriptor)
     }
 
     func currentVersion() async throws -> String {

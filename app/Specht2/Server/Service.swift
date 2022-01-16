@@ -21,6 +21,7 @@ class Service {
     let connection: XPCConnection
 
     private init(connection: XPCConnection) {
+        XPCErrorRegistry.shared.registerDomain(nil, forErrorType: FfiError.self)
         self.connection = connection
     }
 

@@ -28,6 +28,8 @@
 		363FB8D727910ED50019C630 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363FB8D527910ED50019C630 /* Endpoint.swift */; };
 		369242CA2793DAD800B70B87 /* SwiftyXPC in Frameworks */ = {isa = PBXBuildFile; productRef = 369242C92793DAD800B70B87 /* SwiftyXPC */; };
 		369242CC2793DADC00B70B87 /* SwiftyXPC in Frameworks */ = {isa = PBXBuildFile; productRef = 369242CB2793DADC00B70B87 /* SwiftyXPC */; };
+		369242CE2793F91300B70B87 /* FfiError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369242CD2793F91300B70B87 /* FfiError.swift */; };
+		369242CF2793F91300B70B87 /* FfiError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369242CD2793F91300B70B87 /* FfiError.swift */; };
 		36A843682753B7AA00E6201D /* core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36A843672753B79E00E6201D /* core.a */; };
 		36B37984276846F700445DF6 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 36B37983276846F700445DF6 /* Sparkle */; };
 		36B379892768559200445DF6 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = 36B379882768559200445DF6 /* Defaults */; };
@@ -120,6 +122,7 @@
 		36298E592778181600A90377 /* String+LocalizedError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+LocalizedError.swift"; sourceTree = "<group>"; };
 		36298E5F277F0FF000A90377 /* uninstall.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = uninstall.sh; sourceTree = "<group>"; };
 		363FB8D527910ED50019C630 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
+		369242CD2793F91300B70B87 /* FfiError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FfiError.swift; sourceTree = "<group>"; };
 		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
 		36A843672753B79E00E6201D /* core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = core.a; path = Specht2/core.a; sourceTree = "<group>"; };
 		36AD80CE2780273B00417A11 /* Specht2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Specht2.entitlements; sourceTree = "<group>"; };
@@ -195,6 +198,7 @@
 				36298E4D2774946B00A90377 /* Constants.swift */,
 				36298E522774982F00A90377 /* ServiceInterface.swift */,
 				363FB8D527910ED50019C630 /* Endpoint.swift */,
+				369242CD2793F91300B70B87 /* FfiError.swift */,
 			);
 			path = ProxyHelperCommon;
 			sourceTree = "<group>";
@@ -551,6 +555,7 @@
 				36298E51277497E300A90377 /* ProxyHelper.swift in Sources */,
 				36298E542774982F00A90377 /* ServiceInterface.swift in Sources */,
 				363FB8D727910ED50019C630 /* Endpoint.swift in Sources */,
+				369242CF2793F91300B70B87 /* FfiError.swift in Sources */,
 				36298E4E2774946B00A90377 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -579,6 +584,7 @@
 				36DBECF6273CE96B00D4A0DB /* AppDelegate.swift in Sources */,
 				36298E1A276AD9BF00A90377 /* Autostart.swift in Sources */,
 				36298E21276B0B5900A90377 /* Server.swift in Sources */,
+				369242CE2793F91300B70B87 /* FfiError.swift in Sources */,
 				36298E1F276B01C500A90377 /* Alert.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
