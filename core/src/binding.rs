@@ -5,6 +5,7 @@ use crate::tun::device::{create_tun_as_raw_handle, Device, INVALID_DEVICE_HANDLE
 use crate::Result;
 use futures::future::AbortHandle;
 use ipnetwork::Ipv4Network;
+use libc::c_int;
 use rich_phantoms::PhantomInvariantAlwaysSendSync;
 use std::{
     ffi::{c_void, CStr, CString},
@@ -173,6 +174,11 @@ pub extern "C" fn specht2_stop(handle: NonNull<c_void>) {
 }
 
 #[no_mangle]
+pub extern "C" fn specht2_init_syslog(level: log::LevelFilter) {
+    syslog::init(syslog::Facility::LOG_USER, level, None).expect("Failed to init logger");
+}
+
+#[no_mangle]
 pub extern "C" fn specht2_create_tun(subnet: NonNull<c_char>) -> RawDeviceHandle {
     let subnet_string = unsafe { CStr::from_ptr(subnet.as_ptr()) }
         .to_string_lossy()
@@ -180,10 +186,38 @@ pub extern "C" fn specht2_create_tun(subnet: NonNull<c_char>) -> RawDeviceHandle
 
     let subnet = match subnet_string.parse() {
         Ok(subnet) => subnet,
-        Err(_) => return INVALID_DEVICE_HANDLE,
+        Err(err) => {
+            ffi_helpers::update_last_error(err);
+            return INVALID_DEVICE_HANDLE;
+        }
     };
 
-    create_tun_as_raw_handle(subnet).unwrap_or(INVALID_DEVICE_HANDLE)
+    match create_tun_as_raw_handle(subnet) {
+        Ok(fd) => fd,
+        Err(err) => {
+            ffi_helpers::update_last_error(err);
+            INVALID_DEVICE_HANDLE
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn specht2_get_last_error_len() -> c_int {
+    ffi_helpers::error_handling::last_error_length()
+}
+
+/// # Safety
+///
+/// We expect the buf be the specified length
+#[no_mangle]
+pub unsafe extern "C" fn specht2_take_last_error(mut buf: NonNull<c_char>, len: usize) -> c_int {
+    match ffi_helpers::error_handling::error_message_utf8(buf.as_mut(), len as c_int) {
+        -1 => -1,
+        result => {
+            ffi_helpers::error_handling::clear_last_error();
+            result
+        }
+    }
 }
 
 extern "C" fn handler_callback(sender: NonNull<c_void>, err_ptr: *const c_char) {

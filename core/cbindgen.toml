@@ -1,5 +1,9 @@
 language = "C"
 
+[parse]
+parse_deps = true
+include = ["log"]
+
 [defines]
 "target_os = macos" = "__APPLE__"
 "target_os = linux" = "__linux__"
