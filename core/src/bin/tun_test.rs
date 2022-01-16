@@ -7,6 +7,7 @@ use specht2_core::acceptor::Acceptor;
 use specht2_core::connector::tcp::TcpConnector;
 use specht2_core::connector::Connector;
 use specht2_core::resolver::udp::UdpResolver;
+use specht2_core::tun::listening_address_for_subnet;
 use specht2_core::tun::{device::Device, stack::create_stack};
 use specht2_core::Result;
 use tokio::io::copy_bidirectional;
@@ -31,17 +32,11 @@ async fn main() -> Result<()> {
         .await?,
     );
 
-    let stack = create_stack(
-        device,
-        ip_block,
-        resolver.clone(),
-        "10.128.0.1:8091".parse().unwrap(),
-    )
-    .await?;
+    let stack = create_stack(device, ip_block, resolver.clone()).await?;
 
     tokio::spawn(stack.0);
 
-    let listener = TcpListener::bind("10.128.0.1:8091").await?;
+    let listener = TcpListener::bind(listening_address_for_subnet(&ip_block)).await?;
 
     let acceptor = Arc::new(stack.1);
 

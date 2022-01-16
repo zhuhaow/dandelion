@@ -3,7 +3,12 @@ use super::{
     dns::FakeDns,
     translator::Translator,
 };
-use crate::{acceptor::Acceptor, resolver::Resolver, tun::acceptor::TunAcceptor, Result};
+use crate::{
+    acceptor::Acceptor,
+    resolver::Resolver,
+    tun::{acceptor::TunAcceptor, listening_address_for_subnet},
+    Result,
+};
 use anyhow::ensure;
 use bytes::{Bytes, BytesMut};
 use futures::{Future, StreamExt};
@@ -27,7 +32,6 @@ pub async fn create_stack<R: Resolver>(
     mut device: Device,
     subnet: Ipv4Network,
     resolver: R,
-    listening_addr: SocketAddrV4,
 ) -> Result<(impl Future<Output = ()>, impl Acceptor<TcpStream>)> {
     // It's easy to make them configurable but we don't need it yet.
     static MTU: usize = 1500;
@@ -43,6 +47,7 @@ pub async fn create_stack<R: Resolver>(
     );
 
     let dns_ip = subnet.ip();
+    let listening_addr = listening_address_for_subnet(&subnet);
 
     let mut iter = subnet.into_iter();
 

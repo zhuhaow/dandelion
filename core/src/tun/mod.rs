@@ -17,3 +17,10 @@ cfg_if::cfg_if! {
         pub use stack_win as stack;
     }
 }
+
+use ipnetwork::Ipv4Network;
+use std::net::SocketAddrV4;
+
+pub fn listening_address_for_subnet(subnet: &Ipv4Network) -> SocketAddrV4 {
+    SocketAddrV4::new(subnet.ip(), 8088)
+}

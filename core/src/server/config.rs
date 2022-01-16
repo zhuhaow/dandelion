@@ -22,6 +22,7 @@ use crate::{
     geoip::Source,
     resolver::{system::SystemResolver, udp::UdpResolver, Resolver},
     simplex::Config,
+    tun::listening_address_for_subnet,
     Result,
 };
 use anyhow::Error;
@@ -87,20 +88,19 @@ pub enum AcceptorConfig {
         addr: SocketAddr,
     },
     Tun {
-        listen_addr: SocketAddr,
         subnet: Ipv4Network,
     },
 }
 
 impl AcceptorConfig {
-    pub fn server_addr(&self) -> &SocketAddr {
+    pub fn server_addr(&self) -> SocketAddr {
         match self {
             AcceptorConfig::Socks5 { addr }
             | AcceptorConfig::Simplex { addr, .. }
-            | AcceptorConfig::Http { addr } => addr,
-            AcceptorConfig::Tun {
-                listen_addr: addr, ..
-            } => addr,
+            | AcceptorConfig::Http { addr } => *addr,
+            AcceptorConfig::Tun { subnet, .. } => {
+                SocketAddr::V4(listening_address_for_subnet(subnet))
+            }
         }
     }
 }

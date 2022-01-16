@@ -13,7 +13,6 @@ pub async fn create_stack<R: Resolver>(
     _device: Device,
     _subnet: Ipv4Network,
     _resolver: R,
-    _listening_addr: SocketAddrV4,
 ) -> Result<(impl Future<Output = ()>, impl Acceptor<TcpStream>)> {
     Err::<(Ready<()>, NoOpAcceptor), _>(anyhow::anyhow!("Not supported"))
 }

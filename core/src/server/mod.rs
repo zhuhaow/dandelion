@@ -5,6 +5,7 @@ pub mod privilege;
 use self::privilege::PrivilegeHandler;
 use crate::acceptor::http::HttpAcceptor;
 use crate::acceptor::AsDynAcceptorArc;
+
 use crate::tun::stack::create_stack;
 use crate::{
     acceptor::{simplex::SimplexAcceptor, socks5::Socks5Acceptor},
@@ -101,23 +102,12 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
                         Arc::new(HttpAcceptor::default()).as_dyn_acceptor(),
                         None,
                     )),
-                    AcceptorConfig::Tun {
-                        listen_addr,
-                        subnet,
-                    } => {
+                    AcceptorConfig::Tun { subnet } => {
                         let device = privilege_handler_ref.create_tun_interface(subnet).await?;
 
-                        let addr = match listen_addr {
-                            std::net::SocketAddr::V4(addr) => addr,
-                            std::net::SocketAddr::V6(_) => {
-                                bail!("Do not support Ipv6 for tun yet")
-                            }
-                        };
+                        let (fut, acceptor) = create_stack(device, *subnet, resolver).await?;
 
-                        let (fut, acceptor) =
-                            create_stack(device, *subnet, resolver, *addr).await?;
-
-                        Ok((
+                        Ok::<_, anyhow::Error>((
                             listener_stream,
                             Arc::new(acceptor).as_dyn_acceptor(),
                             Some(fut),
