@@ -325,7 +325,7 @@ impl PrivilegeHandler for PrivilegeCallbackHandler<'_> {
             unsafe {
                 (self.create_tun_interface_handler)(
                     self.callback_data,
-                    NonNull::new_unchecked(subnet_str.as_ptr() as *mut i8),
+                    NonNull::new_unchecked(subnet_str.as_ptr() as *mut c_char),
                     rawfd_handler_callback,
                     NonNull::new_unchecked(tx as *mut c_void),
                 )
