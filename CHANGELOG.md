@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.1.0
+
+**[App]** Add support for tun.
+**[Known Issue]** We can not correctly close tun interface. We need to kill the app and XPC service to bring down the tun interface.
+
 ## 0.0.14
 
 **[App]** Fix "too many files" error.
