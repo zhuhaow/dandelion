@@ -9,7 +9,6 @@ use std::{
     mem,
     os::unix::prelude::{AsRawFd, IntoRawFd, RawFd},
     pin::Pin,
-    sync::Arc,
     task::{Context, Poll},
 };
 use tokio::io::{unix::AsyncFd, AsyncRead, ReadBuf};
