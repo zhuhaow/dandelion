@@ -60,19 +60,19 @@ pub fn create_tun_as_raw_handle(subnet: Ipv4Network) -> Result<RawDeviceHandle> 
 }
 
 #[derive(Clone)]
-struct OwnedFd(Arc<RawFd>);
+struct OwnedFd(RawFd);
 
 impl AsRawFd for OwnedFd {
     fn as_raw_fd(&self) -> RawFd {
-        *self.0
+        self.0
     }
 }
 
 impl Drop for OwnedFd {
     fn drop(&mut self) {
         unsafe {
-            if *self.0 >= 0 {
-                libc::close(*self.0);
+            if self.0 >= 0 {
+                libc::close(self.0);
             }
         }
     }
@@ -135,7 +135,7 @@ impl Device {
 
     pub fn from_raw_device_handle(fd: RawDeviceHandle) -> Result<Self> {
         Ok(Self {
-            inner: AsyncFd::new(OwnedFd(Arc::new(fd)))?,
+            inner: AsyncFd::new(OwnedFd(fd))?,
         })
     }
 
