@@ -160,7 +160,7 @@ func createTunInterfaceHandler(_: UnsafeMutableRawPointer,
                                callback: ErrorPayloadCallback_RawDeviceHandle?,
                                callbackData: UnsafeMutableRawPointer) {
     let subnet = String.init(cString: subnet)
-    
+
     Task {
         do {
             let service = try await Service.getDefaultService()

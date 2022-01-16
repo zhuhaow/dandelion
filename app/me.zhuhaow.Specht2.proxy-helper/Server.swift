@@ -70,21 +70,21 @@ class Server: ServiceInterface {
 
     func createTunInterface(subnet: String) async throws -> XPCFileDescriptor {
         NSLog("Creating tun interface for \(subnet)")
-        
+
         let fileDescriptor = subnet.withCString {
             specht2_create_tun(UnsafeMutablePointer(mutating: $0))
         }
-                
+
         if fileDescriptor < 0 {
             let error = takeFfiLastError()!
             NSLog("Failed to create tun interface: \(error)")
             throw error
         }
-        
+
         defer {
             close(fileDescriptor)
         }
-        
+
         return XPCFileDescriptor(fileDescriptor: fileDescriptor)
     }
 

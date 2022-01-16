@@ -12,32 +12,29 @@ func takeFfiLastError() -> FfiError? {
     guard len > 0 else {
         return nil
     }
-    
+
     var buf = Data(count: Int(len))
-    
+
     return buf.withUnsafeMutableBytes {
         let ptr = $0.bindMemory(to: CChar.self)
         let result = specht2_take_last_error($0.bindMemory(to: CChar.self).baseAddress!, UInt(len))
-        
+
         guard result > 0 else {
             return nil
         }
-        
+
         return FfiError(String(cString: ptr.baseAddress!))
     }
 }
 
-struct FfiError: LocalizedError, Codable
-{
+struct FfiError: LocalizedError, Codable {
     let message: String
 
-    init(_ message: String)
-    {
+    init(_ message: String) {
         self.message = message
     }
 
-    public var errorDescription: String?
-    {
+    public var errorDescription: String? {
         return message
     }
 }
