@@ -1,21 +1,25 @@
 use super::Rule;
-use crate::{connector::BoxedConnector, endpoint::Endpoint};
+use crate::{connector::BoxedConnector, endpoint::Endpoint, resolver::Resolver};
 use ipnetwork::IpNetwork;
-use tokio::net::lookup_host;
 
-pub struct IpRule {
+pub struct IpRule<R: Resolver> {
     subnets: Vec<IpNetwork>,
     connector: BoxedConnector,
+    resolver: R,
 }
 
-impl IpRule {
-    pub fn new(subnets: Vec<IpNetwork>, connector: BoxedConnector) -> Self {
-        Self { subnets, connector }
+impl<R: Resolver> IpRule<R> {
+    pub fn new(subnets: Vec<IpNetwork>, connector: BoxedConnector, resolver: R) -> Self {
+        Self {
+            subnets,
+            connector,
+            resolver,
+        }
     }
 }
 
 #[async_trait::async_trait]
-impl Rule for IpRule {
+impl<R: Resolver> Rule for IpRule<R> {
     async fn check(&self, endpoint: &Endpoint) -> Option<&BoxedConnector> {
         match endpoint {
             Endpoint::Addr(addr) => {
@@ -25,11 +29,11 @@ impl Rule for IpRule {
                     }
                 }
             }
-            Endpoint::Domain(host, port) => {
-                let addrs = lookup_host((host.as_str(), *port)).await.ok()?;
-                for addr in addrs {
+            Endpoint::Domain(host, _) => {
+                let ips = self.resolver.lookup_ip(host.as_str()).await.ok()?;
+                for ip in ips {
                     for network in self.subnets.iter() {
-                        if network.contains(addr.ip()) {
+                        if network.contains(ip) {
                             return Some(&self.connector);
                         }
                     }

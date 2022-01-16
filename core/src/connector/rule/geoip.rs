@@ -1,34 +1,36 @@
 use super::Rule;
-use crate::{connector::BoxedConnector, endpoint::Endpoint};
+use crate::{connector::BoxedConnector, endpoint::Endpoint, resolver::Resolver};
 use iso3166_1::CountryCode;
 use maxminddb::{geoip2::Country, MaxMindDBError, Reader};
 use memmap2::Mmap;
 use std::{net::IpAddr, sync::Arc};
-use tokio::net::lookup_host;
 
 /// GeoRule matches the geo location of the endpoint based on IP address.
 ///
 /// It only matches when the IP addresses can be obtained either they are
 /// provided directly or we can resolve the host name successfully.
-pub struct GeoRule {
+pub struct GeoRule<R: Resolver> {
     connector: BoxedConnector,
     reader: Arc<Reader<Mmap>>,
     country: Option<CountryCode<'static>>,
     equal: bool,
+    resolver: R,
 }
 
-impl GeoRule {
+impl<R: Resolver> GeoRule<R> {
     pub fn new(
         connector: BoxedConnector,
         reader: Arc<Reader<Mmap>>,
         country: Option<CountryCode<'static>>,
         equal: bool,
+        resolver: R,
     ) -> Self {
         Self {
             connector,
             reader,
             country,
             equal,
+            resolver,
         }
     }
 
@@ -53,7 +55,7 @@ impl GeoRule {
 }
 
 #[async_trait::async_trait]
-impl Rule for GeoRule {
+impl<R: Resolver> Rule for GeoRule<R> {
     async fn check(&self, endpoint: &Endpoint) -> Option<&BoxedConnector> {
         match endpoint {
             Endpoint::Addr(addr) => {
@@ -61,10 +63,10 @@ impl Rule for GeoRule {
                     return Some(&self.connector);
                 }
             }
-            Endpoint::Domain(host, port) => {
-                let addrs = lookup_host((host.as_str(), *port)).await.ok()?;
-                for addr in addrs {
-                    if self.match_ip(&addr.ip()) == Some(self.equal) {
+            Endpoint::Domain(host, _) => {
+                let ips = self.resolver.lookup_ip(host.as_str()).await.ok()?;
+                for ip in ips {
+                    if self.match_ip(&ip) == Some(self.equal) {
                         return Some(&self.connector);
                     }
                 }

@@ -173,6 +173,7 @@ fn get_rule_connector<'a>(
                 )),
                 RuleEntry::DnsFail(ind) => Box::new(DnsFailRule::new(
                     get_connector(connectors, ind, resolver.clone()).await?,
+                    resolver.clone(),
                 )),
                 RuleEntry::Domain { modes, index } => Box::new(DomainRule::new(
                     modes.clone(),
@@ -193,10 +194,12 @@ fn get_rule_connector<'a>(
                         .await?,
                     country.clone(),
                     *equal,
+                    resolver.clone(),
                 )),
                 RuleEntry::Ip { subnets, index } => Box::new(IpRule::new(
                     subnets.clone(),
                     get_connector(connectors, index, resolver.clone()).await?,
+                    resolver.clone(),
                 )),
             };
 
