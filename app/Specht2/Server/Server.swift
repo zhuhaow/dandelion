@@ -158,10 +158,12 @@ func createTunInterfaceHandler(_: UnsafeMutableRawPointer,
                                subnet: UnsafeMutablePointer<CChar>,
                                callback: ErrorPayloadCallback_RawDeviceHandle?,
                                callbackData: UnsafeMutableRawPointer) {
+    let subnet = String.init(cString: subnet)
+    
     Task {
         do {
             let service = try await Service.getDefaultService()
-            let fileDescriptor = try await service.createTunInterface(subnet: String.init(cString: subnet))
+            let fileDescriptor = try await service.createTunInterface(subnet: subnet)
             callback!(callbackData, fileDescriptor.dup(), nil)
         } catch {
             callback!(callbackData, -1, error.localizedDescription)
