@@ -81,10 +81,6 @@ class Server: ServiceInterface {
             throw error
         }
 
-        defer {
-            close(fileDescriptor)
-        }
-
         return XPCFileDescriptor(fileDescriptor: fileDescriptor)
     }
 
