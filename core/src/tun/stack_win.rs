@@ -6,7 +6,6 @@ use crate::Result;
 use futures::future::Ready;
 use futures::Future;
 use ipnetwork::Ipv4Network;
-use std::net::SocketAddrV4;
 use tokio::net::TcpStream;
 
 pub async fn create_stack<R: Resolver>(
