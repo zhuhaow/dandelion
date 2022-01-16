@@ -16,9 +16,12 @@ use crate::{
 };
 use anyhow::bail;
 use futures::future::{AbortRegistration, Abortable};
+use futures::Stream;
 use futures::{future::try_join_all, stream::select_all, StreamExt, TryStreamExt};
 use log::{debug, warn};
+use std::net::SocketAddr;
 use std::sync::Arc;
+use tokio::net::TcpStream;
 use tokio::task::JoinHandle;
 use tokio::{io::copy_bidirectional, net::TcpListener};
 use tokio_stream::wrappers::TcpListenerStream;
@@ -73,13 +76,16 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
         let streams = try_join_all(config.acceptors.iter().map(|c| {
             let resolver = resolver.clone();
             async move {
-                let listener_stream =
-                    TcpListenerStream::new(TcpListener::bind(c.server_addr()).await?)
-                        .map_err(Into::<anyhow::Error>::into);
+                async fn create_stream(
+                    addr: SocketAddr,
+                ) -> Result<impl Stream<Item = Result<TcpStream>>> {
+                    Ok(TcpListenerStream::new(TcpListener::bind(addr).await?)
+                        .map_err(Into::<anyhow::Error>::into))
+                }
 
                 match c {
                     AcceptorConfig::Socks5 { .. } => Ok((
-                        listener_stream,
+                        create_stream(c.server_addr()).await?,
                         Arc::new(Socks5Acceptor::default()).as_dyn_acceptor(),
                         None,
                     )),
@@ -89,7 +95,7 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
                         secret_value,
                         ..
                     } => Ok((
-                        listener_stream,
+                        create_stream(c.server_addr()).await?,
                         Arc::new(SimplexAcceptor::new(Config::new(
                             path.to_string(),
                             (secret_key.to_string(), secret_value.to_string()),
@@ -98,7 +104,7 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
                         None,
                     )),
                     AcceptorConfig::Http { .. } => Ok((
-                        listener_stream,
+                        create_stream(c.server_addr()).await?,
                         Arc::new(HttpAcceptor::default()).as_dyn_acceptor(),
                         None,
                     )),
@@ -108,7 +114,7 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
                         let (fut, acceptor) = create_stack(device, *subnet, resolver).await?;
 
                         Ok::<_, anyhow::Error>((
-                            listener_stream,
+                            create_stream(c.server_addr()).await?,
                             Arc::new(acceptor).as_dyn_acceptor(),
                             Some(fut),
                         ))
@@ -144,7 +150,7 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
                     }
                     AcceptorConfig::Tun { subnet, .. } => {
                         privilege_handler
-                            .set_dns(Some((subnet.iter().next().unwrap(), 53).into()))
+                            .set_dns(Some((subnet.ip(), 53).into()))
                             .await?
                     }
                 }
