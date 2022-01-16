@@ -53,6 +53,7 @@ class Server {
         afterStop = nil
         stopHandle = startServer(configUrl: configUrl, routeTraffic: routeTraffic) { result in
             self.queue.async {
+                self.stopHandle = nil
                 doneCallback(result)
                 self.afterStop?()
             }
