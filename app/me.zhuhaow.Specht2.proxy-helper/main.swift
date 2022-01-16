@@ -7,6 +7,8 @@
 
 import Foundation
 
+specht2_init_syslog(UInt(Info.rawValue))
+
 _ = Server()
 
 RunLoop.main.run()
