@@ -15,6 +15,7 @@ use crate::{
         socks5::Socks5Connector,
         speed::SpeedConnector,
         tcp::TcpConnector,
+        tcp_pool::TcpPoolConnector,
         tls::TlsConnector,
         BoxedConnector, Connector,
     },
@@ -214,6 +215,11 @@ fn get_rule_connector<'a>(
 #[derive(Debug, Deserialize)]
 pub enum ConnectorConfig {
     Direct,
+    Pool {
+        #[serde_as(as = "DisplayFromStr")]
+        endpoint: Endpoint,
+        size: usize,
+    },
     Simplex {
         #[serde_as(as = "DisplayFromStr")]
         endpoint: Endpoint,
@@ -247,6 +253,9 @@ impl ConnectorConfig {
     pub async fn get_connector(&self, resolver: Arc<dyn Resolver>) -> Result<BoxedConnector> {
         match self {
             ConnectorConfig::Direct => Ok(TcpConnector::new(resolver).boxed()),
+            ConnectorConfig::Pool { endpoint, size } => {
+                Ok(TcpPoolConnector::new(resolver.clone(), endpoint.clone(), *size).boxed())
+            }
             ConnectorConfig::Simplex {
                 endpoint,
                 path,

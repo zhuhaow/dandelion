@@ -5,6 +5,7 @@ pub mod simplex;
 pub mod socks5;
 pub mod speed;
 pub mod tcp;
+pub mod tcp_pool;
 pub mod tls;
 
 use crate::{endpoint::Endpoint, io::Io, Result};

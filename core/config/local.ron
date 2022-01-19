@@ -1,5 +1,5 @@
 ServerConfig (
-    resolver: System,
+    resolver: Udp("114.114.114.114:53", 3000),
     acceptors:
         [Socks5(
             addr: "127.0.0.1:8086",
@@ -8,7 +8,10 @@ ServerConfig (
         Speed([
             (100, Socks5(
                     endpoint: "127.0.0.1:8088",
-                    next: Direct
+                    next: Pool(
+                        endpoint: "127.0.0.1:8088",
+                        size: 10,
+                    )
                 )),
             (0, Direct)
         ])
