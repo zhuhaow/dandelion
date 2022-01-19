@@ -24,10 +24,10 @@
 		36298E532774982F00A90377 /* ServiceInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E522774982F00A90377 /* ServiceInterface.swift */; };
 		36298E542774982F00A90377 /* ServiceInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E522774982F00A90377 /* ServiceInterface.swift */; };
 		36298E5A2778181600A90377 /* String+LocalizedError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36298E592778181600A90377 /* String+LocalizedError.swift */; };
+		3638C03D279812BD00913484 /* SwiftyXPC in Frameworks */ = {isa = PBXBuildFile; productRef = 3638C03C279812BD00913484 /* SwiftyXPC */; };
+		3638C03F279812CC00913484 /* SwiftyXPC in Frameworks */ = {isa = PBXBuildFile; productRef = 3638C03E279812CC00913484 /* SwiftyXPC */; };
 		363FB8D627910ED50019C630 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363FB8D527910ED50019C630 /* Endpoint.swift */; };
 		363FB8D727910ED50019C630 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363FB8D527910ED50019C630 /* Endpoint.swift */; };
-		369242CA2793DAD800B70B87 /* SwiftyXPC in Frameworks */ = {isa = PBXBuildFile; productRef = 369242C92793DAD800B70B87 /* SwiftyXPC */; };
-		369242CC2793DADC00B70B87 /* SwiftyXPC in Frameworks */ = {isa = PBXBuildFile; productRef = 369242CB2793DADC00B70B87 /* SwiftyXPC */; };
 		369242CE2793F91300B70B87 /* FfiError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369242CD2793F91300B70B87 /* FfiError.swift */; };
 		369242CF2793F91300B70B87 /* FfiError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369242CD2793F91300B70B87 /* FfiError.swift */; };
 		36A843682753B7AA00E6201D /* core.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36A843672753B79E00E6201D /* core.a */; };
@@ -145,7 +145,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				369242CC2793DADC00B70B87 /* SwiftyXPC in Frameworks */,
+				3638C03F279812CC00913484 /* SwiftyXPC in Frameworks */,
 				36FFDC4D2792CB87009FB8F4 /* core.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -164,7 +164,7 @@
 				36B379892768559200445DF6 /* Defaults in Frameworks */,
 				36A843682753B7AA00E6201D /* core.a in Frameworks */,
 				36B37984276846F700445DF6 /* Sparkle in Frameworks */,
-				369242CA2793DAD800B70B87 /* SwiftyXPC in Frameworks */,
+				3638C03D279812BD00913484 /* SwiftyXPC in Frameworks */,
 				36298E1D276AE1FC00A90377 /* Then in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -320,7 +320,7 @@
 			);
 			name = "me.zhuhaow.Specht2.proxy-helper";
 			packageProductDependencies = (
-				369242CB2793DADC00B70B87 /* SwiftyXPC */,
+				3638C03E279812CC00913484 /* SwiftyXPC */,
 			);
 			productName = "me.zhuhaow.proxy-helper";
 			productReference = 36298E3C2774891F00A90377 /* me.zhuhaow.Specht2.proxy-helper */;
@@ -366,7 +366,7 @@
 				36B37983276846F700445DF6 /* Sparkle */,
 				36B379882768559200445DF6 /* Defaults */,
 				36298E1C276AE1FC00A90377 /* Then */,
-				369242C92793DAD800B70B87 /* SwiftyXPC */,
+				3638C03C279812BD00913484 /* SwiftyXPC */,
 			);
 			productName = Specht2;
 			productReference = 36DBECF2273CE96B00D4A0DB /* Specht2.app */;
@@ -428,7 +428,7 @@
 				36B37982276846F700445DF6 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				36B379852768523F00445DF6 /* XCRemoteSwiftPackageReference "Defaults" */,
 				36298E1B276AE04200A90377 /* XCRemoteSwiftPackageReference "Then" */,
-				36FFDC512793D0FE009FB8F4 /* XCRemoteSwiftPackageReference "SwiftyXPC" */,
+				3638C03B279812BD00913484 /* XCRemoteSwiftPackageReference "SwiftyXPC" */,
 			);
 			productRefGroup = 36DBECF3273CE96B00D4A0DB /* Products */;
 			projectDirPath = "";
@@ -1024,6 +1024,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		3638C03B279812BD00913484 /* XCRemoteSwiftPackageReference "SwiftyXPC" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CharlesJS/SwiftyXPC";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.0;
+			};
+		};
 		36B37982276846F700445DF6 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sparkle-project/Sparkle";
@@ -1040,14 +1048,6 @@
 				minimumVersion = 6.0.0;
 			};
 		};
-		36FFDC512793D0FE009FB8F4 /* XCRemoteSwiftPackageReference "SwiftyXPC" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/zhuhaow/SwiftyXPC";
-			requirement = {
-				branch = owned_fd;
-				kind = branch;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1056,14 +1056,14 @@
 			package = 36298E1B276AE04200A90377 /* XCRemoteSwiftPackageReference "Then" */;
 			productName = Then;
 		};
-		369242C92793DAD800B70B87 /* SwiftyXPC */ = {
+		3638C03C279812BD00913484 /* SwiftyXPC */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 36FFDC512793D0FE009FB8F4 /* XCRemoteSwiftPackageReference "SwiftyXPC" */;
+			package = 3638C03B279812BD00913484 /* XCRemoteSwiftPackageReference "SwiftyXPC" */;
 			productName = SwiftyXPC;
 		};
-		369242CB2793DADC00B70B87 /* SwiftyXPC */ = {
+		3638C03E279812CC00913484 /* SwiftyXPC */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 36FFDC512793D0FE009FB8F4 /* XCRemoteSwiftPackageReference "SwiftyXPC" */;
+			package = 3638C03B279812BD00913484 /* XCRemoteSwiftPackageReference "SwiftyXPC" */;
 			productName = SwiftyXPC;
 		};
 		36B37983276846F700445DF6 /* Sparkle */ = {
