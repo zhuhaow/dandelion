@@ -78,6 +78,16 @@ class ProxyHelper: NSObject {
         }
     }
 
+    func flushDnsCache() throws {
+        let process = Process()
+
+        process.arguments = ["-HUP", "mDNSResponder"]
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
+
+        try process.run()
+        process.waitUntilExit()
+    }
+
     private func updateConfigure(type: CFString, with: @escaping (inout NSMutableDictionary) -> Void) throws {
         guard let prefRef = SCPreferencesCreateWithAuthorization(nil,
                                                                  Bundle.main.bundleIdentifier! as CFString,

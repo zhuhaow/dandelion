@@ -66,6 +66,7 @@ class Server: ServiceInterface {
 
     func setDns(endpoint: Endpoint?) async throws {
         try proxyHelper.updateDns(endpoint: endpoint)
+        try proxyHelper.flushDnsCache()
     }
 
     func createTunInterface(subnet: String) async throws -> XPCFileDescriptor {
