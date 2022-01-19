@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.2.0
+
+**[App]** Flush DNS cache when we update system DNS configuration
+
+### Fix
+
+**[App]** Fix file description leak when using tun interface
+
 ## 0.1.0
 
 **[App]** Add support for tun.
