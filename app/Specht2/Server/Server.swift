@@ -165,7 +165,7 @@ func createTunInterfaceHandler(_: UnsafeMutableRawPointer,
         do {
             let service = try await Service.getDefaultService()
             let fileDescriptor = try await service.createTunInterface(subnet: subnet)
-            callback!(callbackData, fileDescriptor.dup(), nil)
+            callback!(callbackData, try fileDescriptor.dup(), nil)
         } catch {
             callback!(callbackData, -1, error.localizedDescription)
         }
