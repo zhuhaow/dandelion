@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.3.0
+
+Add support for connection pool
+
 ## 0.2.0
 
 **[App]** Flush DNS cache when we update system DNS configuration
