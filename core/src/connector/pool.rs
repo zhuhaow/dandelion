@@ -58,7 +58,7 @@ impl<C: Connector + Clone + 'static> Connector for PoolConnector<C> {
         let mut pool = self.pool.lock().await;
 
         while let Some(result) = pool.pop_front() {
-            // pool is already locked so we won't have the fill() fill
+            // pool is already locked so we won't have the fill() filling
             // connection to the pool at the same time
             self.fill();
 
