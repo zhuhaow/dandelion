@@ -1,43 +1,39 @@
-use super::tcp::TcpConnector;
 use super::Connector;
 use crate::endpoint::Endpoint;
-use crate::resolver::Resolver;
 use crate::Result;
 use anyhow::ensure;
 use std::collections::VecDeque;
 use std::sync::Arc;
-use tokio::net::TcpStream;
 use tokio::sync::Mutex;
 
-pub struct TcpPoolConnector<R: Resolver + Clone + 'static> {
-    resolver: R,
+pub struct PoolConnector<C: Connector + Clone + 'static> {
     endpoint: Endpoint,
+    connector: C,
     // Here we use Result instead of using the stream directly. This helps us to
     // provide a natural backpressure if the there is issue with network that
     // all connections will fail.
-    pool: Arc<Mutex<VecDeque<Result<TcpStream>>>>,
+    pool: Arc<Mutex<VecDeque<Result<C::Stream>>>>,
 }
 
-impl<R: Resolver + Clone + 'static> TcpPoolConnector<R> {
-    pub fn new(resolver: R, endpoint: Endpoint, size: usize) -> Self {
-        let connector = Self {
-            resolver,
+impl<C: Connector + Clone + 'static> PoolConnector<C> {
+    pub fn new(connector: C, endpoint: Endpoint, size: usize) -> Self {
+        let c = Self {
             endpoint,
+            connector,
             pool: Arc::new(Mutex::new(VecDeque::with_capacity(size))),
         };
 
         for _ in 0..size {
-            connector.fill();
+            c.fill();
         }
 
-        connector
+        c
     }
 
     fn fill(&self) {
-        let connector = TcpConnector::new(self.resolver.clone());
-
         let endpoint = self.endpoint.clone();
         let pool = self.pool.clone();
+        let connector = self.connector.clone();
 
         tokio::spawn(async move {
             pool.lock()
@@ -48,8 +44,8 @@ impl<R: Resolver + Clone + 'static> TcpPoolConnector<R> {
 }
 
 #[async_trait::async_trait]
-impl<R: Resolver + Clone + 'static> Connector for TcpPoolConnector<R> {
-    type Stream = TcpStream;
+impl<C: Connector + Clone + 'static> Connector for PoolConnector<C> {
+    type Stream = C::Stream;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
         ensure!(
@@ -71,8 +67,6 @@ impl<R: Resolver + Clone + 'static> Connector for TcpPoolConnector<R> {
             }
         }
 
-        let connector = TcpConnector::new(self.resolver.clone());
-
-        connector.connect(endpoint).await
+        self.connector.connect(endpoint).await
     }
 }

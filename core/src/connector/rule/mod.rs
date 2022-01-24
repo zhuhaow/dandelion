@@ -4,23 +4,28 @@ pub mod domain;
 pub mod geoip;
 pub mod ip;
 
-use super::{BoxedConnector, Connector};
-use crate::{endpoint::Endpoint, io::Io, Result};
+use super::Connector;
+use crate::{endpoint::Endpoint, Result};
 use anyhow::anyhow;
+use std::marker::PhantomData;
 
-pub struct RuleConnector {
-    rules: Vec<Box<dyn Rule>>,
+pub struct RuleConnector<C: Connector> {
+    rules: Vec<Box<dyn Rule<C>>>,
+    _marker: PhantomData<C>,
 }
 
-impl RuleConnector {
-    pub fn new(rules: Vec<Box<dyn Rule>>) -> Self {
-        Self { rules }
+impl<C: Connector> RuleConnector<C> {
+    pub fn new(rules: Vec<Box<dyn Rule<C>>>) -> Self {
+        Self {
+            rules,
+            _marker: Default::default(),
+        }
     }
 }
 
 #[async_trait::async_trait]
-impl Connector for RuleConnector {
-    type Stream = Box<dyn Io>;
+impl<C: Connector> Connector for RuleConnector<C> {
+    type Stream = C::Stream;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
         for rule in self.rules.iter() {
@@ -35,6 +40,6 @@ impl Connector for RuleConnector {
 }
 
 #[async_trait::async_trait]
-pub trait Rule: Sync + Send {
-    async fn check(&self, endpoint: &Endpoint) -> Option<&BoxedConnector>;
+pub trait Rule<C: Connector>: Sync + Send {
+    async fn check(&self, endpoint: &Endpoint) -> Option<&C>;
 }

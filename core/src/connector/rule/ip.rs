@@ -1,15 +1,15 @@
 use super::Rule;
-use crate::{connector::BoxedConnector, endpoint::Endpoint, resolver::Resolver};
+use crate::{connector::Connector, endpoint::Endpoint, resolver::Resolver};
 use ipnetwork::IpNetwork;
 
-pub struct IpRule<R: Resolver> {
+pub struct IpRule<R: Resolver, C: Connector> {
     subnets: Vec<IpNetwork>,
-    connector: BoxedConnector,
+    connector: C,
     resolver: R,
 }
 
-impl<R: Resolver> IpRule<R> {
-    pub fn new(subnets: Vec<IpNetwork>, connector: BoxedConnector, resolver: R) -> Self {
+impl<R: Resolver, C: Connector> IpRule<R, C> {
+    pub fn new(subnets: Vec<IpNetwork>, connector: C, resolver: R) -> Self {
         Self {
             subnets,
             connector,
@@ -19,8 +19,8 @@ impl<R: Resolver> IpRule<R> {
 }
 
 #[async_trait::async_trait]
-impl<R: Resolver> Rule for IpRule<R> {
-    async fn check(&self, endpoint: &Endpoint) -> Option<&BoxedConnector> {
+impl<R: Resolver, C: Connector> Rule<C> for IpRule<R, C> {
+    async fn check(&self, endpoint: &Endpoint) -> Option<&C> {
         match endpoint {
             Endpoint::Addr(addr) => {
                 for network in self.subnets.iter() {

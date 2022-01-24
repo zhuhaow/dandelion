@@ -5,7 +5,6 @@ pub mod privilege;
 use self::privilege::PrivilegeHandler;
 use crate::acceptor::http::HttpAcceptor;
 use crate::acceptor::AsDynAcceptorArc;
-
 use crate::tun::stack::create_stack;
 use crate::{
     acceptor::{simplex::SimplexAcceptor, socks5::Socks5Acceptor},
@@ -136,7 +135,7 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
 
         let mut listeners = select_all(streams);
 
-        let connector = Arc::new(config.connector.get_connector(resolver).await?);
+        let connector = config.connector.get_connector(resolver).await?;
 
         if route_traffic {
             for c in config.acceptors.iter() {

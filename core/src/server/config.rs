@@ -3,6 +3,7 @@ use crate::{
     connector::{
         block::BlockConnector,
         http::HttpConnector,
+        pool::PoolConnector,
         rule::{
             all::AllRule,
             dns_fail::DnsFailRule,
@@ -15,9 +16,8 @@ use crate::{
         socks5::Socks5Connector,
         speed::SpeedConnector,
         tcp::TcpConnector,
-        tcp_pool::TcpPoolConnector,
         tls::TlsConnector,
-        BoxedConnector, Connector,
+        ArcConnector, Connector,
     },
     endpoint::Endpoint,
     geoip::Source,
@@ -146,13 +146,13 @@ fn get_rule_connector<'a>(
     connectors: &'a HashMap<String, Box<ConnectorConfig>>,
     rules: &'a [RuleEntry],
     resolver: Arc<dyn Resolver>,
-) -> impl Future<Output = Result<BoxedConnector>> + 'a {
+) -> impl Future<Output = Result<ArcConnector>> + 'a {
     #[allow(clippy::manual_async_fn)]
     fn get_connector<'a>(
         connectors: &'a HashMap<String, Box<ConnectorConfig>>,
         ind: &'a str,
         resolver: Arc<dyn Resolver>,
-    ) -> impl Future<Output = Result<BoxedConnector>> + 'a {
+    ) -> impl Future<Output = Result<ArcConnector>> + 'a {
         async move {
             let config = connectors
                 .get(ind)
@@ -166,9 +166,9 @@ fn get_rule_connector<'a>(
         let mut geo_ip_builder = geoip_config
             .as_ref()
             .map(|s| GeoIpBuilder::new(s.to_owned()));
-        let mut connector_rules: Vec<Box<dyn Rule>> = Vec::new();
+        let mut connector_rules: Vec<Box<dyn Rule<ArcConnector>>> = Vec::new();
         for entry in rules.iter() {
-            let rule: Box<dyn Rule> = match entry {
+            let rule: Box<dyn Rule<_>> = match entry {
                 RuleEntry::All(ind) => Box::new(AllRule::new(
                     get_connector(connectors, ind, resolver.clone()).await?,
                 )),
@@ -207,7 +207,7 @@ fn get_rule_connector<'a>(
             connector_rules.push(rule);
         }
 
-        Ok(RuleConnector::new(connector_rules).boxed())
+        Ok(RuleConnector::new(connector_rules).arc())
     }
 }
 
@@ -219,6 +219,7 @@ pub enum ConnectorConfig {
         #[serde_as(as = "DisplayFromStr")]
         endpoint: Endpoint,
         size: usize,
+        next: Box<ConnectorConfig>,
     },
     Simplex {
         #[serde_as(as = "DisplayFromStr")]
@@ -250,12 +251,19 @@ pub enum ConnectorConfig {
 
 impl ConnectorConfig {
     #[async_recursion::async_recursion]
-    pub async fn get_connector(&self, resolver: Arc<dyn Resolver>) -> Result<BoxedConnector> {
+    pub async fn get_connector(&self, resolver: Arc<dyn Resolver>) -> Result<ArcConnector> {
         match self {
-            ConnectorConfig::Direct => Ok(TcpConnector::new(resolver).boxed()),
-            ConnectorConfig::Pool { endpoint, size } => {
-                Ok(TcpPoolConnector::new(resolver.clone(), endpoint.clone(), *size).boxed())
-            }
+            ConnectorConfig::Direct => Ok(TcpConnector::new(resolver).arc()),
+            ConnectorConfig::Pool {
+                endpoint,
+                size,
+                next,
+            } => Ok(PoolConnector::new(
+                next.get_connector(resolver).await?,
+                endpoint.clone(),
+                *size,
+            )
+            .arc()),
             ConnectorConfig::Simplex {
                 endpoint,
                 path,
@@ -270,9 +278,9 @@ impl ConnectorConfig {
                 ),
                 next.get_connector(resolver).await?,
             )
-            .boxed()),
+            .arc()),
             ConnectorConfig::Tls(c) => {
-                Ok(TlsConnector::new(c.get_connector(resolver).await?).boxed())
+                Ok(TlsConnector::new(c.get_connector(resolver).await?).arc())
             }
             ConnectorConfig::Rule {
                 geoip,
@@ -287,18 +295,16 @@ impl ConnectorConfig {
                     .try_collect()
                     .await?,
             )
-            .boxed()),
-            ConnectorConfig::Http { endpoint, next } => Ok(HttpConnector::new(
-                next.get_connector(resolver).await?,
-                endpoint.clone(),
-            )
-            .boxed()),
+            .arc()),
+            ConnectorConfig::Http { endpoint, next } => {
+                Ok(HttpConnector::new(next.get_connector(resolver).await?, endpoint.clone()).arc())
+            }
             ConnectorConfig::Socks5 { endpoint, next } => Ok(Socks5Connector::new(
                 next.get_connector(resolver).await?,
                 endpoint.clone(),
             )
-            .boxed()),
-            ConnectorConfig::Block => Ok(BlockConnector {}.boxed()),
+            .arc()),
+            ConnectorConfig::Block => Ok(BlockConnector {}.arc()),
         }
     }
 }

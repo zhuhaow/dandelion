@@ -1,13 +1,13 @@
 use super::Rule;
-use crate::{connector::BoxedConnector, endpoint::Endpoint, resolver::Resolver};
+use crate::{connector::Connector, endpoint::Endpoint, resolver::Resolver};
 
-pub struct DnsFailRule<R: Resolver> {
-    connector: BoxedConnector,
+pub struct DnsFailRule<R: Resolver, C: Connector> {
+    connector: C,
     resolver: R,
 }
 
-impl<R: Resolver> DnsFailRule<R> {
-    pub fn new(connector: BoxedConnector, resolver: R) -> Self {
+impl<R: Resolver, C: Connector> DnsFailRule<R, C> {
+    pub fn new(connector: C, resolver: R) -> Self {
         Self {
             connector,
             resolver,
@@ -16,8 +16,8 @@ impl<R: Resolver> DnsFailRule<R> {
 }
 
 #[async_trait::async_trait]
-impl<R: Resolver> Rule for DnsFailRule<R> {
-    async fn check(&self, endpoint: &Endpoint) -> Option<&BoxedConnector> {
+impl<R: Resolver, C: Connector> Rule<C> for DnsFailRule<R, C> {
+    async fn check(&self, endpoint: &Endpoint) -> Option<&C> {
         if let Endpoint::Domain(host, _) = endpoint {
             let result = self.resolver.lookup_ip(host.as_str()).await;
             match result {
@@ -37,7 +37,7 @@ impl<R: Resolver> Rule for DnsFailRule<R> {
 mod tests {
     use super::DnsFailRule;
     use crate::{
-        connector::{rule::Rule, tcp::TcpConnector, Connector},
+        connector::{rule::Rule, tcp::TcpConnector},
         endpoint::Endpoint,
         resolver::system::SystemResolver,
     };
@@ -50,7 +50,7 @@ mod tests {
     #[tokio::test]
     async fn test_dns_fail(#[case] domain: &str, #[case] is_some: bool) {
         let rule = DnsFailRule::new(
-            TcpConnector::new(SystemResolver::new()).boxed(),
+            TcpConnector::new(SystemResolver::new()),
             SystemResolver::new(),
         );
 

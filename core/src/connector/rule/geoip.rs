@@ -1,5 +1,5 @@
 use super::Rule;
-use crate::{connector::BoxedConnector, endpoint::Endpoint, resolver::Resolver};
+use crate::{connector::Connector, endpoint::Endpoint, resolver::Resolver};
 use iso3166_1::CountryCode;
 use maxminddb::{geoip2::Country, MaxMindDBError, Reader};
 use memmap2::Mmap;
@@ -9,17 +9,17 @@ use std::{net::IpAddr, sync::Arc};
 ///
 /// It only matches when the IP addresses can be obtained either they are
 /// provided directly or we can resolve the host name successfully.
-pub struct GeoRule<R: Resolver> {
-    connector: BoxedConnector,
+pub struct GeoRule<R: Resolver, C: Connector> {
+    connector: C,
     reader: Arc<Reader<Mmap>>,
     country: Option<CountryCode<'static>>,
     equal: bool,
     resolver: R,
 }
 
-impl<R: Resolver> GeoRule<R> {
+impl<R: Resolver, C: Connector> GeoRule<R, C> {
     pub fn new(
-        connector: BoxedConnector,
+        connector: C,
         reader: Arc<Reader<Mmap>>,
         country: Option<CountryCode<'static>>,
         equal: bool,
@@ -55,8 +55,8 @@ impl<R: Resolver> GeoRule<R> {
 }
 
 #[async_trait::async_trait]
-impl<R: Resolver> Rule for GeoRule<R> {
-    async fn check(&self, endpoint: &Endpoint) -> Option<&BoxedConnector> {
+impl<R: Resolver, C: Connector> Rule<C> for GeoRule<R, C> {
+    async fn check(&self, endpoint: &Endpoint) -> Option<&C> {
         match endpoint {
             Endpoint::Addr(addr) => {
                 if self.match_ip(&addr.ip()) == Some(self.equal) {

@@ -1,14 +1,15 @@
 pub mod block;
 pub mod http;
+pub mod pool;
 pub mod rule;
 pub mod simplex;
 pub mod socks5;
 pub mod speed;
 pub mod tcp;
-pub mod tcp_pool;
 pub mod tls;
 
 use crate::{endpoint::Endpoint, io::Io, Result};
+use std::sync::Arc;
 
 #[async_trait::async_trait]
 pub trait Connector: Sync + Send {
@@ -21,6 +22,13 @@ pub trait Connector: Sync + Send {
         Self: Sized + 'static,
     {
         Box::new(ConnectorWrapper { connector: self })
+    }
+
+    fn arc(self) -> ArcConnector
+    where
+        Self: Sized + 'static,
+    {
+        Arc::new(ConnectorWrapper { connector: self })
     }
 }
 
@@ -45,5 +53,16 @@ impl Connector for BoxedConnector {
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
         self.as_ref().connect(endpoint).await
+    }
+}
+
+pub type ArcConnector = Arc<dyn Connector<Stream = Box<dyn Io>>>;
+
+#[async_trait::async_trait]
+impl<C: Connector + ?Sized> Connector for Arc<C> {
+    type Stream = C::Stream;
+
+    async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
+        C::connect(self, endpoint).await
     }
 }

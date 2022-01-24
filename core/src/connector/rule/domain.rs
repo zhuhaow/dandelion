@@ -1,5 +1,5 @@
 use super::Rule;
-use crate::{connector::BoxedConnector, endpoint::Endpoint};
+use crate::{connector::Connector, endpoint::Endpoint};
 use regex::Regex;
 use serde::Deserialize;
 
@@ -11,20 +11,20 @@ pub enum Mode {
     Regex(#[serde(with = "serde_regex")] Regex),
 }
 
-pub struct DomainRule {
+pub struct DomainRule<C: Connector> {
     modes: Vec<Mode>,
-    connector: BoxedConnector,
+    connector: C,
 }
 
-impl DomainRule {
-    pub fn new(modes: Vec<Mode>, connector: BoxedConnector) -> Self {
+impl<C: Connector> DomainRule<C> {
+    pub fn new(modes: Vec<Mode>, connector: C) -> Self {
         Self { modes, connector }
     }
 }
 
 #[async_trait::async_trait]
-impl Rule for DomainRule {
-    async fn check(&self, endpoint: &Endpoint) -> Option<&BoxedConnector> {
+impl<C: Connector> Rule<C> for DomainRule<C> {
+    async fn check(&self, endpoint: &Endpoint) -> Option<&C> {
         if let Endpoint::Domain(d, _) = endpoint {
             for mode in self.modes.iter() {
                 if match mode {
