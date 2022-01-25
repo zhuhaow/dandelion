@@ -1,0 +1,379 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 53;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		CA60B9A145A5130FA25ADE3B /* Cargo.toml in Sources */ = {isa = PBXBuildFile; fileRef = CA60680694513EF4668187A5 /* Cargo.toml */; settings = {COMPILER_FLAGS = "--lib"; }; };
+		CA60B9A145A59EF1AA0CF46F /* Cargo.toml in Sources */ = {isa = PBXBuildFile; fileRef = CA60680694513EF4668187A5 /* Cargo.toml */; settings = {COMPILER_FLAGS = "--bin tun_test"; }; };
+		CA60B9A145A5F01C2AE3A8F7 /* Cargo.toml in Sources */ = {isa = PBXBuildFile; fileRef = CA60680694513EF4668187A5 /* Cargo.toml */; settings = {COMPILER_FLAGS = "--bin specht2"; }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		CA6068069451AC6C1400ACA8 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			dependencyFile = "$(DERIVED_FILE_DIR)/$(CARGO_XCODE_TARGET_ARCH)-$(EXECUTABLE_NAME).d";
+			filePatterns = "*/Cargo.toml";
+			fileType = pattern.proxy;
+			inputFiles = (
+			);
+			isEditable = 0;
+			name = "Cargo project build";
+			outputFiles = (
+				"$(OBJECT_FILE_DIR)/$(CARGO_XCODE_TARGET_ARCH)-$(EXECUTABLE_NAME)",
+			);
+			script = "# generated with cargo-xcode 1.4.1\n\nset -eu; export PATH=$PATH:~/.cargo/bin:/usr/local/bin;\nif [ \"${IS_MACCATALYST-NO}\" = YES ]; then\n    CARGO_XCODE_TARGET_TRIPLE=\"${CARGO_XCODE_TARGET_ARCH}-apple-ios-macabi\"\nelse\n    CARGO_XCODE_TARGET_TRIPLE=\"${CARGO_XCODE_TARGET_ARCH}-apple-${CARGO_XCODE_TARGET_OS}\"\nfi\nif [ \"$CARGO_XCODE_TARGET_OS\" != \"darwin\" ]; then\n    PATH=\"${PATH/\\/Contents\\/Developer\\/Toolchains\\/XcodeDefault.xctoolchain\\/usr\\/bin:/xcode-provided-ld-cant-link-lSystem-for-the-host-build-script:}\"\nfi\nPATH=\"$PATH:/opt/homebrew/bin\" # Rust projects often depend on extra tools like nasm, which Xcode lacks\nif [ \"$CARGO_XCODE_BUILD_MODE\" == release ]; then\n    OTHER_INPUT_FILE_FLAGS=\"${OTHER_INPUT_FILE_FLAGS} --release\"\nfi\nif command -v rustup &> /dev/null; then\n    if ! rustup target list --installed | egrep -q \"${CARGO_XCODE_TARGET_TRIPLE}\"; then\n        echo \"warning: this build requires rustup toolchain for $CARGO_XCODE_TARGET_TRIPLE, but it isn't installed\"\n        rustup target add \"${CARGO_XCODE_TARGET_TRIPLE}\" || echo >&2 \"warning: can't install $CARGO_XCODE_TARGET_TRIPLE\"\n    fi\nfi\nif [ \"$ACTION\" = clean ]; then\n ( set -x; cargo clean --manifest-path=\"$SCRIPT_INPUT_FILE\" ${OTHER_INPUT_FILE_FLAGS} --target=\"${CARGO_XCODE_TARGET_TRIPLE}\"; );\nelse\n ( set -x; cargo build --manifest-path=\"$SCRIPT_INPUT_FILE\" --features=\"${CARGO_XCODE_FEATURES:-}\" ${OTHER_INPUT_FILE_FLAGS} --target=\"${CARGO_XCODE_TARGET_TRIPLE}\"; );\nfi\n# it's too hard to explain Cargo's actual exe path to Xcode build graph, so hardlink to a known-good path instead\nBUILT_SRC=\"${CARGO_TARGET_DIR}/${CARGO_XCODE_TARGET_TRIPLE}/${CARGO_XCODE_BUILD_MODE}/${CARGO_XCODE_CARGO_FILE_NAME}\"\nln -f -- \"$BUILT_SRC\" \"$SCRIPT_OUTPUT_FILE_0\"\n\n# xcode generates dep file, but for its own path, so append our rename to it\nDEP_FILE_SRC=\"${CARGO_TARGET_DIR}/${CARGO_XCODE_TARGET_TRIPLE}/${CARGO_XCODE_BUILD_MODE}/${CARGO_XCODE_CARGO_DEP_FILE_NAME}\"\nif [ -f \"$DEP_FILE_SRC\" ]; then\n    DEP_FILE_DST=\"${DERIVED_FILE_DIR}/${CARGO_XCODE_TARGET_ARCH}-${EXECUTABLE_NAME}.d\"\n    cp -f \"$DEP_FILE_SRC\" \"$DEP_FILE_DST\"\n    echo >> \"$DEP_FILE_DST\" \"$SCRIPT_OUTPUT_FILE_0: $BUILT_SRC\"\nfi\n\n# lipo script needs to know all the platform-specific files that have been built\n# archs is in the file name, so that paths don't stay around after archs change\n# must match input for LipoScript\nFILE_LIST=\"${DERIVED_FILE_DIR}/${ARCHS}-${EXECUTABLE_NAME}.xcfilelist\"\ntouch \"$FILE_LIST\"\nif ! egrep -q \"$SCRIPT_OUTPUT_FILE_0\" \"$FILE_LIST\" ; then\n    echo >> \"$FILE_LIST\" \"$SCRIPT_OUTPUT_FILE_0\"\nfi\n";
+		};
+/* End PBXBuildRule section */
+
+/* Begin PBXFileReference section */
+		ADDEDBA66A6E1 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
+		CA60680694513EF4668187A5 /* Cargo.toml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cargo.toml; sourceTree = "<group>"; };
+		CA60B733A63D213DD5F89A1D /* tun_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tun_test; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA60B733A63D5FA5D0D616A8 /* specht2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = specht2; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA60F0162249B39E5836B3FD /* libspecht2_core_static.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libspecht2_core_static.a; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		ADDEDBA66A6E2 /* Required for static linking */ = {
+			isa = PBXGroup;
+			children = (
+				ADDEDBA66A6E1 /* libresolv.tbd */,
+			);
+			name = "Required for static linking";
+			sourceTree = "<group>";
+		};
+		CA606806945122869D176AE5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CA60F0162249B39E5836B3FD /* libspecht2_core_static.a */,
+				CA60B733A63D5FA5D0D616A8 /* specht2 */,
+				CA60B733A63D213DD5F89A1D /* tun_test */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		CA606806945198AF0B5890DB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				ADDEDBA66A6E2 /* Required for static linking */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		CA6068069451D65BC3C892A8 = {
+			isa = PBXGroup;
+			children = (
+				CA60680694513EF4668187A5 /* Cargo.toml */,
+				CA606806945122869D176AE5 /* Products */,
+				CA606806945198AF0B5890DB /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CA60B733A63D9EF1AA0CF46F /* tun_test-bin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CA6093FEEE6D9EF1AA0CF46F /* Build configuration list for PBXNativeTarget "tun_test-bin" */;
+			buildPhases = (
+				CA60FE747D2B9EF1AA0CF46F /* Sources */,
+				CA6068069451AF6EBB7F357C /* Universal Binary lipo */,
+			);
+			buildRules = (
+				CA6068069451AC6C1400ACA8 /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = "tun_test-bin";
+			productName = tun_test;
+			productReference = CA60B733A63D213DD5F89A1D /* tun_test */;
+			productType = "com.apple.product-type.tool";
+		};
+		CA60B733A63DF01C2AE3A8F7 /* specht2-bin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CA6093FEEE6DF01C2AE3A8F7 /* Build configuration list for PBXNativeTarget "specht2-bin" */;
+			buildPhases = (
+				CA60FE747D2BF01C2AE3A8F7 /* Sources */,
+				CA6068069451AF6EBB7F357C /* Universal Binary lipo */,
+			);
+			buildRules = (
+				CA6068069451AC6C1400ACA8 /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = "specht2-bin";
+			productName = specht2;
+			productReference = CA60B733A63D5FA5D0D616A8 /* specht2 */;
+			productType = "com.apple.product-type.tool";
+		};
+		CA60F0162249130FA25ADE3B /* specht2_core-staticlib */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CA6093FEEE6D130FA25ADE3B /* Build configuration list for PBXNativeTarget "specht2_core-staticlib" */;
+			buildPhases = (
+				CA60FE747D2B130FA25ADE3B /* Sources */,
+				CA6068069451AF6EBB7F357C /* Universal Binary lipo */,
+			);
+			buildRules = (
+				CA6068069451AC6C1400ACA8 /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = "specht2_core-staticlib";
+			productName = libspecht2_core_static.a;
+			productReference = CA60F0162249B39E5836B3FD /* libspecht2_core_static.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CA6068069451E04653AD465F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1300;
+				TargetAttributes = {
+					CA60B733A63D9EF1AA0CF46F = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+					CA60B733A63DF01C2AE3A8F7 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+					CA60F0162249130FA25ADE3B = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = CA606806945180E02D6C7F57 /* Build configuration list for PBXProject "specht2_core" */;
+			compatibilityVersion = "Xcode 11.4";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = CA6068069451D65BC3C892A8;
+			productRefGroup = CA606806945122869D176AE5 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CA60F0162249130FA25ADE3B /* specht2_core-staticlib */,
+				CA60B733A63DF01C2AE3A8F7 /* specht2-bin */,
+				CA60B733A63D9EF1AA0CF46F /* tun_test-bin */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		CA6068069451AF6EBB7F357C /* Universal Binary lipo */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(DERIVED_FILE_DIR)/$(ARCHS)-$(EXECUTABLE_NAME).xcfilelist",
+			);
+			name = "Universal Binary lipo";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# generated with cargo-xcode 1.4.1\nset -eux; cat \"$DERIVED_FILE_DIR/$ARCHS-$EXECUTABLE_NAME.xcfilelist\" | tr '\\n' '\\0' | xargs -0 lipo -create -output \"$TARGET_BUILD_DIR/$EXECUTABLE_PATH\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		CA60FE747D2B130FA25ADE3B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA60B9A145A5130FA25ADE3B /* Cargo.toml in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CA60FE747D2B9EF1AA0CF46F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA60B9A145A59EF1AA0CF46F /* Cargo.toml in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CA60FE747D2BF01C2AE3A8F7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CA60B9A145A5F01C2AE3A8F7 /* Cargo.toml in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		CA603478C288228BE02872F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CARGO_TARGET_DIR = "$(PROJECT_TEMP_DIR)/cargo_target";
+				CARGO_XCODE_BUILD_MODE = debug;
+				CARGO_XCODE_FEATURES = "";
+				"CARGO_XCODE_TARGET_ARCH[arch=arm64*]" = aarch64;
+				"CARGO_XCODE_TARGET_ARCH[arch=i386]" = i686;
+				"CARGO_XCODE_TARGET_ARCH[arch=x86_64*]" = x86_64;
+				"CARGO_XCODE_TARGET_OS[sdk=appletvos*]" = tvos;
+				"CARGO_XCODE_TARGET_OS[sdk=appletvsimulator*]" = tvos;
+				"CARGO_XCODE_TARGET_OS[sdk=iphoneos*]" = ios;
+				"CARGO_XCODE_TARGET_OS[sdk=iphonesimulator*]" = "ios-sim";
+				"CARGO_XCODE_TARGET_OS[sdk=macosx*]" = darwin;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = specht2_core;
+				SDKROOT = macosx;
+				SUPPORTS_MACCATALYST = YES;
+			};
+			name = Debug;
+		};
+		CA603478C2883CC16B37690B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CARGO_TARGET_DIR = "$(PROJECT_TEMP_DIR)/cargo_target";
+				CARGO_XCODE_BUILD_MODE = release;
+				CARGO_XCODE_FEATURES = "";
+				"CARGO_XCODE_TARGET_ARCH[arch=arm64*]" = aarch64;
+				"CARGO_XCODE_TARGET_ARCH[arch=i386]" = i686;
+				"CARGO_XCODE_TARGET_ARCH[arch=x86_64*]" = x86_64;
+				"CARGO_XCODE_TARGET_OS[sdk=appletvos*]" = tvos;
+				"CARGO_XCODE_TARGET_OS[sdk=appletvsimulator*]" = tvos;
+				"CARGO_XCODE_TARGET_OS[sdk=iphoneos*]" = ios;
+				"CARGO_XCODE_TARGET_OS[sdk=iphonesimulator*]" = "ios-sim";
+				"CARGO_XCODE_TARGET_OS[sdk=macosx*]" = darwin;
+				PRODUCT_NAME = specht2_core;
+				SDKROOT = macosx;
+				SUPPORTS_MACCATALYST = YES;
+			};
+			name = Release;
+		};
+		CA6095F36D5D130FA25ADE3B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = libspecht2_core.d;
+				CARGO_XCODE_CARGO_FILE_NAME = libspecht2_core.a;
+				INSTALL_GROUP = "";
+				INSTALL_MODE_FLAG = "";
+				INSTALL_OWNER = "";
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				PRODUCT_NAME = specht2_core_static;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos appletvsimulator appletvos";
+			};
+			name = Debug;
+		};
+		CA6095F36D5D9EF1AA0CF46F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = tun_test.d;
+				CARGO_XCODE_CARGO_FILE_NAME = tun_test;
+				PRODUCT_NAME = tun_test;
+				SUPPORTED_PLATFORMS = macosx;
+			};
+			name = Debug;
+		};
+		CA6095F36D5DF01C2AE3A8F7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = specht2.d;
+				CARGO_XCODE_CARGO_FILE_NAME = specht2;
+				PRODUCT_NAME = specht2;
+				SUPPORTED_PLATFORMS = macosx;
+			};
+			name = Debug;
+		};
+		CA60DE3AB2BC130FA25ADE3B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = libspecht2_core.d;
+				CARGO_XCODE_CARGO_FILE_NAME = libspecht2_core.a;
+				INSTALL_GROUP = "";
+				INSTALL_MODE_FLAG = "";
+				INSTALL_OWNER = "";
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				PRODUCT_NAME = specht2_core_static;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos appletvsimulator appletvos";
+			};
+			name = Release;
+		};
+		CA60DE3AB2BC9EF1AA0CF46F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = tun_test.d;
+				CARGO_XCODE_CARGO_FILE_NAME = tun_test;
+				PRODUCT_NAME = tun_test;
+				SUPPORTED_PLATFORMS = macosx;
+			};
+			name = Release;
+		};
+		CA60DE3AB2BCF01C2AE3A8F7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = specht2.d;
+				CARGO_XCODE_CARGO_FILE_NAME = specht2;
+				PRODUCT_NAME = specht2;
+				SUPPORTED_PLATFORMS = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CA606806945180E02D6C7F57 /* Build configuration list for PBXProject "specht2_core" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA603478C2883CC16B37690B /* Release */,
+				CA603478C288228BE02872F8 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CA6093FEEE6D130FA25ADE3B /* Build configuration list for PBXNativeTarget "specht2_core-staticlib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA60DE3AB2BC130FA25ADE3B /* Release */,
+				CA6095F36D5D130FA25ADE3B /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CA6093FEEE6D9EF1AA0CF46F /* Build configuration list for PBXNativeTarget "tun_test-bin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA60DE3AB2BC9EF1AA0CF46F /* Release */,
+				CA6095F36D5D9EF1AA0CF46F /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CA6093FEEE6DF01C2AE3A8F7 /* Build configuration list for PBXNativeTarget "specht2-bin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA60DE3AB2BCF01C2AE3A8F7 /* Release */,
+				CA6095F36D5DF01C2AE3A8F7 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = CA6068069451E04653AD465F /* Project object */;
+}
