@@ -127,7 +127,6 @@ impl Drop for Specht2Context {
 #[no_mangle]
 pub unsafe extern "C" fn specht2_start(
     config_path: NonNull<c_char>,
-    route_traffic: bool,
     context: Specht2Context,
 ) -> NonNull<c_void> {
     let path_string = CStr::from_ptr(config_path.as_ptr())
@@ -155,7 +154,7 @@ pub unsafe extern "C" fn specht2_start(
         let result = runtime.block_on(async move {
             let config: ServerConfig = ron::de::from_str(&read_to_string(path)?)?;
 
-            let server = Server::new(config, context_ref.to_privilege_handler(), route_traffic);
+            let server = Server::new(config, context_ref.to_privilege_handler());
 
             server.serve(reg).await
         });

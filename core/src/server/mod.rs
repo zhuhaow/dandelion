@@ -45,23 +45,17 @@ impl Drop for Handles {
 pub struct Server<P: PrivilegeHandler> {
     config: ServerConfig,
     handler: P,
-    route_traffic: bool,
 }
 
 impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
-    pub fn new(config: ServerConfig, handler: P, route_traffic: bool) -> Self {
-        Self {
-            config,
-            handler,
-            route_traffic,
-        }
+    pub fn new(config: ServerConfig, handler: P) -> Self {
+        Self { config, handler }
     }
 
     pub async fn serve(self, reg: AbortRegistration) -> Result<()> {
         let Self {
             config,
             handler: privilege_handler,
-            route_traffic,
         } = self;
 
         if config.tun_enabled() && config.resolver.is_system() {
@@ -137,21 +131,23 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
 
         let connector = config.connector.get_connector(resolver).await?;
 
-        if route_traffic {
-            for c in config.acceptors.iter() {
-                match c {
-                    AcceptorConfig::Socks5 { addr } => {
+        for c in config.acceptors.iter() {
+            match c {
+                AcceptorConfig::Socks5 { addr, managed } => {
+                    if *managed {
                         privilege_handler.set_socks5_proxy(Some(*addr)).await?
                     }
-                    AcceptorConfig::Simplex { .. } => {}
-                    AcceptorConfig::Http { addr } => {
+                }
+                AcceptorConfig::Simplex { .. } => {}
+                AcceptorConfig::Http { addr, managed } => {
+                    if *managed {
                         privilege_handler.set_http_proxy(Some(*addr)).await?
                     }
-                    AcceptorConfig::Tun { subnet, .. } => {
-                        privilege_handler
-                            .set_dns(Some((subnet.ip(), 53).into()))
-                            .await?
-                    }
+                }
+                AcceptorConfig::Tun { subnet, .. } => {
+                    privilege_handler
+                        .set_dns(Some((subnet.ip(), 53).into()))
+                        .await?
                 }
             }
         }
@@ -194,16 +190,20 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
 
         let result = abortable.await;
 
-        if route_traffic {
-            for c in config.acceptors.iter() {
-                match c {
-                    AcceptorConfig::Socks5 { .. } => {
+        for c in config.acceptors.iter() {
+            match c {
+                AcceptorConfig::Socks5 { managed, .. } => {
+                    if *managed {
                         privilege_handler.set_socks5_proxy(None).await?
                     }
-                    AcceptorConfig::Simplex { .. } => {}
-                    AcceptorConfig::Http { .. } => privilege_handler.set_http_proxy(None).await?,
-                    AcceptorConfig::Tun { .. } => privilege_handler.set_dns(None).await?,
                 }
+                AcceptorConfig::Simplex { .. } => {}
+                AcceptorConfig::Http { managed, .. } => {
+                    if *managed {
+                        privilege_handler.set_http_proxy(None).await?
+                    }
+                }
+                AcceptorConfig::Tun { .. } => privilege_handler.set_dns(None).await?,
             }
         }
 

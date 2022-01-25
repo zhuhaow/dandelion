@@ -50,15 +50,6 @@ class TaskBarController: NSObject, NSMenuDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        _ = menu.addItem(withTitle: "Manage proxy automatically",
-                     action: #selector(self.toggleProxyManagement),
-                     keyEquivalent: "").then {
-            $0.target = self
-            if ConfigManager.isManagingProxy() {
-                $0.state = .on
-            }
-        }
-
         menu.addItem(NSMenuItem.separator())
 
         _ = menu.addItem(withTitle: "Check update automatically",
@@ -150,12 +141,6 @@ extension TaskBarController {
     @objc func about() {
         NSApplication.shared.activate(ignoringOtherApps: true)
         NSApplication.shared.orderFrontStandardAboutPanel(nil)
-    }
-}
-
-extension TaskBarController {
-    @objc func toggleProxyManagement() {
-        ConfigManager.toggleManagingProxy()
     }
 }
 

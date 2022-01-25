@@ -55,7 +55,7 @@ async fn main() -> Result<()> {
     let config: ServerConfig = ron::de::from_str(&read_to_string(path)?)?;
     let (_, reg) = AbortHandle::new_pair();
 
-    Server::new(config, NoPrivilegeHandler::default(), false)
+    Server::new(config, NoPrivilegeHandler::default())
         .serve(reg)
         .await?;
 

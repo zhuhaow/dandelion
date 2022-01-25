@@ -25,13 +25,12 @@ class Server {
         self.stopHandle != nil
     }
 
-    func run(name: String, configUrl: URL, routeTraffic: Bool, doneCallback: @escaping (Result<Void, String>) -> Void) {
+    func run(name: String, configUrl: URL, doneCallback: @escaping (Result<Void, String>) -> Void) {
         queue.async {
             if self.running {
                 self.afterStop = {
                     self.runServer(name: name,
                                    configUrl: configUrl,
-                                   routeTraffic: routeTraffic,
                                    doneCallback: doneCallback)
                 }
 
@@ -39,7 +38,6 @@ class Server {
             } else {
                 self.runServer(name: name,
                                configUrl: configUrl,
-                               routeTraffic: routeTraffic,
                                doneCallback: doneCallback)
             }
         }
@@ -47,11 +45,10 @@ class Server {
 
     private func runServer(name: String,
                            configUrl: URL,
-                           routeTraffic: Bool,
                            doneCallback: @escaping (Result<Void, String>) -> Void) {
         // We only clear it here, so every new start of server will never use old callback.
         afterStop = nil
-        stopHandle = startServer(configUrl: configUrl, routeTraffic: routeTraffic) { result in
+        stopHandle = startServer(configUrl: configUrl) { result in
             self.queue.async {
                 self.stopHandle = nil
                 doneCallback(result)
@@ -184,7 +181,6 @@ func doneHandler(userdata: UnsafeMutableRawPointer, error: UnsafePointer<CChar>?
 }
 
 private func startServer(configUrl: URL,
-                         routeTraffic: Bool,
                          closure: @escaping (Result<Void, String>) -> Void) -> StopHandle {
     let wrappedClosure = WrapClosure(closure: closure)
     let data = Unmanaged.passRetained(wrappedClosure).toOpaque()
@@ -203,7 +199,7 @@ private func startServer(configUrl: URL,
         // The $0 should not be nil according to the docs since the path should always be
         // possible to have a valid representation.
         let mutablePtr = UnsafeMutablePointer(mutating: $0!)
-        return specht2_start(mutablePtr, routeTraffic, context)
+        return specht2_start(mutablePtr, context)
     })
 }
 

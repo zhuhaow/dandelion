@@ -78,6 +78,8 @@ impl ResolverConfig {
 pub enum AcceptorConfig {
     Socks5 {
         addr: SocketAddr,
+        #[serde(default)]
+        managed: bool,
     },
     Simplex {
         addr: SocketAddr,
@@ -87,6 +89,8 @@ pub enum AcceptorConfig {
     },
     Http {
         addr: SocketAddr,
+        #[serde(default)]
+        managed: bool,
     },
     Tun {
         subnet: Ipv4Network,
@@ -96,9 +100,9 @@ pub enum AcceptorConfig {
 impl AcceptorConfig {
     pub fn server_addr(&self) -> SocketAddr {
         match self {
-            AcceptorConfig::Socks5 { addr }
+            AcceptorConfig::Socks5 { addr, .. }
             | AcceptorConfig::Simplex { addr, .. }
-            | AcceptorConfig::Http { addr } => *addr,
+            | AcceptorConfig::Http { addr, .. } => *addr,
             AcceptorConfig::Tun { subnet, .. } => {
                 SocketAddr::V4(listening_address_for_subnet(subnet))
             }

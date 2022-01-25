@@ -68,7 +68,7 @@ class ConfigManager {
         }
 
         Defaults[.activeConfig] = name
-        server.run(name: name, configUrl: configUrl, routeTraffic: isManagingProxy()) { result in
+        server.run(name: name, configUrl: configUrl) { result in
             switch result {
             case .success:
                 break
@@ -96,22 +96,8 @@ class ConfigManager {
     static func isRunning() -> Bool {
         return server.isRunning()
     }
-
-    static func isManagingProxy() -> Bool {
-        return Defaults[.manageProxy]
-    }
-
-    static func toggleManagingProxy() {
-        Defaults[.manageProxy] = !Defaults[.manageProxy]
-
-        // Restart the server so the proxy setting will be updated.
-        if let name = Defaults[.activeConfig], configs.keys.contains(name) {
-            run(name: name)
-        }
-    }
 }
 
 extension Defaults.Keys {
     static let activeConfig = Key<String?>("activeConfig")
-    static let manageProxy = Key<Bool>("manageProxy", default: false)
 }
