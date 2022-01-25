@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 0.4.0
+
+Use config file to determine if the app should update network configuration.
+
+Fix that domain used for rule matching may be with or without ending dot. Now there is no ending dot.
+
+Fix security issues in dependencies.
+
 ## 0.3.1
 
 Add support to use any connector that connects to the same endpoint for the connection pool.
