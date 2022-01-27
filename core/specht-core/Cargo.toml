@@ -7,7 +7,6 @@ license = "MIT"
 [dependencies]
 tokio = { version = "1.15.0", features = ["io-util", "net", "macros", "rt", "rt-multi-thread"] }
 async-trait = "0.1.52"
-structopt = "0.3.25"
 tokio-tungstenite = "0.16.1"
 futures = "0.3.19"
 async-compat = "0.2.1"
@@ -18,14 +17,10 @@ hyper-tungstenite = "0.5.0"
 hyper = { version = "0.14.16", features = ["http1", "server"] }
 bytes = "1.1.0"
 tungstenite = "0.16.0"
-ron = "0.7.0"
 serde = { version = "1.0.132", features = ["derive"] }
-serde_with = "1.11.0"
 log = "0.4.14"
-flexi_logger = "0.22.0"
 anyhow = { version = "1.0.52", features = ["backtrace"] }
 tokio-native-tls = "0.3.0"
-fdlimit = "0.2.1"
 lazy_static = "1.4.0"
 regex = "1.5.4"
 ipnetwork = "0.18.0"
@@ -37,10 +32,8 @@ reqwest = "0.11.8"
 # Make sure it's compatible with maxminddb
 memmap2 = "0.3.1"
 serde_regex = "1.1.0"
-async-recursion = "1.0.0"
 tempfile = "3.2.0"
 tower = { version = "0.4.11", features = ["util"] }
-tokio-stream = { version = "0.1.8", features = ["net"] }
 dns-lookup = "1.0.8"
 itertools = "0.10.3"
 libc = "0.2.112"
@@ -53,12 +46,9 @@ trust-dns-client = "0.20.3"
 tokio-util = { version = "0.6.9", features = ["codec"] }
 pnet_packet = "0.29.0"
 as-dyn-trait = "0.2.0"
-rich-phantoms = "0.1.0"
 byteorder = "1.4.3"
 async-stream = "0.3.2"
 cfg-if = "1.0.0"
-ffi_helpers = "0.3.0"
-syslog = "6.0.1"
 
 [dev-dependencies]
 env_logger = "0.9.0"

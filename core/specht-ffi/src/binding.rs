@@ -173,11 +173,6 @@ pub extern "C" fn specht2_stop(handle: NonNull<c_void>) {
 }
 
 #[no_mangle]
-pub extern "C" fn specht2_init_syslog(level: log::LevelFilter) {
-    syslog::init(syslog::Facility::LOG_USER, level, None).expect("Failed to init logger");
-}
-
-#[no_mangle]
 pub extern "C" fn specht2_create_tun(subnet: NonNull<c_char>) -> RawDeviceHandle {
     let subnet_string = unsafe { CStr::from_ptr(subnet.as_ptr()) }
         .to_string_lossy()
