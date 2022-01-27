@@ -1,12 +1,12 @@
 // See https://www.nickwilcox.com/blog/recipe_swift_rust_callback/
 
-use crate::server::{config::ServerConfig, privilege::PrivilegeHandler, Server};
-use crate::tun::device::{create_tun_as_raw_handle, Device, INVALID_DEVICE_HANDLE};
-use crate::Result;
 use futures::future::AbortHandle;
 use ipnetwork::Ipv4Network;
 use libc::c_int;
 use rich_phantoms::PhantomInvariantAlwaysSendSync;
+use specht_core::tun::device::{create_tun_as_raw_handle, Device, INVALID_DEVICE_HANDLE};
+use specht_core::Result;
+use specht_server::{config::ServerConfig, privilege::PrivilegeHandler, Server};
 use std::{
     ffi::{c_void, CStr, CString},
     fs::read_to_string,

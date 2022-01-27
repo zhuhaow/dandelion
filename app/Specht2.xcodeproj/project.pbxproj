@@ -28,8 +28,8 @@
 		3638C03F279812CC00913484 /* SwiftyXPC in Frameworks */ = {isa = PBXBuildFile; productRef = 3638C03E279812CC00913484 /* SwiftyXPC */; };
 		363FB8D627910ED50019C630 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363FB8D527910ED50019C630 /* Endpoint.swift */; };
 		363FB8D727910ED50019C630 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363FB8D527910ED50019C630 /* Endpoint.swift */; };
-		3668055E27A297DA008F89C1 /* libspecht-core_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3668055927A297D0008F89C1 /* libspecht-core_static.a */; };
-		3668055F27A297E0008F89C1 /* libspecht-core_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3668055927A297D0008F89C1 /* libspecht-core_static.a */; };
+		3668056627A2AD7C008F89C1 /* libspecht-ffi_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3668056527A2AD70008F89C1 /* libspecht-ffi_static.a */; };
+		3668056727A2AD80008F89C1 /* libspecht-ffi_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3668056527A2AD70008F89C1 /* libspecht-ffi_static.a */; };
 		369242CE2793F91300B70B87 /* FfiError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369242CD2793F91300B70B87 /* FfiError.swift */; };
 		369242CF2793F91300B70B87 /* FfiError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369242CD2793F91300B70B87 /* FfiError.swift */; };
 		36B37984276846F700445DF6 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 36B37983276846F700445DF6 /* Sparkle */; };
@@ -51,26 +51,12 @@
 			remoteGlobalIDString = 36298E3B2774891F00A90377;
 			remoteInfo = "me.zhuhaow.proxy-helper";
 		};
-		3668055827A297D0008F89C1 /* PBXContainerItemProxy */ = {
+		3668056427A2AD70008F89C1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 3668055227A297D0008F89C1 /* specht-core.xcodeproj */;
+			containerPortal = 3668056027A2AD70008F89C1 /* specht-ffi.xcodeproj */;
 			proxyType = 2;
-			remoteGlobalIDString = CA60DB37782E8BF88395F50D;
-			remoteInfo = "specht-core-staticlib";
-		};
-		3668055A27A297D0008F89C1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3668055227A297D0008F89C1 /* specht-core.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = CA60A35315905FA5D0D616A8;
-			remoteInfo = "specht2-bin";
-		};
-		3668055C27A297D0008F89C1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3668055227A297D0008F89C1 /* specht-core.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = CA60A3531590213DD5F89A1D;
-			remoteInfo = "tun_test-bin";
+			remoteGlobalIDString = CA606D715516ED1D8FD7C712;
+			remoteInfo = "specht-ffi-staticlib";
 		};
 		36AD80CC2780116E00417A11 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -143,7 +129,7 @@
 		36298E592778181600A90377 /* String+LocalizedError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "String+LocalizedError.swift"; sourceTree = "<group>"; };
 		36298E5F277F0FF000A90377 /* uninstall.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = uninstall.sh; sourceTree = "<group>"; };
 		363FB8D527910ED50019C630 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
-		3668055227A297D0008F89C1 /* specht-core.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "specht-core.xcodeproj"; path = "../core/specht-core/specht-core.xcodeproj"; sourceTree = "<group>"; };
+		3668056027A2AD70008F89C1 /* specht-ffi.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "specht-ffi.xcodeproj"; path = "../core/specht-ffi/specht-ffi.xcodeproj"; sourceTree = "<group>"; };
 		369242CD2793F91300B70B87 /* FfiError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FfiError.swift; sourceTree = "<group>"; };
 		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
 		36A843672753B79E00E6201D /* core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = core.a; path = Specht2/core.a; sourceTree = "<group>"; };
@@ -167,8 +153,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3668056727A2AD80008F89C1 /* libspecht-ffi_static.a in Frameworks */,
 				3638C03F279812CC00913484 /* SwiftyXPC in Frameworks */,
-				3668055F27A297E0008F89C1 /* libspecht-core_static.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -185,7 +171,7 @@
 			files = (
 				36B379892768559200445DF6 /* Defaults in Frameworks */,
 				36B37984276846F700445DF6 /* Sparkle in Frameworks */,
-				3668055E27A297DA008F89C1 /* libspecht-core_static.a in Frameworks */,
+				3668056627A2AD7C008F89C1 /* libspecht-ffi_static.a in Frameworks */,
 				3638C03D279812BD00913484 /* SwiftyXPC in Frameworks */,
 				36298E1D276AE1FC00A90377 /* Then in Frameworks */,
 			);
@@ -253,12 +239,10 @@
 			path = Server;
 			sourceTree = "<group>";
 		};
-		3668055327A297D0008F89C1 /* Products */ = {
+		3668056127A2AD70008F89C1 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				3668055927A297D0008F89C1 /* libspecht-core_static.a */,
-				3668055B27A297D0008F89C1 /* specht2 */,
-				3668055D27A297D0008F89C1 /* tun_test */,
+				3668056527A2AD70008F89C1 /* libspecht-ffi_static.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -277,7 +261,7 @@
 		36DBECE9273CE96B00D4A0DB = {
 			isa = PBXGroup;
 			children = (
-				3668055227A297D0008F89C1 /* specht-core.xcodeproj */,
+				3668056027A2AD70008F89C1 /* specht-ffi.xcodeproj */,
 				36298E5F277F0FF000A90377 /* uninstall.sh */,
 				36298E4C2774944400A90377 /* ProxyHelperCommon */,
 				36DBECF4273CE96B00D4A0DB /* Specht2 */,
@@ -465,8 +449,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 3668055327A297D0008F89C1 /* Products */;
-					ProjectRef = 3668055227A297D0008F89C1 /* specht-core.xcodeproj */;
+					ProductGroup = 3668056127A2AD70008F89C1 /* Products */;
+					ProjectRef = 3668056027A2AD70008F89C1 /* specht-ffi.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -480,25 +464,11 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		3668055927A297D0008F89C1 /* libspecht-core_static.a */ = {
+		3668056527A2AD70008F89C1 /* libspecht-ffi_static.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
-			path = "libspecht-core_static.a";
-			remoteRef = 3668055827A297D0008F89C1 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		3668055B27A297D0008F89C1 /* specht2 */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = specht2;
-			remoteRef = 3668055A27A297D0008F89C1 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		3668055D27A297D0008F89C1 /* tun_test */ = {
-			isa = PBXReferenceProxy;
-			fileType = "compiled.mach-o.executable";
-			path = tun_test;
-			remoteRef = 3668055C27A297D0008F89C1 /* PBXContainerItemProxy */;
+			path = "libspecht-ffi_static.a";
+			remoteRef = 3668056427A2AD70008F89C1 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -547,7 +517,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\ncd \"${SRCROOT}/../core/specht-core\"\ncbindgen --output \"${SRCROOT}/Specht2/core.h\"\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\ncd \"${SRCROOT}/../core/specht-ffi\"\ncbindgen --output \"${SRCROOT}/Specht2/core.h\"\n";
 		};
 		36FFDC4C2792B6EA009FB8F4 /* Generate binding header */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -566,7 +536,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\ncd \"${SRCROOT}/../core/specht-core\"\ncbindgen --output \"${SRCROOT}/me.zhuhaow.Specht2.proxy-helper/core.h\"\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nexport PATH=\"$HOME/.cargo/bin:$PATH\"\n\ncd \"${SRCROOT}/../core/specht-ffi\"\ncbindgen --output \"${SRCROOT}/me.zhuhaow.Specht2.proxy-helper/core.h\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

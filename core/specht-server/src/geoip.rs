@@ -1,9 +1,9 @@
-use crate::{
+use maxminddb::Reader;
+use memmap2::Mmap;
+use specht_core::{
     geoip::{create_reader, Source},
     Result,
 };
-use maxminddb::Reader;
-use memmap2::Mmap;
 use std::sync::Arc;
 
 pub struct GeoIpBuilder {

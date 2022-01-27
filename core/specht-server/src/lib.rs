@@ -3,21 +3,21 @@ pub mod geoip;
 pub mod privilege;
 
 use self::privilege::PrivilegeHandler;
-use crate::acceptor::http::HttpAcceptor;
-use crate::acceptor::AsDynAcceptorArc;
-use crate::tun::stack::create_stack;
-use crate::{
-    acceptor::{simplex::SimplexAcceptor, socks5::Socks5Acceptor},
-    connector::Connector,
-    server::config::{AcceptorConfig, ServerConfig},
-    simplex::Config,
-    Result,
-};
+use crate::config::{AcceptorConfig, ServerConfig};
 use anyhow::bail;
 use futures::future::{AbortRegistration, Abortable};
 use futures::Stream;
 use futures::{future::try_join_all, stream::select_all, StreamExt, TryStreamExt};
 use log::{debug, warn};
+use specht_core::acceptor::http::HttpAcceptor;
+use specht_core::acceptor::AsDynAcceptorArc;
+use specht_core::tun::stack::create_stack;
+use specht_core::{
+    acceptor::{simplex::SimplexAcceptor, socks5::Socks5Acceptor},
+    connector::Connector,
+    simplex::Config,
+    Result,
+};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::TcpStream;

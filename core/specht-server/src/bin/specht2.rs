@@ -1,8 +1,6 @@
 use futures::future::AbortHandle;
-use specht_core::{
-    server::{config::ServerConfig, privilege::NoPrivilegeHandler, Server},
-    Result,
-};
+use specht_core::Result;
+use specht_server::{config::ServerConfig, privilege::NoPrivilegeHandler, Server};
 use std::{
     env,
     fs::read_to_string,
