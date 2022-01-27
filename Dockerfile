@@ -12,7 +12,7 @@ RUN cargo chef cook --release
 COPY ./core ./
 RUN cargo build --release
 # So we know where the binary will be
-RUN cargo install --path . --locked
+RUN cargo install --path specht-server --locked
 
 FROM debian:buster-slim
 RUN apt update && apt install -y --no-install-recommends \
