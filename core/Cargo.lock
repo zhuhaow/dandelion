@@ -1591,6 +1591,7 @@ dependencies = [
  "async-trait",
  "fdlimit",
  "ffi_helpers",
+ "flexi_logger",
  "futures",
  "ipnetwork",
  "libc",

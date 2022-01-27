@@ -1,8 +1,10 @@
 // See https://www.nickwilcox.com/blog/recipe_swift_rust_callback/
 
+use flexi_logger::LogSpecBuilder;
 use futures::future::AbortHandle;
 use ipnetwork::Ipv4Network;
 use libc::c_int;
+use log::{Level, LevelFilter};
 use rich_phantoms::PhantomInvariantAlwaysSendSync;
 use specht_core::{
     tun::device::{create_tun_as_raw_handle, Device, INVALID_DEVICE_HANDLE},
@@ -216,6 +218,17 @@ pub unsafe extern "C" fn specht2_take_last_error(mut buf: NonNull<c_char>, len: 
             result
         }
     }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn specht2_set_log_level(level: LevelFilter) {
+    // Since we only log to stdout/stderr we can simply recall this every time.
+    let spec = LogSpecBuilder::new()
+        .module("specht_core", level)
+        .module("specht_server", level)
+        .module("specht_ffi", level)
+        .build();
+    let _ = flexi_logger::Logger::with(spec).log_to_stderr().start();
 }
 
 extern "C" fn handler_callback(sender: NonNull<c_void>, err_ptr: *const c_char) {

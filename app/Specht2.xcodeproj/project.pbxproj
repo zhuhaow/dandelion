@@ -30,6 +30,7 @@
 		363FB8D727910ED50019C630 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363FB8D527910ED50019C630 /* Endpoint.swift */; };
 		3668056627A2AD7C008F89C1 /* libspecht-ffi_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3668056527A2AD70008F89C1 /* libspecht-ffi_static.a */; };
 		3668056727A2AD80008F89C1 /* libspecht-ffi_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3668056527A2AD70008F89C1 /* libspecht-ffi_static.a */; };
+		3668056B27A2BF47008F89C1 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3668056A27A2BF47008F89C1 /* Log.swift */; };
 		369242CE2793F91300B70B87 /* FfiError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369242CD2793F91300B70B87 /* FfiError.swift */; };
 		369242CF2793F91300B70B87 /* FfiError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369242CD2793F91300B70B87 /* FfiError.swift */; };
 		36B37984276846F700445DF6 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 36B37983276846F700445DF6 /* Sparkle */; };
@@ -130,6 +131,7 @@
 		36298E5F277F0FF000A90377 /* uninstall.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = uninstall.sh; sourceTree = "<group>"; };
 		363FB8D527910ED50019C630 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
 		3668056027A2AD70008F89C1 /* specht-ffi.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "specht-ffi.xcodeproj"; path = "../core/specht-ffi/specht-ffi.xcodeproj"; sourceTree = "<group>"; };
+		3668056A27A2BF47008F89C1 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
 		369242CD2793F91300B70B87 /* FfiError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FfiError.swift; sourceTree = "<group>"; };
 		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
 		36A843672753B79E00E6201D /* core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = core.a; path = Specht2/core.a; sourceTree = "<group>"; };
@@ -216,6 +218,7 @@
 			children = (
 				36298E19276AD9BF00A90377 /* Autostart.swift */,
 				36298E22276C9EDB00A90377 /* Update.swift */,
+				3668056A27A2BF47008F89C1 /* Log.swift */,
 			);
 			path = SupportFeatures;
 			sourceTree = "<group>";
@@ -569,6 +572,7 @@
 			files = (
 				36298E14276A2BE300A90377 /* main.swift in Sources */,
 				36FFDC4B279260A9009FB8F4 /* Service.swift in Sources */,
+				3668056B27A2BF47008F89C1 /* Log.swift in Sources */,
 				36C7958D276A0A2500D3C5F2 /* TaskBarController.swift in Sources */,
 				36298E23276C9EDB00A90377 /* Update.swift in Sources */,
 				363FB8D627910ED50019C630 /* Endpoint.swift in Sources */,
