@@ -347,7 +347,7 @@ mod test {
     #[tokio::test]
     async fn config_file_without_geo(#[case] filename: &str, #[case] success: bool) -> Result<()> {
         let path = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap())
-            .join("config")
+            .join("../config")
             .join(filename);
         let content = read_to_string(path)?;
         test_config_file(&content, success).await
@@ -360,7 +360,7 @@ mod test {
     #[tokio::test]
     async fn config_file_with_geo(#[case] filename: &str, #[case] success: bool) -> Result<()> {
         let path = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap())
-            .join("config")
+            .join("../config")
             .join(filename);
         let content = read_to_string(path)?;
 
