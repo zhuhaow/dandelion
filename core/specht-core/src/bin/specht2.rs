@@ -1,5 +1,5 @@
 use futures::future::AbortHandle;
-use specht2_core::{
+use specht_core::{
     server::{config::ServerConfig, privilege::NoPrivilegeHandler, Server},
     Result,
 };

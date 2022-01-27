@@ -1557,7 +1557,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "specht2_core"
+name = "specht-core"
 version = "0.1.0"
 dependencies = [
  "anyhow",

@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CA60B9A145A5130FA25ADE3B /* Cargo.toml in Sources */ = {isa = PBXBuildFile; fileRef = CA60680694513EF4668187A5 /* Cargo.toml */; settings = {COMPILER_FLAGS = "--lib"; }; };
-		CA60B9A145A59EF1AA0CF46F /* Cargo.toml in Sources */ = {isa = PBXBuildFile; fileRef = CA60680694513EF4668187A5 /* Cargo.toml */; settings = {COMPILER_FLAGS = "--bin tun_test"; }; };
-		CA60B9A145A5F01C2AE3A8F7 /* Cargo.toml in Sources */ = {isa = PBXBuildFile; fileRef = CA60680694513EF4668187A5 /* Cargo.toml */; settings = {COMPILER_FLAGS = "--bin specht2"; }; };
+		CA60209A4873389E30A15CB5 /* Cargo.toml in Sources */ = {isa = PBXBuildFile; fileRef = CA60B3EE44CD3EF4668187A5 /* Cargo.toml */; settings = {COMPILER_FLAGS = "--bin tun_test"; }; };
+		CA60209A487339FBC643F342 /* Cargo.toml in Sources */ = {isa = PBXBuildFile; fileRef = CA60B3EE44CD3EF4668187A5 /* Cargo.toml */; settings = {COMPILER_FLAGS = "--lib"; }; };
+		CA60209A48735673B04E002D /* Cargo.toml in Sources */ = {isa = PBXBuildFile; fileRef = CA60B3EE44CD3EF4668187A5 /* Cargo.toml */; settings = {COMPILER_FLAGS = "--bin specht2"; }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
-		CA6068069451AC6C1400ACA8 /* PBXBuildRule */ = {
+		CA60B3EE44CDAC6C1400ACA8 /* PBXBuildRule */ = {
 			isa = PBXBuildRule;
 			compilerSpec = com.apple.compilers.proxy.script;
 			dependencyFile = "$(DERIVED_FILE_DIR)/$(CARGO_XCODE_TARGET_ARCH)-$(EXECUTABLE_NAME).d";
@@ -32,10 +32,10 @@
 
 /* Begin PBXFileReference section */
 		ADDEDBA66A6E1 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
-		CA60680694513EF4668187A5 /* Cargo.toml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cargo.toml; sourceTree = "<group>"; };
-		CA60B733A63D213DD5F89A1D /* tun_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tun_test; sourceTree = BUILT_PRODUCTS_DIR; };
-		CA60B733A63D5FA5D0D616A8 /* specht2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = specht2; sourceTree = BUILT_PRODUCTS_DIR; };
-		CA60F0162249B39E5836B3FD /* libspecht2_core_static.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libspecht2_core_static.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA60A3531590213DD5F89A1D /* tun_test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tun_test; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA60A35315905FA5D0D616A8 /* specht2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = specht2; sourceTree = BUILT_PRODUCTS_DIR; };
+		CA60B3EE44CD3EF4668187A5 /* Cargo.toml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cargo.toml; sourceTree = "<group>"; };
+		CA60DB37782E8BF88395F50D /* libspecht-core_static.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libspecht-core_static.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -47,17 +47,17 @@
 			name = "Required for static linking";
 			sourceTree = "<group>";
 		};
-		CA606806945122869D176AE5 /* Products */ = {
+		CA60B3EE44CD22869D176AE5 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				CA60F0162249B39E5836B3FD /* libspecht2_core_static.a */,
-				CA60B733A63D5FA5D0D616A8 /* specht2 */,
-				CA60B733A63D213DD5F89A1D /* tun_test */,
+				CA60DB37782E8BF88395F50D /* libspecht-core_static.a */,
+				CA60A35315905FA5D0D616A8 /* specht2 */,
+				CA60A3531590213DD5F89A1D /* tun_test */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		CA606806945198AF0B5890DB /* Frameworks */ = {
+		CA60B3EE44CD98AF0B5890DB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ADDEDBA66A6E2 /* Required for static linking */,
@@ -65,92 +65,92 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		CA6068069451D65BC3C892A8 = {
+		CA60B3EE44CDD65BC3C892A8 = {
 			isa = PBXGroup;
 			children = (
-				CA60680694513EF4668187A5 /* Cargo.toml */,
-				CA606806945122869D176AE5 /* Products */,
-				CA606806945198AF0B5890DB /* Frameworks */,
+				CA60B3EE44CD3EF4668187A5 /* Cargo.toml */,
+				CA60B3EE44CD22869D176AE5 /* Products */,
+				CA60B3EE44CD98AF0B5890DB /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		CA60B733A63D9EF1AA0CF46F /* tun_test-bin */ = {
+		CA60A3531590389E30A15CB5 /* tun_test-bin */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CA6093FEEE6D9EF1AA0CF46F /* Build configuration list for PBXNativeTarget "tun_test-bin" */;
+			buildConfigurationList = CA60FE0DCABD389E30A15CB5 /* Build configuration list for PBXNativeTarget "tun_test-bin" */;
 			buildPhases = (
-				CA60FE747D2B9EF1AA0CF46F /* Sources */,
-				CA6068069451AF6EBB7F357C /* Universal Binary lipo */,
+				CA60081779D6389E30A15CB5 /* Sources */,
+				CA60B3EE44CDAF6EBB7F357C /* Universal Binary lipo */,
 			);
 			buildRules = (
-				CA6068069451AC6C1400ACA8 /* PBXBuildRule */,
+				CA60B3EE44CDAC6C1400ACA8 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
 			name = "tun_test-bin";
 			productName = tun_test;
-			productReference = CA60B733A63D213DD5F89A1D /* tun_test */;
+			productReference = CA60A3531590213DD5F89A1D /* tun_test */;
 			productType = "com.apple.product-type.tool";
 		};
-		CA60B733A63DF01C2AE3A8F7 /* specht2-bin */ = {
+		CA60A35315905673B04E002D /* specht2-bin */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CA6093FEEE6DF01C2AE3A8F7 /* Build configuration list for PBXNativeTarget "specht2-bin" */;
+			buildConfigurationList = CA60FE0DCABD5673B04E002D /* Build configuration list for PBXNativeTarget "specht2-bin" */;
 			buildPhases = (
-				CA60FE747D2BF01C2AE3A8F7 /* Sources */,
-				CA6068069451AF6EBB7F357C /* Universal Binary lipo */,
+				CA60081779D65673B04E002D /* Sources */,
+				CA60B3EE44CDAF6EBB7F357C /* Universal Binary lipo */,
 			);
 			buildRules = (
-				CA6068069451AC6C1400ACA8 /* PBXBuildRule */,
+				CA60B3EE44CDAC6C1400ACA8 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
 			name = "specht2-bin";
 			productName = specht2;
-			productReference = CA60B733A63D5FA5D0D616A8 /* specht2 */;
+			productReference = CA60A35315905FA5D0D616A8 /* specht2 */;
 			productType = "com.apple.product-type.tool";
 		};
-		CA60F0162249130FA25ADE3B /* specht2_core-staticlib */ = {
+		CA60DB37782E39FBC643F342 /* specht-core-staticlib */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CA6093FEEE6D130FA25ADE3B /* Build configuration list for PBXNativeTarget "specht2_core-staticlib" */;
+			buildConfigurationList = CA60FE0DCABD39FBC643F342 /* Build configuration list for PBXNativeTarget "specht-core-staticlib" */;
 			buildPhases = (
-				CA60FE747D2B130FA25ADE3B /* Sources */,
-				CA6068069451AF6EBB7F357C /* Universal Binary lipo */,
+				CA60081779D639FBC643F342 /* Sources */,
+				CA60B3EE44CDAF6EBB7F357C /* Universal Binary lipo */,
 			);
 			buildRules = (
-				CA6068069451AC6C1400ACA8 /* PBXBuildRule */,
+				CA60B3EE44CDAC6C1400ACA8 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
-			name = "specht2_core-staticlib";
-			productName = libspecht2_core_static.a;
-			productReference = CA60F0162249B39E5836B3FD /* libspecht2_core_static.a */;
+			name = "specht-core-staticlib";
+			productName = "libspecht-core_static.a";
+			productReference = CA60DB37782E8BF88395F50D /* libspecht-core_static.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		CA6068069451E04653AD465F /* Project object */ = {
+		CA60B3EE44CDE04653AD465F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 1300;
 				TargetAttributes = {
-					CA60B733A63D9EF1AA0CF46F = {
+					CA60A3531590389E30A15CB5 = {
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
 					};
-					CA60B733A63DF01C2AE3A8F7 = {
+					CA60A35315905673B04E002D = {
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
 					};
-					CA60F0162249130FA25ADE3B = {
+					CA60DB37782E39FBC643F342 = {
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
 					};
 				};
 			};
-			buildConfigurationList = CA606806945180E02D6C7F57 /* Build configuration list for PBXProject "specht2_core" */;
+			buildConfigurationList = CA60B3EE44CD80E02D6C7F57 /* Build configuration list for PBXProject "specht-core" */;
 			compatibilityVersion = "Xcode 11.4";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -158,20 +158,20 @@
 				en,
 				Base,
 			);
-			mainGroup = CA6068069451D65BC3C892A8;
-			productRefGroup = CA606806945122869D176AE5 /* Products */;
+			mainGroup = CA60B3EE44CDD65BC3C892A8;
+			productRefGroup = CA60B3EE44CD22869D176AE5 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				CA60F0162249130FA25ADE3B /* specht2_core-staticlib */,
-				CA60B733A63DF01C2AE3A8F7 /* specht2-bin */,
-				CA60B733A63D9EF1AA0CF46F /* tun_test-bin */,
+				CA60DB37782E39FBC643F342 /* specht-core-staticlib */,
+				CA60A35315905673B04E002D /* specht2-bin */,
+				CA60A3531590389E30A15CB5 /* tun_test-bin */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		CA6068069451AF6EBB7F357C /* Universal Binary lipo */ = {
+		CA60B3EE44CDAF6EBB7F357C /* Universal Binary lipo */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -189,39 +189,39 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# generated with cargo-xcode 1.4.1\nset -eux; cat \"$DERIVED_FILE_DIR/$ARCHS-$EXECUTABLE_NAME.xcfilelist\" | tr '\\n' '\\0' | xargs -0 lipo -create -output \"$TARGET_BUILD_DIR/$EXECUTABLE_PATH\"\n";
+			shellScript = "# generated with cargo-xcode 1.4.1\nset -eux; cat \"$DERIVED_FILE_DIR/$ARCHS-$EXECUTABLE_NAME.xcfilelist\" | tr '\\n' '\\0' | xargs -0 lipo -create -output \"$TARGET_BUILD_DIR/$EXECUTABLE_PATH\"";
 		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		CA60FE747D2B130FA25ADE3B /* Sources */ = {
+		CA60081779D6389E30A15CB5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA60B9A145A5130FA25ADE3B /* Cargo.toml in Sources */,
+				CA60209A4873389E30A15CB5 /* Cargo.toml in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CA60FE747D2B9EF1AA0CF46F /* Sources */ = {
+		CA60081779D639FBC643F342 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA60B9A145A59EF1AA0CF46F /* Cargo.toml in Sources */,
+				CA60209A487339FBC643F342 /* Cargo.toml in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CA60FE747D2BF01C2AE3A8F7 /* Sources */ = {
+		CA60081779D65673B04E002D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CA60B9A145A5F01C2AE3A8F7 /* Cargo.toml in Sources */,
+				CA60209A48735673B04E002D /* Cargo.toml in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		CA603478C288228BE02872F8 /* Debug */ = {
+		CA60598BE658228BE02872F8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -236,14 +236,15 @@
 				"CARGO_XCODE_TARGET_OS[sdk=iphoneos*]" = ios;
 				"CARGO_XCODE_TARGET_OS[sdk=iphonesimulator*]" = "ios-sim";
 				"CARGO_XCODE_TARGET_OS[sdk=macosx*]" = darwin;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_NAME = specht2_core;
+				PRODUCT_NAME = "specht-core";
 				SDKROOT = macosx;
 				SUPPORTS_MACCATALYST = YES;
 			};
 			name = Debug;
 		};
-		CA603478C2883CC16B37690B /* Release */ = {
+		CA60598BE6583CC16B37690B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -258,63 +259,14 @@
 				"CARGO_XCODE_TARGET_OS[sdk=iphoneos*]" = ios;
 				"CARGO_XCODE_TARGET_OS[sdk=iphonesimulator*]" = "ios-sim";
 				"CARGO_XCODE_TARGET_OS[sdk=macosx*]" = darwin;
-				PRODUCT_NAME = specht2_core;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				PRODUCT_NAME = "specht-core";
 				SDKROOT = macosx;
 				SUPPORTS_MACCATALYST = YES;
 			};
 			name = Release;
 		};
-		CA6095F36D5D130FA25ADE3B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CARGO_XCODE_CARGO_DEP_FILE_NAME = libspecht2_core.d;
-				CARGO_XCODE_CARGO_FILE_NAME = libspecht2_core.a;
-				INSTALL_GROUP = "";
-				INSTALL_MODE_FLAG = "";
-				INSTALL_OWNER = "";
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				PRODUCT_NAME = specht2_core_static;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos appletvsimulator appletvos";
-			};
-			name = Debug;
-		};
-		CA6095F36D5D9EF1AA0CF46F /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CARGO_XCODE_CARGO_DEP_FILE_NAME = tun_test.d;
-				CARGO_XCODE_CARGO_FILE_NAME = tun_test;
-				PRODUCT_NAME = tun_test;
-				SUPPORTED_PLATFORMS = macosx;
-			};
-			name = Debug;
-		};
-		CA6095F36D5DF01C2AE3A8F7 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CARGO_XCODE_CARGO_DEP_FILE_NAME = specht2.d;
-				CARGO_XCODE_CARGO_FILE_NAME = specht2;
-				PRODUCT_NAME = specht2;
-				SUPPORTED_PLATFORMS = macosx;
-			};
-			name = Debug;
-		};
-		CA60DE3AB2BC130FA25ADE3B /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CARGO_XCODE_CARGO_DEP_FILE_NAME = libspecht2_core.d;
-				CARGO_XCODE_CARGO_FILE_NAME = libspecht2_core.a;
-				INSTALL_GROUP = "";
-				INSTALL_MODE_FLAG = "";
-				INSTALL_OWNER = "";
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
-				PRODUCT_NAME = specht2_core_static;
-				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos appletvsimulator appletvos";
-			};
-			name = Release;
-		};
-		CA60DE3AB2BC9EF1AA0CF46F /* Release */ = {
+		CA60B81C25A4389E30A15CB5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CARGO_XCODE_CARGO_DEP_FILE_NAME = tun_test.d;
@@ -324,7 +276,21 @@
 			};
 			name = Release;
 		};
-		CA60DE3AB2BCF01C2AE3A8F7 /* Release */ = {
+		CA60B81C25A439FBC643F342 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = libspecht_core.d;
+				CARGO_XCODE_CARGO_FILE_NAME = libspecht_core.a;
+				INSTALL_GROUP = "";
+				INSTALL_MODE_FLAG = "";
+				INSTALL_OWNER = "";
+				PRODUCT_NAME = "specht-core_static";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos appletvsimulator appletvos";
+			};
+			name = Release;
+		};
+		CA60B81C25A45673B04E002D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CARGO_XCODE_CARGO_DEP_FILE_NAME = specht2.d;
@@ -333,47 +299,81 @@
 				SUPPORTED_PLATFORMS = macosx;
 			};
 			name = Release;
+		};
+		CA60D692CD86389E30A15CB5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = tun_test.d;
+				CARGO_XCODE_CARGO_FILE_NAME = tun_test;
+				PRODUCT_NAME = tun_test;
+				SUPPORTED_PLATFORMS = macosx;
+			};
+			name = Debug;
+		};
+		CA60D692CD8639FBC643F342 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = libspecht_core.d;
+				CARGO_XCODE_CARGO_FILE_NAME = libspecht_core.a;
+				INSTALL_GROUP = "";
+				INSTALL_MODE_FLAG = "";
+				INSTALL_OWNER = "";
+				PRODUCT_NAME = "specht-core_static";
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "macosx iphonesimulator iphoneos appletvsimulator appletvos";
+			};
+			name = Debug;
+		};
+		CA60D692CD865673B04E002D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CARGO_XCODE_CARGO_DEP_FILE_NAME = specht2.d;
+				CARGO_XCODE_CARGO_FILE_NAME = specht2;
+				PRODUCT_NAME = specht2;
+				SUPPORTED_PLATFORMS = macosx;
+			};
+			name = Debug;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		CA606806945180E02D6C7F57 /* Build configuration list for PBXProject "specht2_core" */ = {
+		CA60B3EE44CD80E02D6C7F57 /* Build configuration list for PBXProject "specht-core" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				CA603478C2883CC16B37690B /* Release */,
-				CA603478C288228BE02872F8 /* Debug */,
+				CA60598BE6583CC16B37690B /* Release */,
+				CA60598BE658228BE02872F8 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CA6093FEEE6D130FA25ADE3B /* Build configuration list for PBXNativeTarget "specht2_core-staticlib" */ = {
+		CA60FE0DCABD389E30A15CB5 /* Build configuration list for PBXNativeTarget "tun_test-bin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				CA60DE3AB2BC130FA25ADE3B /* Release */,
-				CA6095F36D5D130FA25ADE3B /* Debug */,
+				CA60B81C25A4389E30A15CB5 /* Release */,
+				CA60D692CD86389E30A15CB5 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CA6093FEEE6D9EF1AA0CF46F /* Build configuration list for PBXNativeTarget "tun_test-bin" */ = {
+		CA60FE0DCABD39FBC643F342 /* Build configuration list for PBXNativeTarget "specht-core-staticlib" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				CA60DE3AB2BC9EF1AA0CF46F /* Release */,
-				CA6095F36D5D9EF1AA0CF46F /* Debug */,
+				CA60B81C25A439FBC643F342 /* Release */,
+				CA60D692CD8639FBC643F342 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CA6093FEEE6DF01C2AE3A8F7 /* Build configuration list for PBXNativeTarget "specht2-bin" */ = {
+		CA60FE0DCABD5673B04E002D /* Build configuration list for PBXNativeTarget "specht2-bin" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				CA60DE3AB2BCF01C2AE3A8F7 /* Release */,
-				CA6095F36D5DF01C2AE3A8F7 /* Debug */,
+				CA60B81C25A45673B04E002D /* Release */,
+				CA60D692CD865673B04E002D /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = CA6068069451E04653AD465F /* Project object */;
+	rootObject = CA60B3EE44CDE04653AD465F /* Project object */;
 }

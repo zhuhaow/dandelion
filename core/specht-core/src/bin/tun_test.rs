@@ -3,13 +3,13 @@ use std::time::Duration;
 
 use ipnetwork::Ipv4Network;
 use log::{debug, warn};
-use specht2_core::acceptor::Acceptor;
-use specht2_core::connector::tcp::TcpConnector;
-use specht2_core::connector::Connector;
-use specht2_core::resolver::udp::UdpResolver;
-use specht2_core::tun::listening_address_for_subnet;
-use specht2_core::tun::{device::Device, stack::create_stack};
-use specht2_core::Result;
+use specht_core::acceptor::Acceptor;
+use specht_core::connector::tcp::TcpConnector;
+use specht_core::connector::Connector;
+use specht_core::resolver::udp::UdpResolver;
+use specht_core::tun::listening_address_for_subnet;
+use specht_core::tun::{device::Device, stack::create_stack};
+use specht_core::Result;
 use tokio::io::copy_bidirectional;
 use tokio::net::TcpListener;
 
