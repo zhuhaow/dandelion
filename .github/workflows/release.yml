@@ -28,6 +28,9 @@ jobs:
             toolchain: stable
             override: true
             target: aarch64-apple-darwin
+      - uses: Swatinem/rust-cache@v1
+        with:
+          working-directory: core/
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.0"
@@ -106,6 +109,18 @@ jobs:
           rm -rf ./*
           cp -r ../core/* .
         shell: bash
+      - if: ${{ matrix.target != 'aarch64-apple-darwin' }}
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            override: true
+      - if: ${{ matrix.target == 'aarch64-apple-darwin' }}
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            override: true
+            target: aarch64-apple-darwin
+      - uses: Swatinem/rust-cache@v1
       - if: ${{ matrix.target == 'aarch64-unknown-linux-gnu' }}
         run: |
           docker build -t arm64_with_openssl -f cross/Dockerfile-arm64 .
