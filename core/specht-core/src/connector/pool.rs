@@ -1,9 +1,7 @@
 use super::Connector;
-use crate::endpoint::Endpoint;
-use crate::Result;
+use crate::{endpoint::Endpoint, Result};
 use anyhow::ensure;
-use std::collections::VecDeque;
-use std::sync::Arc;
+use std::{collections::VecDeque, sync::Arc};
 use tokio::sync::Mutex;
 
 pub struct PoolConnector<C: Connector + Clone + 'static> {

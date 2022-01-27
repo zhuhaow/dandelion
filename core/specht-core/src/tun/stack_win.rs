@@ -1,10 +1,10 @@
 use super::device::Device;
-use crate::acceptor::Acceptor;
-use crate::acceptor::NoOpAcceptor;
-use crate::resolver::Resolver;
-use crate::Result;
-use futures::future::Ready;
-use futures::Future;
+use crate::{
+    acceptor::{Acceptor, NoOpAcceptor},
+    resolver::Resolver,
+    Result,
+};
+use futures::{future::Ready, Future};
 use ipnetwork::Ipv4Network;
 use tokio::net::TcpStream;
 

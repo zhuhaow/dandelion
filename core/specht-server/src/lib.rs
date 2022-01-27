@@ -5,24 +5,27 @@ pub mod privilege;
 use self::privilege::PrivilegeHandler;
 use crate::config::{AcceptorConfig, ServerConfig};
 use anyhow::bail;
-use futures::future::{AbortRegistration, Abortable};
-use futures::Stream;
-use futures::{future::try_join_all, stream::select_all, StreamExt, TryStreamExt};
+use futures::{
+    future::{try_join_all, AbortRegistration, Abortable},
+    stream::select_all,
+    Stream, StreamExt, TryStreamExt,
+};
 use log::{debug, warn};
-use specht_core::acceptor::http::HttpAcceptor;
-use specht_core::acceptor::AsDynAcceptorArc;
-use specht_core::tun::stack::create_stack;
 use specht_core::{
-    acceptor::{simplex::SimplexAcceptor, socks5::Socks5Acceptor},
+    acceptor::{
+        http::HttpAcceptor, simplex::SimplexAcceptor, socks5::Socks5Acceptor, AsDynAcceptorArc,
+    },
     connector::Connector,
     simplex::Config,
+    tun::stack::create_stack,
     Result,
 };
-use std::net::SocketAddr;
-use std::sync::Arc;
-use tokio::net::TcpStream;
-use tokio::task::JoinHandle;
-use tokio::{io::copy_bidirectional, net::TcpListener};
+use std::{net::SocketAddr, sync::Arc};
+use tokio::{
+    io::copy_bidirectional,
+    net::{TcpListener, TcpStream},
+    task::JoinHandle,
+};
 use tokio_stream::wrappers::TcpListenerStream;
 
 #[derive(Default)]

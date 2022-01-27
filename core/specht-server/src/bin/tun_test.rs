@@ -1,16 +1,14 @@
 use ipnetwork::Ipv4Network;
 use log::{debug, warn};
-use specht_core::acceptor::Acceptor;
-use specht_core::connector::tcp::TcpConnector;
-use specht_core::connector::Connector;
-use specht_core::resolver::udp::UdpResolver;
-use specht_core::tun::listening_address_for_subnet;
-use specht_core::tun::{device::Device, stack::create_stack};
-use specht_core::Result;
-use std::sync::Arc;
-use std::time::Duration;
-use tokio::io::copy_bidirectional;
-use tokio::net::TcpListener;
+use specht_core::{
+    acceptor::Acceptor,
+    connector::{tcp::TcpConnector, Connector},
+    resolver::udp::UdpResolver,
+    tun::{device::Device, listening_address_for_subnet, stack::create_stack},
+    Result,
+};
+use std::{sync::Arc, time::Duration};
+use tokio::{io::copy_bidirectional, net::TcpListener};
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<()> {

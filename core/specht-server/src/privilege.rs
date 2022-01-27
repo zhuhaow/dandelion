@@ -1,7 +1,6 @@
 use anyhow::bail;
 use ipnetwork::Ipv4Network;
-use specht_core::tun::device::Device;
-use specht_core::Result;
+use specht_core::{tun::device::Device, Result};
 use std::net::SocketAddr;
 
 // Delegate the actions that we cannot do with normal permission to external

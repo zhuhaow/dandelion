@@ -4,8 +4,10 @@ use futures::future::AbortHandle;
 use ipnetwork::Ipv4Network;
 use libc::c_int;
 use rich_phantoms::PhantomInvariantAlwaysSendSync;
-use specht_core::tun::device::{create_tun_as_raw_handle, Device, INVALID_DEVICE_HANDLE};
-use specht_core::Result;
+use specht_core::{
+    tun::device::{create_tun_as_raw_handle, Device, INVALID_DEVICE_HANDLE},
+    Result,
+};
 use specht_server::{config::ServerConfig, privilege::PrivilegeHandler, Server};
 use std::{
     ffi::{c_void, CStr, CString},
@@ -16,8 +18,10 @@ use std::{
     ptr::{null, NonNull},
     thread,
 };
-use tokio::sync::oneshot::Sender;
-use tokio::{runtime::Builder, sync::oneshot};
+use tokio::{
+    runtime::Builder,
+    sync::{oneshot, oneshot::Sender},
+};
 
 // For some reason cbindgen cannot find the type def, so redefin it here.
 #[cfg(any(target_os = "macos", target_os = "linux"))]
