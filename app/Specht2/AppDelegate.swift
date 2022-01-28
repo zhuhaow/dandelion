@@ -11,10 +11,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var taskBarController: TaskBarController!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        Log.initialize()
         ConfigManager.initialize()
         Autostart.initialize()
         Update.initialize()
-
+        
         taskBarController = TaskBarController()
     }
 

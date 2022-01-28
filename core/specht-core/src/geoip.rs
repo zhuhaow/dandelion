@@ -1,6 +1,5 @@
 use crate::Result;
 use flate2::read::GzDecoder;
-use log::debug;
 use maxminddb::Reader;
 use memmap2::Mmap;
 use serde::Deserialize;
@@ -11,6 +10,7 @@ use std::{
 };
 use tar::Archive;
 use tempfile::tempdir;
+use tracing::{debug, info};
 
 #[derive(Debug, Deserialize, Clone)]
 pub enum Source {
@@ -34,7 +34,7 @@ pub async fn create_reader(source: &Source) -> Result<Reader<Mmap>> {
 async fn download_db(license: &str, to: &Path) -> Result<()> {
     let dir = tempdir()?;
 
-    debug!(
+    info!(
         "Downloading GeoLite2 database from remote to temp folder {} ...",
         dir.path().to_str().unwrap()
     );
@@ -68,7 +68,7 @@ async fn download_db(license: &str, to: &Path) -> Result<()> {
     create_dir_all(to.parent().unwrap())?;
 
     std::fs::copy(db_temp_dir.join("GeoLite2-Country.mmdb"), &to)?;
-    debug!("Done");
+    info!("Downloaded GeoLite2 database");
 
     Ok(())
 }
@@ -80,6 +80,10 @@ fn open_reader(from: &Path) -> Result<Reader<Mmap>> {
 async fn ensure_reader(license: &str, temp_file: &Path) -> Result<Reader<Mmap>> {
     // first try to load the file
     if let Ok(reader) = open_reader(temp_file) {
+        debug!(
+            "Found existing GeoList2 database from {}",
+            temp_file.to_str().unwrap()
+        );
         return Ok(reader);
     }
 

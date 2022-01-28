@@ -1,5 +1,4 @@
 use ipnetwork::Ipv4Network;
-use log::{debug, warn};
 use specht_core::{
     acceptor::Acceptor,
     connector::{tcp::TcpConnector, Connector},
@@ -9,6 +8,7 @@ use specht_core::{
 };
 use std::{sync::Arc, time::Duration};
 use tokio::{io::copy_bidirectional, net::TcpListener};
+use tracing::{debug, warn};
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<()> {

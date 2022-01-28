@@ -13,7 +13,6 @@ use anyhow::ensure;
 use bytes::{Bytes, BytesMut};
 use futures::{Future, StreamExt};
 use ipnetwork::Ipv4Network;
-use log::debug;
 use pnet_packet::{
     ip::IpNextHeaderProtocols,
     ipv4::{checksum, Ipv4Packet, MutableIpv4Packet},
@@ -22,6 +21,7 @@ use pnet_packet::{
 };
 use std::{net::SocketAddrV4, ops::Range, sync::Arc, time::Duration};
 use tokio::{io::AsyncReadExt, net::TcpStream, sync::Mutex};
+use tracing::info;
 
 use trust_dns_client::{
     op::Message,
@@ -69,7 +69,7 @@ pub async fn create_stack<R: Resolver>(
     let dns_server_clone = dns_server.clone();
     let translator_clone = translator.clone();
 
-    debug!("DNS listening on {}", dns_ip);
+    info!("Tun DNS listening on {}", dns_ip);
 
     let packet_fut = async move {
         let writer = device.get_writer();
@@ -106,7 +106,7 @@ pub async fn create_stack<R: Resolver>(
             .await;
 
             if let Err(err) = result {
-                log::info!(
+                info!(
                     "Error happened when handing packets from TUN interface: {}",
                     err
                 );
@@ -146,8 +146,6 @@ impl<R: Resolver> StackImpl<R> {
     }
 
     async fn input(&self, mut tun_buf: BytesMut) -> Result<()> {
-        debug!("Got new packet input");
-
         let packet_buf = &mut tun_buf[4..];
 
         let mut packet = MutableIpv4Packet::new(packet_buf)
@@ -176,12 +174,8 @@ impl<R: Resolver> StackImpl<R> {
         // There is an issue in the type def require the T to be a ref.
         inbound_udp_packet: &'a UdpPacket<'a>,
     ) -> Result<()> {
-        debug!("Got a dns request");
         let dns_request = Message::from_bytes(inbound_udp_packet.payload())?;
-        debug!("Locking DNS");
         let dns_response = self.dns_server.handle(dns_request).await?;
-        debug!("Released DNS");
-        debug!("Got response for fake dns server");
         let mut dns_response_buf = Vec::new();
         let mut encoder = BinEncoder::new(&mut dns_response_buf);
         dns_response.emit(&mut encoder)?;
@@ -235,15 +229,10 @@ impl<R: Resolver> StackImpl<R> {
     }
 
     async fn translate<'a>(&self, inbound_packet: &'a mut MutableIpv4Packet<'a>) -> Result<()> {
-        debug!("Locking translator");
-        let result = self.translator.lock().await.translate(inbound_packet);
-        debug!("Released translator");
-        result
+        self.translator.lock().await.translate(inbound_packet)
     }
 
     fn send(&self, packet: &Bytes) -> Result<()> {
-        debug!("Writing packet to tun");
-
         self.writer.write(packet.as_ref())
     }
 }

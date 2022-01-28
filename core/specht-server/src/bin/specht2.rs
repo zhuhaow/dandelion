@@ -25,10 +25,12 @@ async fn main() -> Result<()> {
     #[cfg(not(target_os = "windows"))]
     {
         use fdlimit::raise_fd_limit;
-        use log::info;
+        use tracing::info;
+        use tracing::warn;
+
         match raise_fd_limit() {
             Some(limit) => info!("Raised fd limit to {}", limit),
-            None => info!("Failed to raise fd limit, this may cause \"Too many files error\" when there is too many connections"),
+            None => warn!("Failed to raise fd limit, this may cause \"Too many files error\" when there is too many connections"),
         }
     }
 

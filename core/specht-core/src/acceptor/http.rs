@@ -1,5 +1,3 @@
-use std::{str::FromStr, sync::Arc};
-
 use super::{Acceptor, HandshakeResult};
 use crate::{endpoint::Endpoint, io::Io};
 use anyhow::{bail, ensure, Result};
@@ -9,6 +7,7 @@ use http::{
     Method, Request, Response,
 };
 use hyper::{client::conn::SendRequest, server::conn::Http, service::service_fn, Body};
+use std::{str::FromStr, sync::Arc};
 use tokio::{
     io::duplex,
     sync::{

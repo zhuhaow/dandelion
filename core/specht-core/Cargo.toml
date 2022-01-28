@@ -18,7 +18,6 @@ hyper = { version = "0.14.16", features = ["http1", "server"] }
 bytes = "1.1.0"
 tungstenite = "0.16.0"
 serde = { version = "1.0.132", features = ["derive"] }
-log = "0.4.14"
 anyhow = { version = "1.0.52", features = ["backtrace"] }
 tokio-native-tls = "0.3.0"
 lazy_static = "1.4.0"
@@ -49,6 +48,7 @@ as-dyn-trait = "0.2.0"
 byteorder = "1.4.3"
 async-stream = "0.3.2"
 cfg-if = "1.0.0"
+tracing = { version = "0.1.29", features = ["log"] }
 
 [dev-dependencies]
 env_logger = "0.9.0"

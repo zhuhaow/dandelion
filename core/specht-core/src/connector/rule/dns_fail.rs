@@ -1,5 +1,6 @@
 use super::Rule;
 use crate::{connector::Connector, endpoint::Endpoint, resolver::Resolver};
+use tracing::debug;
 
 pub struct DnsFailRule<R: Resolver, C: Connector> {
     connector: C,
@@ -23,10 +24,21 @@ impl<R: Resolver, C: Connector> Rule<C> for DnsFailRule<R, C> {
             match result {
                 Ok(ips) => {
                     if ips.is_empty() {
+                        debug!(
+                            "Matched since resolve failed, domain {} is resolved with no result",
+                            host
+                        );
                         return Some(&self.connector);
                     }
                 }
-                Err(_) => return Some(&self.connector),
+                Err(err) => {
+                    debug!(
+                        "Matched since resolved failed for domain {} due to {}",
+                        host, err
+                    );
+
+                    return Some(&self.connector);
+                }
             }
         }
         None

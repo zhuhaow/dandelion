@@ -10,7 +10,7 @@ use futures::{
     stream::select_all,
     Stream, StreamExt, TryStreamExt,
 };
-use log::{debug, warn};
+use rand::Rng;
 use specht_core::{
     acceptor::{
         http::HttpAcceptor, simplex::SimplexAcceptor, socks5::Socks5Acceptor, AsDynAcceptorArc,
@@ -27,6 +27,7 @@ use tokio::{
     task::JoinHandle,
 };
 use tokio_stream::wrappers::TcpListenerStream;
+use tracing::{debug, info_span, warn, Instrument};
 
 #[derive(Default)]
 struct Handles(Vec<JoinHandle<()>>);
@@ -162,28 +163,38 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
                 let acceptor = acceptor.clone();
                 let connector = connector.clone();
 
-                tokio::spawn(async move {
-                    let result = async move {
-                        debug!("Start handshake");
-                        let (endpoint, fut) = acceptor.do_handshake(stream).await?;
-                        debug!("Accepted connection request to {}", endpoint);
-                        let mut remote = connector.connect(&endpoint).await?;
-                        debug!("Connected to {}", endpoint);
-                        let mut local = fut.await?;
-                        debug!("Forwarding data");
-                        copy_bidirectional(&mut local, &mut remote).await?;
-                        debug!("Done processing connection");
+                tokio::spawn(
+                    async move {
+                        let result = async move {
+                            debug!("Start handshake");
+                            let (endpoint, fut) = acceptor.do_handshake(stream).await?;
+                            debug!(
+                                "Accepted connection request to {}, connecting to remote...",
+                                endpoint
+                            );
+                            let mut remote = connector.connect(&endpoint).await?;
+                            debug!(
+                                "Connected to remote for {}, finishing handshake...",
+                                endpoint
+                            );
+                            let mut local = fut.await?;
+                            debug!("Start forwarding data...");
+                            copy_bidirectional(&mut local, &mut remote).await?;
+                            debug!("Done processing connection");
 
-                        Ok::<_, anyhow::Error>(())
-                    }
-                    .await;
+                            Ok::<_, anyhow::Error>(())
+                        }
+                        .await;
 
-                    if let Err(err) = result {
-                        warn!("Error happened when processing a connection: {}", err)
-                    } else {
-                        debug!("Successfully processed connection");
+                        if let Err(err) = result {
+                            warn!("Error happened when processing a connection: {}", err)
+                        }
                     }
-                });
+                    .instrument(info_span!(
+                        "connection",
+                        id = rand::thread_rng().gen::<u32>()
+                    )),
+                );
             }
 
             Ok::<_, anyhow::Error>(())

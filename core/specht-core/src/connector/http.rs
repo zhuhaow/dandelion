@@ -3,7 +3,7 @@ use crate::{endpoint::Endpoint, Result};
 use anyhow::{ensure, Context};
 use http::{Request, StatusCode};
 use hyper::{client::conn::handshake, Body};
-use log::debug;
+use tracing::debug;
 
 pub struct HttpConnector<C: Connector> {
     connector: C,
@@ -24,6 +24,8 @@ impl<C: Connector> Connector for HttpConnector<C> {
     type Stream = C::Stream;
 
     async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
+        debug!("Begin HTTP CONNECT handshake");
+
         let s = self
             .connector
             .connect(&self.next_hop)
@@ -66,7 +68,7 @@ impl<C: Connector> Connector for HttpConnector<C> {
         }
         .with_context(|| "Failed to obtain the underlying io after handshake")?;
 
-        debug!("Finished http CONNECT handshake");
+        debug!("Finished HTTP CONNECT handshake");
 
         Ok(parts.io)
     }

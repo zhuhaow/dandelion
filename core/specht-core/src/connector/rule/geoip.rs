@@ -4,6 +4,7 @@ use iso3166_1::CountryCode;
 use maxminddb::{geoip2::Country, MaxMindDBError, Reader};
 use memmap2::Mmap;
 use std::{net::IpAddr, sync::Arc};
+use tracing::{debug, warn};
 
 /// GeoRule matches the geo location of the endpoint based on IP address.
 ///
@@ -36,21 +37,33 @@ impl<R: Resolver, C: Connector> GeoRule<R, C> {
 
     /// Returns None if there is error when we try to find the geo location of the ip.
     fn match_ip(&self, addr: &IpAddr) -> Option<bool> {
-        let result: Option<Country> = match self.reader.lookup(*addr) {
-            Ok(c) => Some(c),
+        let result: Option<&str> = match self.look_up_country(addr) {
+            Ok(c) => c,
             Err(err) => {
                 if matches!(err, MaxMindDBError::AddressNotFoundError(_)) {
+                    debug!(
+                        "Cannot find geo information for ip {}, error: {}",
+                        addr, err
+                    );
                     None
                 } else {
+                    warn!(
+                        "Failed to look up geo information for ip {}, error: {}",
+                        addr, err
+                    );
                     return None;
                 }
             }
         };
 
-        Some(
-            result.and_then(|c| c.country.and_then(|c| c.iso_code))
-                == self.country.as_ref().map(|c| c.alpha2),
-        )
+        Some(result == self.country.as_ref().map(|c| c.alpha2))
+    }
+
+    fn look_up_country(&self, addr: &IpAddr) -> std::result::Result<Option<&str>, MaxMindDBError> {
+        self.reader
+            .lookup(*addr)
+            .map(|c: Country| c.country.and_then(|c| c.iso_code))
+            .map_err(Into::into)
     }
 }
 
@@ -60,15 +73,37 @@ impl<R: Resolver, C: Connector> Rule<C> for GeoRule<R, C> {
         match endpoint {
             Endpoint::Addr(addr) => {
                 if self.match_ip(&addr.ip()) == Some(self.equal) {
+                    debug!(
+                        "Matched ip {} with geo: {:#?}, equal: {}",
+                        addr,
+                        self.country.as_ref().map(|c| c.name),
+                        self.equal
+                    );
                     return Some(&self.connector);
                 }
+                debug!(
+                    "Didn't match ip {} with geo: {:#?}, equal: {}. The ip look up result: {:#?}",
+                    addr,
+                    self.country.as_ref().map(|c| c.name),
+                    self.equal,
+                    self.look_up_country(&addr.ip()),
+                );
             }
             Endpoint::Domain(host, _) => {
                 let ips = self.resolver.lookup_ip(host.as_str()).await.ok()?;
+                debug!("Domain {} resolved to {:#?}", host, ips);
                 for ip in ips {
                     if self.match_ip(&ip) == Some(self.equal) {
+                        debug!("Matched ip {} with geo {}", ip, self.equal);
                         return Some(&self.connector);
                     }
+                    debug!(
+                    "Didn't match ip {} with geo: {:#?}, equal: {}. The ip look up result: {:#?}",
+                    ip,
+                    self.country.as_ref().map(|c| c.name),
+                    self.equal,
+                    self.look_up_country(&ip),
+                );
                 }
             }
         };
