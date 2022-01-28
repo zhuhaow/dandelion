@@ -15,7 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ConfigManager.initialize()
         Autostart.initialize()
         Update.initialize()
-        
+
         taskBarController = TaskBarController()
     }
 

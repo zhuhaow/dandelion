@@ -15,7 +15,7 @@ enum LogLevel: Codable, Defaults.Serializable, CaseIterable {
     case info
     case debug
     case trace
-    
+
     func toFfiLogLevel() -> UInt {
         switch self {
         case .off:

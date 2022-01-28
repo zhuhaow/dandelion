@@ -67,9 +67,9 @@ class TaskBarController: NSObject, NSMenuDelegate {
             .target = self
 
         menu.addItem(NSMenuItem.separator())
-        
+
         menu.addItem(createLogMenuItem())
-        
+
         menu.addItem(NSMenuItem.separator())
 
         _ = menu.addItem(withTitle: "Autostart app at login",
@@ -160,24 +160,24 @@ extension TaskBarController {
                           action: nil,
                           keyEquivalent: "").then {
             let menu = NSMenu()
-            
+
             for level in LogLevel.allCases {
                 let item = NSMenuItem(title: String(describing: level),
                                       action: #selector(self.logLevel),
                                       keyEquivalent: "")
-                
+
                 item.target = self
-                
+
                 if level == Defaults[.logLevel] {
                     item.state = .on
                 }
                 menu.addItem(item)
             }
-            
+
             $0.submenu = menu
         }
     }
-    
+
     @objc func logLevel(item: NSMenuItem) {
         for level in LogLevel.allCases {
             if item.title == String(describing: level) {
