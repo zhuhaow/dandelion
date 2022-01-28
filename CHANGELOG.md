@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.5.0
+
+**[App]** Add support for logging
+
 ## 0.4.0
 
 Use config file to determine if the app should update network configuration.
