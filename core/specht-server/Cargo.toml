@@ -6,7 +6,7 @@ license = "MIT"
 
 [dependencies]
 specht-core = { path = "../specht-core" }
-tokio = { version = "1.15.0", features = ["io-util", "net"] }
+tokio = { version = "1.16.1", features = ["io-util", "net"] }
 async-trait = "0.1.52"
 structopt = "0.3.25"
 futures = "0.3.19"
