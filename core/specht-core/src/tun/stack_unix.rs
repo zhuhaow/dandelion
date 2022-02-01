@@ -36,7 +36,6 @@ pub async fn create_stack<R: Resolver>(
     // It's easy to make them configurable but we don't need it yet.
     static MTU: usize = 1500;
     static DNS_TTL: Duration = Duration::from_secs(120);
-    static IP_TTL: Duration = Duration::from_secs(180);
     static FAKE_SNAT_IP_POOL_SIZE: usize = 10;
     static FAKE_SNAT_PORT_RANGE: Range<u16> = 1024..65535;
     static DNS_PORT: u16 = 53;
@@ -63,7 +62,6 @@ pub async fn create_stack<R: Resolver>(
         listening_addr,
         fake_snap_ip_pool,
         FAKE_SNAT_PORT_RANGE.clone(),
-        IP_TTL,
     )));
 
     let dns_server_clone = dns_server.clone();

@@ -1,41 +1,225 @@
-use crate::{utils::expiring_hash::ExpiringHashMap, Result};
-use anyhow::bail;
-
+use crate::Result;
+use anyhow::{bail, ensure};
 use pnet_packet::{
     ip::IpNextHeaderProtocols,
     ipv4::{checksum, MutableIpv4Packet},
-    tcp::{ipv4_checksum, MutableTcpPacket, TcpPacket},
+    tcp::{
+        ipv4_checksum, MutableTcpPacket,
+        TcpFlags::{ACK, FIN, RST, SYN},
+        TcpPacket,
+    },
     MutablePacket, Packet,
 };
 use rand::{prelude::SliceRandom, Rng};
 use std::{
+    collections::HashMap,
     net::{Ipv4Addr, SocketAddrV4},
     ops::Range,
-    time::Duration,
 };
+use tracing::{info, trace};
+
+#[derive(PartialEq)]
+enum State {
+    On,
+    GetFin { expect_ack: u32 },
+    Closed,
+}
+
+#[derive(Hash, PartialEq, Eq, Clone)]
+struct Key(SocketAddrV4, (SocketAddrV4, SocketAddrV4));
+
+struct Connection {
+    fake_ip_state: State,
+    real_pair_state: State,
+    fake_ip: SocketAddrV4,
+    real_pair: (SocketAddrV4, SocketAddrV4),
+}
+
+impl Connection {
+    fn new(fake_ip: SocketAddrV4, real_pair: (SocketAddrV4, SocketAddrV4)) -> Self {
+        Self {
+            fake_ip,
+            real_pair,
+            fake_ip_state: State::On,
+            real_pair_state: State::On,
+        }
+    }
+}
+
+struct ConnectionManager {
+    real_pair_map: HashMap<(SocketAddrV4, SocketAddrV4), Key>,
+    fake_ip_map: HashMap<SocketAddrV4, Key>,
+    map: HashMap<Key, Connection>,
+    fake_ips: Vec<Ipv4Addr>,
+    fake_port_range: Range<u16>,
+    listening_addr: SocketAddrV4,
+}
+
+struct RewriteTo(SocketAddrV4, SocketAddrV4);
+
+impl ConnectionManager {
+    fn new(
+        fake_ips: Vec<Ipv4Addr>,
+        fake_port_range: Range<u16>,
+        listening_addr: SocketAddrV4,
+    ) -> Self {
+        Self {
+            real_pair_map: Default::default(),
+            fake_ip_map: Default::default(),
+            map: Default::default(),
+            fake_ips,
+            fake_port_range,
+            listening_addr,
+        }
+    }
+
+    fn get_init_syn(&mut self, source: SocketAddrV4, target: SocketAddrV4) -> Result<RewriteTo> {
+        ensure!(
+            target != self.listening_addr,
+            "Unexpected SYN send to {}",
+            self.listening_addr,
+        );
+
+        // Check if this is a dup SYN
+        match self
+            .real_pair_map
+            .get(&(source, target))
+            .and_then(|k| self.map.get(k))
+        {
+            Some(c) => Ok(RewriteTo(c.fake_ip, self.listening_addr)),
+            None => {
+                let fake_ip = self.get_fake_ip()?;
+                trace!("Create new connection {} -> {}", source, target);
+                let connection = Connection::new(fake_ip, (source, target));
+                self.fake_ip_map
+                    .insert(fake_ip, Key(fake_ip, (source, target)));
+                self.real_pair_map
+                    .insert((source, target), Key(fake_ip, (source, target)));
+                self.map.insert(Key(fake_ip, (source, target)), connection);
+                Ok(RewriteTo(fake_ip, self.listening_addr))
+            }
+        }
+    }
+
+    fn get_rst(&mut self, source: SocketAddrV4, target: SocketAddrV4) -> Result<Option<RewriteTo>> {
+        // we are not implementing RFC5963 to check the validity of RST since we
+        // don't have any attack surface with internal only stack.
+        match self.find_mapping(&source, &target) {
+            Some((rewrite, key)) => {
+                self.remove_connection(&key);
+
+                Ok(Some(rewrite))
+            }
+            // Resetting nothing, ignore.
+            None => Ok(None),
+        }
+    }
+
+    fn get_packet(
+        &mut self,
+        source: SocketAddrV4,
+        target: SocketAddrV4,
+        ack: Option<u32>,
+        seq: u32,
+        fin: bool,
+    ) -> Result<RewriteTo> {
+        match self.find_mapping(&source, &target) {
+            Some((rewrite, k)) => {
+                let conn = self.map.get_mut(&k).unwrap();
+
+                let (source_state, desitination_state) = if target == conn.fake_ip {
+                    (&mut conn.real_pair_state, &mut conn.fake_ip_state)
+                } else {
+                    (&mut conn.fake_ip_state, &mut conn.real_pair_state)
+                };
+
+                match desitination_state {
+                    State::On => {
+                        if fin {
+                            *desitination_state = State::GetFin {
+                                expect_ack: seq.saturating_add(1),
+                            };
+                        }
+                    }
+                    _ => {}
+                };
+
+                match source_state {
+                    State::GetFin { expect_ack } => {
+                        if Some(expect_ack.to_owned()) == ack {
+                            *source_state = State::Closed
+                        }
+                    }
+                    _ => {}
+                };
+
+                if source_state == &State::Closed && desitination_state == &State::Closed {
+                    trace!(
+                        "Tun translator removed connection {} <-> {}",
+                        source,
+                        target
+                    );
+                    self.remove_connection(&k);
+                }
+
+                Ok(rewrite)
+            }
+            None => bail!("Failed to find source/destination mapping for packet",),
+        }
+    }
+
+    fn remove_connection(&mut self, key: &Key) {
+        match self.map.remove(key) {
+            Some(c) => {
+                self.fake_ip_map.remove(&c.fake_ip);
+                self.real_pair_map.remove(&c.real_pair);
+            }
+            None => {}
+        }
+    }
+
+    fn get_fake_ip(&self) -> Result<SocketAddrV4> {
+        for _ in 0..1000 {
+            let mut rng = rand::thread_rng();
+            let ip = self.fake_ips.choose(&mut rng).unwrap();
+            let port = rng.gen_range(self.fake_port_range.clone());
+            let addr = SocketAddrV4::new(*ip, port);
+            if self.fake_ip_map.get(&addr).is_none() {
+                return Ok(addr);
+            }
+        }
+
+        bail!("Failed to generated a fake ip");
+    }
+
+    fn find_mapping(
+        &mut self,
+        source: &SocketAddrV4,
+        target: &SocketAddrV4,
+    ) -> Option<(RewriteTo, Key)> {
+        if source == &self.listening_addr {
+            self.fake_ip_map
+                .get(target)
+                .and_then(|k| self.map.get(k).map(|c| (k, c)))
+                .map(|(k, c)| (RewriteTo(c.real_pair.1, c.real_pair.0), k.clone()))
+        } else {
+            self.real_pair_map
+                .get(&(*source, *target))
+                .and_then(|k| self.map.get(k).map(|c| (k, c)))
+                .map(|(k, c)| (RewriteTo(c.fake_ip, self.listening_addr), k.clone()))
+        }
+    }
+}
 
 // TODO: Support IPv6
 pub struct Translator {
-    listening_addr: SocketAddrV4,
-    real_source_to_fake_map: ExpiringHashMap<(SocketAddrV4, SocketAddrV4), SocketAddrV4>,
-    fake_to_real_source_map: ExpiringHashMap<SocketAddrV4, (SocketAddrV4, SocketAddrV4)>,
-    fake_ips: Vec<Ipv4Addr>,
-    fake_port_range: Range<u16>,
+    manager: ConnectionManager,
 }
 
 impl Translator {
-    pub fn new(
-        listening_addr: SocketAddrV4,
-        ips: Vec<Ipv4Addr>,
-        ports: Range<u16>,
-        ip_ttl: Duration,
-    ) -> Self {
+    pub fn new(listening_addr: SocketAddrV4, ips: Vec<Ipv4Addr>, ports: Range<u16>) -> Self {
         Self {
-            listening_addr,
-            real_source_to_fake_map: ExpiringHashMap::new(ip_ttl, true),
-            fake_to_real_source_map: ExpiringHashMap::new(ip_ttl, true),
-            fake_ips: ips,
-            fake_port_range: ports,
+            manager: ConnectionManager::new(ips, ports, listening_addr),
         }
     }
 
@@ -51,82 +235,59 @@ impl Translator {
         let inbound_tcp = TcpPacket::new(inbound_packet.payload())
             .ok_or_else(|| anyhow::anyhow!("Invalid TCP packet"))?;
 
-        // There are two cases, we have a packet send to fake ip from outside or
-        // a packet send to fake ip from the listening port.
-        //
-        // Check by source.
-        if SocketAddrV4::new(inbound_packet.get_source(), inbound_tcp.get_source())
-            == self.listening_addr
-        {
-            if let Some((real_dest, real_source)) =
-                self.fake_to_real_source_map.get(&SocketAddrV4::new(
-                    inbound_packet.get_destination(),
-                    inbound_tcp.get_destination(),
-                ))
-            {
-                // Query it once to refresh the expiring time.
-                let _ = self
-                    .real_source_to_fake_map
-                    .get(&(*real_dest, *real_source));
+        let source = SocketAddrV4::new(inbound_packet.get_source(), inbound_tcp.get_source());
+        let target = SocketAddrV4::new(
+            inbound_packet.get_destination(),
+            inbound_tcp.get_destination(),
+        );
 
-                update_packet(inbound_packet, real_source, real_dest);
-
-                Ok(())
-            } else {
-                bail!(
-                    "Failed to find mapping for address {}",
-                    SocketAddrV4::new(
-                        inbound_packet.get_destination(),
-                        inbound_tcp.get_destination(),
-                    )
-                );
+        let result = if inbound_tcp.get_flags() == SYN {
+            trace!("Get a SYN packet, {} -> {}", source, target);
+            self.manager.get_init_syn(source, target)
+        } else if inbound_tcp.get_flags() & RST != 0 {
+            trace!("Get a RST packet, {} -> {}", source, target);
+            match self.manager.get_rst(source, target) {
+                Ok(result) => match result {
+                    Some(rewrite) => Ok(rewrite),
+                    None => bail!("Failed to translate the RST packet"),
+                },
+                Err(e) => Err(e),
             }
         } else {
-            let real_source =
-                SocketAddrV4::new(inbound_packet.get_source(), inbound_tcp.get_source());
-            let real_dest = SocketAddrV4::new(
-                inbound_packet.get_destination(),
-                inbound_tcp.get_destination(),
-            );
-
-            let fake_source = match self.real_source_to_fake_map.get(&(real_source, real_dest)) {
-                Some(fake_source) => {
-                    let _ = self.fake_to_real_source_map.get(fake_source);
-
-                    *fake_source
-                }
-                None => loop {
-                    // Clean up when we accept a new connection. This won't
-                    // happen too much so it's ok. And we don't have to set up
-                    // a timer for this.
-                    self.clear_expired();
-                    let mut rng = rand::thread_rng();
-                    let ip = self.fake_ips.choose(&mut rng).unwrap();
-                    let port = rng.gen_range(self.fake_port_range.clone());
-                    let addr = SocketAddrV4::new(*ip, port);
-                    if self.fake_to_real_source_map.get(&addr).is_none() {
-                        self.fake_to_real_source_map
-                            .insert(addr, (real_source, real_dest));
-                        self.real_source_to_fake_map
-                            .insert((real_source, real_dest), addr);
-                        break addr;
-                    }
+            self.manager.get_packet(
+                source,
+                target,
+                if inbound_tcp.get_flags() & ACK != 0 {
+                    Some(inbound_tcp.get_acknowledgement())
+                } else {
+                    None
                 },
-            };
+                inbound_tcp.get_sequence(),
+                inbound_tcp.get_flags() & FIN != 0,
+            )
+        };
 
-            update_packet(inbound_packet, &fake_source, &self.listening_addr);
+        match result {
+            Ok(rewrite) => update_packet(inbound_packet, &rewrite.0, &rewrite.1),
+            Err(err) => {
+                info!(
+                    "Error happened when translating packet {} -> {}, {},  sending RST back.",
+                    err, source, target
+                );
 
-            Ok(())
+                update_packet_to_rst(inbound_packet);
+            }
         }
+
+        Ok(())
     }
 
-    pub fn look_up_source(&mut self, addr: &SocketAddrV4) -> Option<SocketAddrV4> {
-        self.fake_to_real_source_map.get(addr).map(|p| p.1)
-    }
-
-    fn clear_expired(&mut self) {
-        self.fake_to_real_source_map.clear_expired();
-        self.real_source_to_fake_map.clear_expired();
+    pub fn look_up_source(&self, addr: &SocketAddrV4) -> Option<SocketAddrV4> {
+        self.manager
+            .fake_ip_map
+            .get(addr)
+            .and_then(|k| self.manager.map.get(k))
+            .map(|c| c.real_pair.1)
     }
 }
 
@@ -143,4 +304,31 @@ fn update_packet(packet: &mut MutableIpv4Packet, source: &SocketAddrV4, dest: &S
         source.ip(),
         dest.ip(),
     ));
+}
+
+fn update_packet_to_rst(packet: &mut MutableIpv4Packet) {
+    let source_ip = packet.get_destination();
+    let destination_ip = packet.get_source();
+
+    packet.set_source(destination_ip);
+    packet.set_destination(source_ip);
+
+    let mut packet_tcp = MutableTcpPacket::new(packet.payload_mut()).unwrap();
+    let source_port = packet_tcp.get_destination();
+    let destination_port = packet_tcp.get_source();
+    let original_payload_length = packet_tcp.payload().len();
+
+    packet_tcp.set_source(destination_port);
+    packet_tcp.set_destination(source_port);
+    packet_tcp.set_sequence(packet_tcp.get_acknowledgement());
+    packet_tcp.set_flags(RST);
+    packet_tcp.set_payload(&[]);
+    packet_tcp.set_checksum(ipv4_checksum(
+        &packet_tcp.to_immutable(),
+        &source_ip,
+        &destination_ip,
+    ));
+
+    packet.set_total_length(packet.get_total_length() - original_payload_length as u16);
+    packet.set_checksum(checksum(&packet.to_immutable()));
 }
