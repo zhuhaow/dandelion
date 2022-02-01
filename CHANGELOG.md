@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.6.0
+
+Use smarter algorithm to handle TCP flow in tun mode.
+Enable keepalive on all TCP connections.
+
 ## 0.5.0
 
 **[App]** Add support for logging
