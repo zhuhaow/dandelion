@@ -133,24 +133,18 @@ impl ConnectionManager {
                     (&mut conn.fake_ip_state, &mut conn.real_pair_state)
                 };
 
-                match desitination_state {
-                    State::On => {
-                        if fin {
-                            *desitination_state = State::GetFin {
-                                expect_ack: seq.saturating_add(1),
-                            };
-                        }
+                if let State::On = desitination_state {
+                    if fin {
+                        *desitination_state = State::GetFin {
+                            expect_ack: seq.saturating_add(1),
+                        };
                     }
-                    _ => {}
                 };
 
-                match source_state {
-                    State::GetFin { expect_ack } => {
-                        if Some(expect_ack.to_owned()) == ack {
-                            *source_state = State::Closed
-                        }
+                if let State::GetFin { expect_ack } = source_state {
+                    if Some(expect_ack.to_owned()) == ack {
+                        *source_state = State::Closed
                     }
-                    _ => {}
                 };
 
                 if source_state == &State::Closed && desitination_state == &State::Closed {
@@ -169,12 +163,9 @@ impl ConnectionManager {
     }
 
     fn remove_connection(&mut self, key: &Key) {
-        match self.map.remove(key) {
-            Some(c) => {
-                self.fake_ip_map.remove(&c.fake_ip);
-                self.real_pair_map.remove(&c.real_pair);
-            }
-            None => {}
+        if let Some(c) = self.map.remove(key) {
+            self.fake_ip_map.remove(&c.fake_ip);
+            self.real_pair_map.remove(&c.real_pair);
         }
     }
 
