@@ -17,7 +17,7 @@ hyper-tungstenite = "0.5.0"
 hyper = { version = "0.14.16", features = ["http1", "server"] }
 bytes = "1.1.0"
 tungstenite = "0.16.0"
-serde = { version = "1.0.132", features = ["derive"] }
+serde = { version = "1.0.136", features = ["derive"] }
 anyhow = { version = "1.0.52", features = ["backtrace"] }
 tokio-native-tls = "0.3.0"
 lazy_static = "1.4.0"

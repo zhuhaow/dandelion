@@ -11,7 +11,7 @@ async-trait = "0.1.52"
 structopt = "0.3.25"
 futures = "0.3.19"
 ron = "0.7.0"
-serde = { version = "1.0.132", features = ["derive"] }
+serde = { version = "1.0.136", features = ["derive"] }
 serde_with = "1.11.0"
 flexi_logger = "0.22.0"
 anyhow = { version = "1.0.52", features = ["backtrace"] }
