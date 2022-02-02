@@ -1,5 +1,5 @@
 //
-//  FfiError.swift
+//  XpcError.swift
 //  Specht2
 //
 //  Created by Zhuhao Wang on 2022/1/16.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-func takeFfiLastError() -> FfiError? {
+func takeFfiLastError() -> XpcError? {
     let len = specht2_get_last_error_len()
     guard len > 0 else {
         return nil
@@ -23,11 +23,11 @@ func takeFfiLastError() -> FfiError? {
             return nil
         }
 
-        return FfiError(String(cString: ptr.baseAddress!))
+        return XpcError(String(cString: ptr.baseAddress!))
     }
 }
 
-struct FfiError: LocalizedError, Codable {
+struct XpcError: LocalizedError, Codable {
     let message: String
 
     init(_ message: String) {

@@ -16,7 +16,7 @@ class Server: ServiceInterface {
     let proxyHelper = ProxyHelper()
 
     init() {
-        XPCErrorRegistry.shared.registerDomain(nil, forErrorType: FfiError.self)
+        XPCErrorRegistry.shared.registerDomain(nil, forErrorType: XpcError.self)
 
         // swiftlint:disable force_try
         listener = try! XPCListener(type: .machService(name: Constants.helperMachLabel),

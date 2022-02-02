@@ -31,8 +31,8 @@
 		3668056627A2AD7C008F89C1 /* libspecht-ffi_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3668056527A2AD70008F89C1 /* libspecht-ffi_static.a */; };
 		3668056727A2AD80008F89C1 /* libspecht-ffi_static.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3668056527A2AD70008F89C1 /* libspecht-ffi_static.a */; };
 		3668056B27A2BF47008F89C1 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3668056A27A2BF47008F89C1 /* Log.swift */; };
-		369242CE2793F91300B70B87 /* FfiError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369242CD2793F91300B70B87 /* FfiError.swift */; };
-		369242CF2793F91300B70B87 /* FfiError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369242CD2793F91300B70B87 /* FfiError.swift */; };
+		369242CE2793F91300B70B87 /* XpcError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369242CD2793F91300B70B87 /* XpcError.swift */; };
+		369242CF2793F91300B70B87 /* XpcError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 369242CD2793F91300B70B87 /* XpcError.swift */; };
 		36B37984276846F700445DF6 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 36B37983276846F700445DF6 /* Sparkle */; };
 		36B379892768559200445DF6 /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = 36B379882768559200445DF6 /* Defaults */; };
 		36B37995276856F500445DF6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36B37994276856F500445DF6 /* Assets.xcassets */; };
@@ -132,7 +132,7 @@
 		363FB8D527910ED50019C630 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
 		3668056027A2AD70008F89C1 /* specht-ffi.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "specht-ffi.xcodeproj"; path = "../core/specht-ffi/specht-ffi.xcodeproj"; sourceTree = "<group>"; };
 		3668056A27A2BF47008F89C1 /* Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
-		369242CD2793F91300B70B87 /* FfiError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FfiError.swift; sourceTree = "<group>"; };
+		369242CD2793F91300B70B87 /* XpcError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XpcError.swift; sourceTree = "<group>"; };
 		36A8435D27528E6F00E6201D /* Specht2-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Specht2-Bridging-Header.h"; sourceTree = "<group>"; };
 		36A843672753B79E00E6201D /* core.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = core.a; path = Specht2/core.a; sourceTree = "<group>"; };
 		36AD80CE2780273B00417A11 /* Specht2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Specht2.entitlements; sourceTree = "<group>"; };
@@ -208,7 +208,7 @@
 				36298E4D2774946B00A90377 /* Constants.swift */,
 				36298E522774982F00A90377 /* ServiceInterface.swift */,
 				363FB8D527910ED50019C630 /* Endpoint.swift */,
-				369242CD2793F91300B70B87 /* FfiError.swift */,
+				369242CD2793F91300B70B87 /* XpcError.swift */,
 			);
 			path = ProxyHelperCommon;
 			sourceTree = "<group>";
@@ -553,7 +553,7 @@
 				36298E51277497E300A90377 /* ProxyHelper.swift in Sources */,
 				36298E542774982F00A90377 /* ServiceInterface.swift in Sources */,
 				363FB8D727910ED50019C630 /* Endpoint.swift in Sources */,
-				369242CF2793F91300B70B87 /* FfiError.swift in Sources */,
+				369242CF2793F91300B70B87 /* XpcError.swift in Sources */,
 				36298E4E2774946B00A90377 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -583,7 +583,7 @@
 				36DBECF6273CE96B00D4A0DB /* AppDelegate.swift in Sources */,
 				36298E1A276AD9BF00A90377 /* Autostart.swift in Sources */,
 				36298E21276B0B5900A90377 /* Server.swift in Sources */,
-				369242CE2793F91300B70B87 /* FfiError.swift in Sources */,
+				369242CE2793F91300B70B87 /* XpcError.swift in Sources */,
 				36298E1F276B01C500A90377 /* Alert.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
