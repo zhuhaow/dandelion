@@ -4,7 +4,7 @@ pub mod privilege;
 
 use self::privilege::PrivilegeHandler;
 use crate::config::{AcceptorConfig, ServerConfig};
-use anyhow::bail;
+use anyhow::{bail, Context};
 use futures::{
     future::{try_join_all, AbortRegistration, Abortable},
     stream::select_all,
@@ -166,28 +166,28 @@ impl<'a, P: PrivilegeHandler + Send + Sync + 'a> Server<P> {
                 tokio::spawn(
                     async move {
                         let result = async move {
-                            debug!("Start handshake");
-                            let (endpoint, fut) = acceptor.do_handshake(stream).await?;
-                            debug!(
-                                "Accepted connection request to {}, connecting to remote...",
-                                endpoint
-                            );
-                            let mut remote = connector.connect(&endpoint).await?;
-                            debug!(
-                                "Connected to remote for {}, finishing handshake...",
-                                endpoint
-                            );
-                            let mut local = fut.await?;
-                            debug!("Start forwarding data...");
-                            copy_bidirectional(&mut local, &mut remote).await?;
-                            debug!("Done processing connection");
+                            let (endpoint, fut) = acceptor
+                                .do_handshake(stream)
+                                .await
+                                .context("Failed to get connect request from acceptor")?;
+                            let mut remote =
+                                connector.connect(&endpoint).await.with_context(|| {
+                                    format!("Failed to connect to endpoint {}", endpoint)
+                                })?;
+                            let mut local = fut.await.with_context(|| {
+                                format!("Failed to finish handshake with local which requests to connect to {}", endpoint)
+                            })?;
+                            copy_bidirectional(&mut local, &mut remote).await.with_context(|| {
+                                format!("Failed to forward data with endpoint {}", endpoint)
+                            })?;
+                            debug!("Done processing connection to {}", endpoint);
 
                             Ok::<_, anyhow::Error>(())
                         }
                         .await;
 
                         if let Err(err) = result {
-                            warn!("Error happened when processing a connection: {}", err)
+                            warn!("Error happened when processing a connection: {:#}", err)
                         }
                     }
                     .instrument(info_span!(
