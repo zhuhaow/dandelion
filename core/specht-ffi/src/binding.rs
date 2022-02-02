@@ -1,6 +1,6 @@
 // See https://www.nickwilcox.com/blog/recipe_swift_rust_callback/
 
-use flexi_logger::LogSpecBuilder;
+use flexi_logger::{default_format, LogSpecBuilder};
 use futures::future::AbortHandle;
 use ipnetwork::Ipv4Network;
 use libc::c_int;
@@ -228,7 +228,10 @@ pub extern "C" fn specht2_set_log_level(level: LevelFilter) {
         .module("specht_server", level)
         .module("specht_ffi", level)
         .build();
-    let _ = flexi_logger::Logger::with(spec).log_to_stderr().start();
+    let _ = flexi_logger::Logger::with(spec)
+        .format(default_format)
+        .log_to_stderr()
+        .start();
 }
 
 extern "C" fn handler_callback(sender: NonNull<c_void>, err_ptr: *const c_char) {
