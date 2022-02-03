@@ -1,5 +1,6 @@
 use crate::Result;
 use anyhow::{bail, ensure};
+use multi_map::MultiMap;
 use pnet_packet::{
     ip::IpNextHeaderProtocols,
     ipv4::{checksum, MutableIpv4Packet},
@@ -12,7 +13,6 @@ use pnet_packet::{
 };
 use rand::{prelude::SliceRandom, Rng};
 use std::{
-    collections::HashMap,
     net::{Ipv4Addr, SocketAddrV4},
     ops::Range,
 };
@@ -24,9 +24,6 @@ enum State {
     GetFin { expect_ack: u32 },
     Closed,
 }
-
-#[derive(Hash, PartialEq, Eq, Clone)]
-struct Key(SocketAddrV4, (SocketAddrV4, SocketAddrV4));
 
 struct Connection {
     fake_ip_state: State,
@@ -46,10 +43,10 @@ impl Connection {
     }
 }
 
+type Key = SocketAddrV4;
+
 struct ConnectionManager {
-    real_pair_map: HashMap<(SocketAddrV4, SocketAddrV4), Key>,
-    fake_ip_map: HashMap<SocketAddrV4, Key>,
-    map: HashMap<Key, Connection>,
+    map: MultiMap<SocketAddrV4, (SocketAddrV4, SocketAddrV4), Connection>,
     fake_ips: Vec<Ipv4Addr>,
     fake_port_range: Range<u16>,
     listening_addr: SocketAddrV4,
@@ -64,8 +61,6 @@ impl ConnectionManager {
         listening_addr: SocketAddrV4,
     ) -> Self {
         Self {
-            real_pair_map: Default::default(),
-            fake_ip_map: Default::default(),
             map: Default::default(),
             fake_ips,
             fake_port_range,
@@ -81,21 +76,13 @@ impl ConnectionManager {
         );
 
         // Check if this is a dup SYN
-        match self
-            .real_pair_map
-            .get(&(source, target))
-            .and_then(|k| self.map.get(k))
-        {
+        match self.map.get_alt(&(source, target)) {
             Some(c) => Ok(RewriteTo(c.fake_ip, self.listening_addr)),
             None => {
                 let fake_ip = self.get_fake_ip()?;
                 trace!("Create new connection {} -> {}", source, target);
                 let connection = Connection::new(fake_ip, (source, target));
-                self.fake_ip_map
-                    .insert(fake_ip, Key(fake_ip, (source, target)));
-                self.real_pair_map
-                    .insert((source, target), Key(fake_ip, (source, target)));
-                self.map.insert(Key(fake_ip, (source, target)), connection);
+                self.map.insert(fake_ip, (source, target), connection);
                 Ok(RewriteTo(fake_ip, self.listening_addr))
             }
         }
@@ -163,10 +150,7 @@ impl ConnectionManager {
     }
 
     fn remove_connection(&mut self, key: &Key) {
-        if let Some(c) = self.map.remove(key) {
-            self.fake_ip_map.remove(&c.fake_ip);
-            self.real_pair_map.remove(&c.real_pair);
-        }
+        self.map.remove(key);
     }
 
     fn get_fake_ip(&self) -> Result<SocketAddrV4> {
@@ -175,7 +159,7 @@ impl ConnectionManager {
             let ip = self.fake_ips.choose(&mut rng).unwrap();
             let port = rng.gen_range(self.fake_port_range.clone());
             let addr = SocketAddrV4::new(*ip, port);
-            if self.fake_ip_map.get(&addr).is_none() {
+            if self.map.get(&addr).is_none() {
                 return Ok(addr);
             }
         }
@@ -189,15 +173,13 @@ impl ConnectionManager {
         target: &SocketAddrV4,
     ) -> Option<(RewriteTo, Key)> {
         if source == &self.listening_addr {
-            self.fake_ip_map
+            self.map
                 .get(target)
-                .and_then(|k| self.map.get(k).map(|c| (k, c)))
-                .map(|(k, c)| (RewriteTo(c.real_pair.1, c.real_pair.0), k.clone()))
+                .map(|c| (RewriteTo(c.real_pair.1, c.real_pair.0), c.fake_ip))
         } else {
-            self.real_pair_map
-                .get(&(*source, *target))
-                .and_then(|k| self.map.get(k).map(|c| (k, c)))
-                .map(|(k, c)| (RewriteTo(c.fake_ip, self.listening_addr), k.clone()))
+            self.map
+                .get_alt(&(*source, *target))
+                .map(|c| (RewriteTo(c.fake_ip, self.listening_addr), c.fake_ip))
         }
     }
 }
@@ -274,11 +256,7 @@ impl Translator {
     }
 
     pub fn look_up_source(&self, addr: &SocketAddrV4) -> Option<SocketAddrV4> {
-        self.manager
-            .fake_ip_map
-            .get(addr)
-            .and_then(|k| self.manager.map.get(k))
-            .map(|c| c.real_pair.1)
+        self.manager.map.get(addr).map(|c| c.real_pair.1)
     }
 }
 
