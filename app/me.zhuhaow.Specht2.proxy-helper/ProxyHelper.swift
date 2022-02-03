@@ -86,7 +86,7 @@ class ProxyHelper: NSObject {
 
         try process.run()
         process.waitUntilExit()
-        
+
         guard process.terminationStatus == EXIT_SUCCESS else {
             throw XpcError("Failed to refresh DNS cache, exit with \(process.terminationStatus)")
         }
