@@ -7,29 +7,39 @@ use std::{
 pub struct ExpiringHashMap<K: Eq + Hash, V> {
     map: HashMap<K, (V, Instant)>,
     ttl: Duration,
-    reset_when_access: bool,
 }
 
 impl<K: Eq + Hash, V> ExpiringHashMap<K, V> {
-    pub fn new(ttl: Duration, reset_when_access: bool) -> Self {
+    pub fn new(ttl: Duration) -> Self {
         Self {
             map: Default::default(),
             ttl,
-            reset_when_access,
         }
     }
 
-    pub fn get(&mut self, key: &K) -> Option<&V> {
+    pub fn get(&self, key: &K) -> Option<&V> {
+        self.map.get(key).and_then(|v| {
+            if v.1.elapsed() >= self.ttl {
+                None
+            } else {
+                Some(&v.0)
+            }
+        })
+    }
+
+    pub fn get_and_refresh(&mut self, key: &K) -> Option<&V> {
         self.map.get_mut(key).and_then(|v| {
             if v.1.elapsed() >= self.ttl {
                 None
             } else {
-                if self.reset_when_access {
-                    v.1 = Instant::now();
-                }
+                v.1 = Instant::now();
                 Some(&v.0)
             }
         })
+    }
+
+    pub fn get_create_time(&self, key: &K) -> Option<&Instant> {
+        self.map.get(key).map(|v| &v.1)
     }
 
     #[allow(dead_code)]
@@ -38,9 +48,18 @@ impl<K: Eq + Hash, V> ExpiringHashMap<K, V> {
             if v.1.elapsed() >= self.ttl {
                 None
             } else {
-                if self.reset_when_access {
-                    v.1 = Instant::now();
-                }
+                Some(&mut v.0)
+            }
+        })
+    }
+
+    #[allow(dead_code)]
+    pub fn get_mut_and_refresh(&mut self, key: &K) -> Option<&mut V> {
+        self.map.get_mut(key).and_then(|v| {
+            if v.1.elapsed() >= self.ttl {
+                None
+            } else {
+                v.1 = Instant::now();
                 Some(&mut v.0)
             }
         })

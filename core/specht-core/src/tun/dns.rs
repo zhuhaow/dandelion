@@ -3,6 +3,7 @@ use anyhow::bail;
 use ipnetwork::Ipv4NetworkIterator;
 use std::{collections::LinkedList, net::Ipv4Addr, sync::Arc, time::Duration};
 use tokio::sync::Mutex;
+use tracing::warn;
 use trust_dns_client::{
     op::{Message, MessageType},
     rr::{RData, Record},
@@ -58,7 +59,25 @@ impl<R: Resolver> FakeDns<R> {
     }
 
     pub async fn reverse_lookup(&self, addr: &Ipv4Addr) -> Option<String> {
-        self.pool.lock().await.map.get(addr).map(String::clone)
+        let pool = self.pool.lock().await;
+
+        if let Some(created_at) = pool.map.get_create_time(addr).map(|c| c.to_owned()) {
+            let domain = pool.map.get(addr).map(String::clone);
+            if created_at.elapsed() > Duration::from_secs(pool.ttl()) {
+                warn!(
+                    "Got a connection to {} with ip {} already expired for {} seconds",
+                    domain.as_ref().unwrap(),
+                    addr,
+                    created_at
+                        .elapsed()
+                        .saturating_sub(Duration::from_secs(pool.ttl()))
+                        .as_secs()
+                );
+            }
+            return domain;
+        }
+
+        None
     }
 }
 
@@ -68,17 +87,24 @@ struct DnsFakeIpPool {
     map: ExpiringHashMap<Ipv4Addr, String>,
 }
 
+// Tests suggest the Safari may use DNS results already expired for ~800s.
+// So set it to an hour.
+static EXTRA_BUFFER_TIME: Duration = Duration::from_secs(3600);
+
 impl DnsFakeIpPool {
     fn new(ip_range: Ipv4NetworkIterator, ttl: Duration) -> Self {
         Self {
             fake_ip_pool: Default::default(),
             ip_iter: ip_range,
-            map: ExpiringHashMap::new(ttl.saturating_add(Duration::from_secs(5)), true),
+            map: ExpiringHashMap::new(ttl.saturating_add(EXTRA_BUFFER_TIME)),
         }
     }
 
     fn ttl(&self) -> u64 {
-        self.map.get_ttl().as_secs().saturating_sub(5)
+        self.map
+            .get_ttl()
+            .saturating_sub(EXTRA_BUFFER_TIME)
+            .as_secs()
     }
 
     fn get_fake_ip(&mut self, domain: String) -> Result<Ipv4Addr> {
