@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.6.1
+
+Fix issue when system use expired dns result from fake dns server by extending
+the clean up delay to 1 hour.
+
 ## 0.6.0
 
 Use smarter algorithm to handle TCP flow in tun mode.
