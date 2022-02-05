@@ -103,11 +103,8 @@ mod tests {
 
     #[tokio::test]
     async fn resolve() -> Result<()> {
-        let resolver = UdpResolver::new(
-            "114.114.114.114:53".parse().unwrap(),
-            Duration::from_secs(5),
-        )
-        .await?;
+        let resolver =
+            UdpResolver::new("8.8.8.8:53".parse().unwrap(), Duration::from_secs(5)).await?;
 
         assert!(!resolver.lookup_ip("apple.com").await?.is_empty());
         assert!(!resolver.lookup_ipv4("apple.com").await?.is_empty());
