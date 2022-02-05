@@ -871,7 +871,7 @@ checksum = "5a2af4902d7569c441449f2315cb83598917b13275209529103e10c238fcf3db"
 dependencies = [
  "log",
  "memchr",
- "memmap2",
+ "memmap2 0.3.1",
  "serde",
 ]
 
@@ -886,6 +886,15 @@ name = "memmap2"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "00b6c2ebff6180198788f5db08d7ce3bc1d0b617176678831a7510825973e357"
+dependencies = [
+ "libc",
+]
+
+[[package]]
+name = "memmap2"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe3179b85e1fd8b14447cbebadb75e45a1002f541b925f0bfec366d56a81c56d"
 dependencies = [
  "libc",
 ]
@@ -1586,7 +1595,7 @@ dependencies = [
  "libc",
  "lru",
  "maxminddb",
- "memmap2",
+ "memmap2 0.5.2",
  "multi-map",
  "nix",
  "os_socketaddr",
@@ -1648,7 +1657,7 @@ dependencies = [
  "ipnetwork",
  "iso3166-1",
  "maxminddb",
- "memmap2",
+ "memmap2 0.5.2",
  "rand",
  "ron",
  "rstest",
