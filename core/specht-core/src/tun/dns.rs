@@ -1,12 +1,17 @@
-use crate::{resolver::Resolver, utils::expiring_hash::ExpiringHashMap, Result};
-use anyhow::bail;
+use crate::{resolver::Resolver, Result};
 use ipnetwork::Ipv4NetworkIterator;
-use std::{collections::LinkedList, net::Ipv4Addr, sync::Arc, time::Duration};
+use lru::LruCache;
+use std::{
+    collections::{HashMap, LinkedList},
+    net::Ipv4Addr,
+    str::FromStr,
+    sync::Arc,
+    time::Duration,
+};
 use tokio::sync::Mutex;
-use tracing::warn;
 use trust_dns_client::{
     op::{Message, MessageType},
-    rr::{RData, Record},
+    rr::{Name, RData, Record},
 };
 
 // Only IPv4 is supported for now.
@@ -15,15 +20,22 @@ use trust_dns_client::{
 // not working only in ipv6-only mode.
 pub struct FakeDns<R: Resolver> {
     server: R,
-    pool: Arc<Mutex<DnsFakeIpPool>>,
+    dns_impl: Arc<Mutex<DnsImpl>>,
+    ttl: Duration,
 }
 
 impl<R: Resolver> FakeDns<R> {
-    pub async fn new(server: R, ip_range: Ipv4NetworkIterator, ttl: Duration) -> Result<Self> {
-        Ok(Self {
+    pub async fn new(
+        server: R,
+        ip_range: Ipv4NetworkIterator,
+        pool_size: usize,
+        ttl: Duration,
+    ) -> Self {
+        Self {
             server,
-            pool: Arc::new(Mutex::new(DnsFakeIpPool::new(ip_range, ttl))),
-        })
+            dns_impl: Arc::new(Mutex::new(DnsImpl::new(ip_range, pool_size))),
+            ttl,
+        }
     }
 
     pub async fn handle(&self, request: Message) -> Result<Message> {
@@ -32,108 +44,84 @@ impl<R: Resolver> FakeDns<R> {
             _ => None,
         });
 
+        // The domain should be FQDN but may come with two forms, w/ or w/o
+        // the ending dot. We don't want the user to deal with that.
+        let request_domain = request_domain
+            .map(|d| d.to_utf8())
+            .map(|d| d.strip_suffix('.').unwrap_or(&d).to_owned());
+
         if let Some(domain) = request_domain {
-            let domain_str = domain.to_utf8();
-            if self.should_use_fake_ip(domain_str.as_str()) {
-                let mut pool = self.pool.lock().await;
-                let ip = pool.get_fake_ip(domain_str)?;
+            let mut dns_impl = self.dns_impl.lock().await;
+            let ip = dns_impl.resolve(domain.as_str())?;
 
-                let mut response = request.clone();
-                response.set_message_type(MessageType::Response);
+            let mut response = request.clone();
+            response.set_message_type(MessageType::Response);
 
-                let rdata = RData::A(ip);
+            let rdata = RData::A(ip);
 
-                response.add_answer(Record::from_rdata(domain.clone(), pool.ttl() as u32, rdata));
+            response.add_answer(Record::from_rdata(
+                Name::from_str(domain.as_str()).unwrap(),
+                self.ttl.as_secs() as u32,
+                rdata,
+            ));
 
-                return Ok(response);
-            }
+            return Ok(response);
         }
 
         Ok(self.server.lookup_raw(request).await?)
     }
 
-    // TODO: We should support a suffix to query real IP address. E.g.,
-    // google.com.test -> google.com
-    fn should_use_fake_ip(&self, _domain: &str) -> bool {
-        true
-    }
-
     pub async fn reverse_lookup(&self, addr: &Ipv4Addr) -> Option<String> {
-        let pool = self.pool.lock().await;
+        let mut dns_impl = self.dns_impl.lock().await;
 
-        if let Some(created_at) = pool.map.get_create_time(addr).map(|c| c.to_owned()) {
-            let domain = pool.map.get(addr).map(String::clone);
-            if created_at.elapsed() > Duration::from_secs(pool.ttl()) {
-                warn!(
-                    "Got a connection to {} with ip {} already expired for {} seconds",
-                    domain.as_ref().unwrap(),
-                    addr,
-                    created_at
-                        .elapsed()
-                        .saturating_sub(Duration::from_secs(pool.ttl()))
-                        .as_secs()
-                );
-            }
-            return domain;
-        }
-
-        None
+        dns_impl.reverse_lookup(addr).map(|s| s.to_owned())
     }
 }
 
-struct DnsFakeIpPool {
+// Tests suggest the Safari may use DNS results already expired for ~3600s. So
+// we don't use a timeout for evicting expired result, but use a LRU cache with
+// size capacity.
+struct DnsImpl {
     fake_ip_pool: LinkedList<Ipv4Addr>,
-    ip_iter: Ipv4NetworkIterator,
-    map: ExpiringHashMap<Ipv4Addr, String>,
+    ip_map: LruCache<Ipv4Addr, String>,
+    domain_map: HashMap<String, Ipv4Addr>,
 }
 
-// Tests suggest the Safari may use DNS results already expired for ~800s.
-// So set it to an hour.
-static EXTRA_BUFFER_TIME: Duration = Duration::from_secs(3600);
-
-impl DnsFakeIpPool {
-    fn new(ip_range: Ipv4NetworkIterator, ttl: Duration) -> Self {
+impl DnsImpl {
+    fn new(ip_iter: Ipv4NetworkIterator, pool_size: usize) -> Self {
         Self {
-            fake_ip_pool: Default::default(),
-            ip_iter: ip_range,
-            map: ExpiringHashMap::new(ttl.saturating_add(EXTRA_BUFFER_TIME)),
+            fake_ip_pool: ip_iter.take(pool_size).collect(),
+            // We will handle eviction manually
+            ip_map: LruCache::unbounded(),
+            domain_map: Default::default(),
         }
     }
 
-    fn ttl(&self) -> u64 {
-        self.map
-            .get_ttl()
-            .saturating_sub(EXTRA_BUFFER_TIME)
-            .as_secs()
-    }
-
-    fn get_fake_ip(&mut self, domain: String) -> Result<Ipv4Addr> {
-        let ip = match self.fake_ip_pool.pop_front() {
-            Some(ip) => ip,
+    fn resolve(&mut self, domain: &str) -> Result<Ipv4Addr> {
+        match self.domain_map.get(domain) {
+            Some(ip) => {
+                self.ip_map.get(ip);
+                Ok(*ip)
+            }
             None => {
-                self.fill_pool();
-                match self.fake_ip_pool.pop_front() {
-                    Some(ip) => ip,
-                    None => bail!("Failed to create fake ip, the pool is drained"),
+                // Check if we should pop ip from lru or get a new one
+                if !self.fake_ip_pool.is_empty() {
+                    let ip = self.fake_ip_pool.pop_front().unwrap();
+                    self.ip_map.put(ip, domain.to_owned());
+                    self.domain_map.insert(domain.to_owned(), ip);
+                    Ok(ip)
+                } else {
+                    let (ip, old_domain) = self.ip_map.pop_lru().unwrap();
+                    self.domain_map.remove(&old_domain);
+                    self.ip_map.put(ip, domain.to_owned());
+                    self.domain_map.insert(domain.to_owned(), ip);
+                    Ok(ip)
                 }
             }
-        };
-
-        self.map.insert(ip, domain);
-
-        Ok(ip)
-    }
-
-    fn fill_pool(&mut self) {
-        self.clear_outdated_map();
-        if self.fake_ip_pool.is_empty() {
-            self.fake_ip_pool.extend(self.ip_iter.by_ref().take(10));
         }
     }
 
-    fn clear_outdated_map(&mut self) {
-        let released = self.map.evict_expired();
-
-        self.fake_ip_pool.extend(released.into_iter().map(|v| v.0));
+    fn reverse_lookup(&mut self, ip: &Ipv4Addr) -> Option<&str> {
+        self.ip_map.get(ip).map(String::as_str)
     }
 }

@@ -36,6 +36,7 @@ pub async fn create_stack<R: Resolver>(
     // It's easy to make them configurable but we don't need it yet.
     static MTU: usize = 1500;
     static DNS_TTL: Duration = Duration::from_secs(120);
+    static DNS_POOL_SIZE: usize = 1000;
     static FAKE_SNAT_IP_POOL_SIZE: usize = 10;
     static FAKE_SNAT_PORT_RANGE: Range<u16> = 1024..65535;
     static DNS_PORT: u16 = 53;
@@ -56,7 +57,7 @@ pub async fn create_stack<R: Resolver>(
 
     let fake_snap_ip_pool = (&mut iter).take(FAKE_SNAT_IP_POOL_SIZE).collect::<_>();
 
-    let dns_server = Arc::new(FakeDns::new(resolver, iter, DNS_TTL).await?);
+    let dns_server = Arc::new(FakeDns::new(resolver, iter, DNS_POOL_SIZE, DNS_TTL).await);
 
     let translator = Arc::new(Mutex::new(Translator::new(
         listening_addr,
