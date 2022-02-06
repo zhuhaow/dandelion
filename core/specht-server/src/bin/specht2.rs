@@ -17,7 +17,7 @@ struct Opt {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    flexi_logger::Logger::try_with_env()
+    flexi_logger::Logger::try_with_env_or_str("warn,specht_core=info")
         .unwrap()
         .start()
         .unwrap();
