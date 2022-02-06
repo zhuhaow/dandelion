@@ -1,11 +1,9 @@
 use crate::{resolver::Resolver, Result};
 use ipnetwork::Ipv4NetworkIterator;
 use lru::LruCache;
+use rustc_hash::{FxHashMap, FxHasher};
 use std::{
-    collections::{HashMap, LinkedList},
-    net::Ipv4Addr,
-    str::FromStr,
-    sync::Arc,
+    collections::LinkedList, hash::BuildHasherDefault, net::Ipv4Addr, str::FromStr, sync::Arc,
     time::Duration,
 };
 use tokio::sync::Mutex;
@@ -83,8 +81,8 @@ impl<R: Resolver> FakeDns<R> {
 // size capacity.
 struct DnsImpl {
     fake_ip_pool: LinkedList<Ipv4Addr>,
-    ip_map: LruCache<Ipv4Addr, String>,
-    domain_map: HashMap<String, Ipv4Addr>,
+    ip_map: LruCache<Ipv4Addr, String, BuildHasherDefault<FxHasher>>,
+    domain_map: FxHashMap<String, Ipv4Addr>,
 }
 
 impl DnsImpl {
@@ -92,7 +90,7 @@ impl DnsImpl {
         Self {
             fake_ip_pool: ip_iter.take(pool_size).collect(),
             // We will handle eviction manually
-            ip_map: LruCache::unbounded(),
+            ip_map: LruCache::unbounded_with_hasher(BuildHasherDefault::default()),
             domain_map: Default::default(),
         }
     }
