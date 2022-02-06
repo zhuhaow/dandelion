@@ -1,5 +1,5 @@
 pub mod system;
-pub mod udp;
+pub mod trust;
 
 use crate::Result;
 use anyhow::bail;
@@ -8,7 +8,7 @@ use std::{
     sync::Arc,
     vec::Vec,
 };
-use trust_dns_client::op::Message;
+use trust_dns_proto::op::Message;
 
 #[async_trait::async_trait]
 pub trait Resolver: Sync + Send {

@@ -2,8 +2,7 @@ use super::Connector;
 use crate::{endpoint::Endpoint, resolver::Resolver, Result};
 use futures::{future::FusedFuture, Future, FutureExt, TryFutureExt};
 use itertools::Itertools;
-use socket2::Socket;
-use socket2::TcpKeepalive;
+use socket2::{Socket, TcpKeepalive};
 use std::{
     net::{IpAddr, Ipv4Addr, Ipv6Addr},
     ops::Add,

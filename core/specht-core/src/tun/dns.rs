@@ -7,9 +7,9 @@ use std::{
     time::Duration,
 };
 use tokio::sync::Mutex;
-use trust_dns_client::{
+use trust_dns_proto::{
     op::{Message, MessageType},
-    rr::{Name, RData, Record},
+    rr::{Name, RData, Record, RecordType},
 };
 
 // Only IPv4 is supported for now.
@@ -38,7 +38,7 @@ impl<R: Resolver> FakeDns<R> {
 
     pub async fn handle(&self, request: Message) -> Result<Message> {
         let request_domain = request.queries().iter().find_map(|q| match q.query_type() {
-            trust_dns_proto::rr::RecordType::A => Some(q.name()),
+            RecordType::A => Some(q.name()),
             _ => None,
         });
 

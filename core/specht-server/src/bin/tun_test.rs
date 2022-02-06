@@ -2,13 +2,14 @@ use ipnetwork::Ipv4Network;
 use specht_core::{
     acceptor::Acceptor,
     connector::{tcp::TcpConnector, Connector},
-    resolver::udp::UdpResolver,
+    resolver::trust::TrustResolver,
     tun::{device::Device, listening_address_for_subnet, stack::create_stack},
     Result,
 };
 use std::{sync::Arc, time::Duration};
 use tokio::{io::copy_bidirectional, net::TcpListener};
 use tracing::{debug, warn};
+use trust_dns_resolver::config::NameServerConfig;
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<()> {
@@ -21,13 +22,15 @@ async fn main() -> Result<()> {
 
     let ip_block: Ipv4Network = "10.128.0.1/12".parse().unwrap();
 
-    let resolver = Arc::new(
-        UdpResolver::new(
-            "114.114.114.114:53".parse().unwrap(),
-            Duration::from_secs(5),
-        )
-        .await?,
-    );
+    let resolver = Arc::new(TrustResolver::new(
+        vec![NameServerConfig {
+            socket_addr: "114.114.114.114:53".parse().unwrap(),
+            protocol: trust_dns_resolver::config::Protocol::Udp,
+            tls_dns_name: None,
+            trust_nx_responses: false,
+        }],
+        Duration::from_secs(5),
+    )?);
 
     let stack = create_stack(device, ip_block, resolver.clone()).await?;
 

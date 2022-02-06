@@ -27,12 +27,13 @@ use specht_core::{
     },
     endpoint::Endpoint,
     geoip::Source,
-    resolver::{system::SystemResolver, udp::UdpResolver, Resolver},
+    resolver::{system::SystemResolver, trust::TrustResolver, Resolver},
     simplex::Config,
     tun::listening_address_for_subnet,
     Result,
 };
 use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
+use trust_dns_resolver::config::NameServerConfig;
 
 #[derive(Debug, Deserialize)]
 pub struct ServerConfig {
@@ -67,9 +68,15 @@ impl ResolverConfig {
     pub async fn get_resolver(&self) -> Result<Arc<dyn Resolver>> {
         match self {
             ResolverConfig::System => Ok(Arc::new(SystemResolver::new())),
-            ResolverConfig::Udp(addr, timeout) => {
-                Ok(Arc::new(UdpResolver::new(*addr, *timeout).await?))
-            }
+            ResolverConfig::Udp(addr, timeout) => Ok(Arc::new(TrustResolver::new(
+                vec![NameServerConfig {
+                    socket_addr: *addr,
+                    protocol: trust_dns_resolver::config::Protocol::Udp,
+                    tls_dns_name: None,
+                    trust_nx_responses: true,
+                }],
+                *timeout,
+            )?)),
         }
     }
 }

@@ -22,8 +22,7 @@ use pnet_packet::{
 use std::{net::SocketAddrV4, ops::Range, sync::Arc, time::Duration};
 use tokio::{io::AsyncReadExt, net::TcpStream, sync::Mutex};
 use tracing::info;
-
-use trust_dns_client::{
+use trust_dns_proto::{
     op::Message,
     serialize::binary::{BinDecodable, BinEncodable, BinEncoder},
 };
