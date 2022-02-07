@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.7.0
+
+Fix issue causing unnecessary lock contention
+
+Fake DNS server now evicts result based on LRU strategy
+
 ## 0.6.1
 
 Fix issue when system use expired dns result from fake dns server by extending
@@ -65,4 +71,3 @@ Add support for Happy Eyeball algorithm.
 ## 0.0.10
 
 Test release with CI
-
