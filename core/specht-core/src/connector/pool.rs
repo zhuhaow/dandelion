@@ -34,9 +34,8 @@ impl<C: Connector + Clone + 'static> PoolConnector<C> {
         let connector = self.connector.clone();
 
         tokio::spawn(async move {
-            pool.lock()
-                .await
-                .push_back(connector.connect(&endpoint).await);
+            let connection = connector.connect(&endpoint).await;
+            pool.lock().await.push_back(connection);
         });
     }
 }
@@ -64,6 +63,8 @@ impl<C: Connector + Clone + 'static> Connector for PoolConnector<C> {
                 return Ok(s);
             }
         }
+
+        drop(pool);
 
         self.connector.connect(endpoint).await
     }
