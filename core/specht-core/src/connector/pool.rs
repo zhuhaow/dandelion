@@ -3,6 +3,7 @@ use crate::{endpoint::Endpoint, Result};
 use anyhow::ensure;
 use std::{collections::VecDeque, sync::Arc};
 use tokio::sync::Mutex;
+use tracing::info;
 
 pub struct PoolConnector<C: Connector + Clone + 'static> {
     endpoint: Endpoint,
@@ -59,8 +60,12 @@ impl<C: Connector + Clone + 'static> Connector for PoolConnector<C> {
             // connection to the pool at the same time
             self.fill();
 
-            if let Ok(s) = result {
-                return Ok(s);
+            match result {
+                Ok(s) => return Ok(s),
+                Err(e) => info!(
+                    "Pool failed to connect to {}: {}, trying next connection",
+                    endpoint, e
+                ),
             }
         }
 
