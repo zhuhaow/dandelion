@@ -49,8 +49,14 @@ impl<R: Resolver> FakeDns<R> {
             .map(|d| d.strip_suffix('.').unwrap_or(&d).to_owned());
 
         if let Some(domain) = request_domain {
-            let mut dns_impl = self.dns_impl.lock().await;
-            let ip = dns_impl.resolve(domain.as_str())?;
+            // If the domain itself is an IP, return the ip.
+            let ip = match Ipv4Addr::from_str(domain.as_str()) {
+                Ok(ip) => ip,
+                Err(_) => {
+                    let mut dns_impl = self.dns_impl.lock().await;
+                    dns_impl.resolve(domain.as_str())?
+                }
+            };
 
             let mut response = request.clone();
             response.set_message_type(MessageType::Response);
@@ -58,15 +64,15 @@ impl<R: Resolver> FakeDns<R> {
             let rdata = RData::A(ip);
 
             response.add_answer(Record::from_rdata(
-                Name::from_str(domain.as_str()).unwrap(),
+                Name::from_str(domain.as_str())?,
                 self.ttl.as_secs() as u32,
                 rdata,
             ));
 
-            return Ok(response);
+            Ok(response)
+        } else {
+            Ok(self.server.lookup_raw(request).await?)
         }
-
-        Ok(self.server.lookup_raw(request).await?)
     }
 
     pub async fn reverse_lookup(&self, addr: &Ipv4Addr) -> Option<String> {
