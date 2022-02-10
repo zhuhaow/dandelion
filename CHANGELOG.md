@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.8.0
+
+Fix issue of panic when dns request has invalid domain
+
+Add support for set valid period for connection pool
+
 ## 0.7.0
 
 Fix issue causing unnecessary lock contention
