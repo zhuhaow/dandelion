@@ -231,6 +231,8 @@ pub enum ConnectorConfig {
         endpoint: Endpoint,
         size: usize,
         next: Box<ConnectorConfig>,
+        #[serde_as(as = "DurationMilliSeconds")]
+        timeout: Duration,
     },
     Simplex {
         #[serde_as(as = "DisplayFromStr")]
@@ -269,10 +271,12 @@ impl ConnectorConfig {
                 endpoint,
                 size,
                 next,
+                timeout,
             } => Ok(PoolConnector::new(
                 next.get_connector(resolver).await?,
                 endpoint.clone(),
                 *size,
+                *timeout,
             )
             .arc()),
             ConnectorConfig::Simplex {

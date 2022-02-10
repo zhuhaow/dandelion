@@ -1,9 +1,15 @@
 use super::Connector;
 use crate::{endpoint::Endpoint, Result};
 use anyhow::ensure;
-use std::{collections::VecDeque, sync::Arc};
+use std::{
+    collections::VecDeque,
+    sync::Arc,
+    time::{Duration, Instant},
+};
 use tokio::sync::Mutex;
 use tracing::info;
+
+type PoolItem<I> = (Result<I>, Instant);
 
 pub struct PoolConnector<C: Connector + Clone + 'static> {
     endpoint: Endpoint,
@@ -11,15 +17,17 @@ pub struct PoolConnector<C: Connector + Clone + 'static> {
     // Here we use Result instead of using the stream directly. This helps us to
     // provide a natural backpressure if the there is issue with network that
     // all connections will fail.
-    pool: Arc<Mutex<VecDeque<Result<C::Stream>>>>,
+    pool: Arc<Mutex<VecDeque<PoolItem<C::Stream>>>>,
+    timeout: Duration,
 }
 
 impl<C: Connector + Clone + 'static> PoolConnector<C> {
-    pub fn new(connector: C, endpoint: Endpoint, size: usize) -> Self {
+    pub fn new(connector: C, endpoint: Endpoint, size: usize, timeout: Duration) -> Self {
         let c = Self {
             endpoint,
             connector,
             pool: Arc::new(Mutex::new(VecDeque::with_capacity(size))),
+            timeout,
         };
 
         for _ in 0..size {
@@ -36,7 +44,7 @@ impl<C: Connector + Clone + 'static> PoolConnector<C> {
 
         tokio::spawn(async move {
             let connection = connector.connect(&endpoint).await;
-            pool.lock().await.push_back(connection);
+            pool.lock().await.push_back((connection, Instant::now()));
         });
     }
 }
@@ -55,13 +63,19 @@ impl<C: Connector + Clone + 'static> Connector for PoolConnector<C> {
 
         let mut pool = self.pool.lock().await;
 
-        while let Some(result) = pool.pop_front() {
+        while let Some((result, time)) = pool.pop_front() {
             // pool is already locked so we won't have the fill() filling
             // connection to the pool at the same time
             self.fill();
 
+            if time.elapsed() > self.timeout {
+                continue;
+            }
+
             match result {
-                Ok(s) => return Ok(s),
+                Ok(s) => {
+                    return Ok(s);
+                }
                 Err(e) => info!(
                     "Pool failed to connect to {}: {}, trying next connection",
                     endpoint, e

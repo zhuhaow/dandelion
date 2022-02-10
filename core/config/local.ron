@@ -11,7 +11,8 @@ ServerConfig (
                     next: Pool(
                         endpoint: "127.0.0.1:8088",
                         size: 10,
-                        next: Direct
+                        next: Direct,
+                        timeout: 60000
                     )
                 )),
             (0, Direct)
