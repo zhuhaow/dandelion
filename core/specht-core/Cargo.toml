@@ -35,7 +35,7 @@ tempfile = "3.2.0"
 tower = { version = "0.4.11", features = ["util"] }
 dns-lookup = "1.0.8"
 itertools = "0.10.3"
-libc = "0.2.112"
+libc = "0.2.119"
 os_socketaddr = "0.2.0"
 nix = "0.23.1"
 rand = "0.8.4"
