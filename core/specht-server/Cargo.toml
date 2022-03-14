@@ -23,7 +23,7 @@ iso3166-1 = "1.0.1"
 memmap2 = "0.3.1"
 async-recursion = "1.0.0"
 tokio-stream = { version = "0.1.8", features = ["net"] }
-tracing = { version = "0.1.29", features = ["log"] }
+tracing = { version = "0.1.32", features = ["log"] }
 tracing-futures = "0.2.5"
 rand = "0.8.4"
 trust-dns-resolver = "0.20.4"
