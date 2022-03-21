@@ -74,6 +74,7 @@ impl ResolverConfig {
                     protocol: trust_dns_resolver::config::Protocol::Udp,
                     tls_dns_name: None,
                     trust_nx_responses: true,
+                    bind_addr: None,
                 }],
                 *timeout,
             )?)),

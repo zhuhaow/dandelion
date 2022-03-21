@@ -6,15 +6,15 @@ license = "MIT"
 
 [dependencies]
 specht-core = { path = "../specht-core" }
-tokio = { version = "1.15.0", features = ["io-util", "net"] }
+tokio = { version = "1.17.0", features = ["io-util", "net"] }
 async-trait = "0.1.52"
-structopt = "0.3.25"
+structopt = "0.3.26"
 futures = "0.3.21"
 ron = "0.7.0"
-serde = { version = "1.0.132", features = ["derive"] }
-serde_with = "1.11.0"
+serde = { version = "1.0.136", features = ["derive"] }
+serde_with = "1.12.0"
 flexi_logger = "0.22.3"
-anyhow = { version = "1.0.52", features = ["backtrace"] }
+anyhow = { version = "1.0.56", features = ["backtrace"] }
 fdlimit = "0.2.1"
 ipnetwork = "0.18.0"
 maxminddb = { version = "0.21.0", features = ["mmap"] }
@@ -23,10 +23,10 @@ iso3166-1 = "1.0.1"
 memmap2 = "0.3.1"
 async-recursion = "1.0.0"
 tokio-stream = { version = "0.1.8", features = ["net"] }
-tracing = { version = "0.1.29", features = ["log"] }
+tracing = { version = "0.1.32", features = ["log"] }
 tracing-futures = "0.2.5"
-rand = "0.8.4"
-trust-dns-resolver = "0.20.4"
+rand = "0.8.5"
+trust-dns-resolver = "0.21.1"
 
 [dev-dependencies]
 rstest = "0.12.0"

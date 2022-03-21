@@ -20,10 +20,8 @@ pub struct TrustResolver {
 
 impl TrustResolver {
     pub fn new(nameservers: Vec<NameServerConfig>, timeout: Duration) -> Result<Self> {
-        let options = ResolverOpts {
-            timeout,
-            ..Default::default()
-        };
+        let mut options = ResolverOpts::default();
+        options.timeout = timeout;
 
         let mut config = ResolverConfig::default();
         for nameserver in nameservers {
@@ -114,6 +112,7 @@ mod tests {
                 protocol: Protocol::Udp,
                 tls_dns_name: None,
                 trust_nx_responses: true,
+                bind_addr: None,
             }],
             Duration::from_secs(5),
         )?;

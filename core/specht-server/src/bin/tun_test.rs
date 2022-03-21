@@ -28,6 +28,7 @@ async fn main() -> Result<()> {
             protocol: trust_dns_resolver::config::Protocol::Udp,
             tls_dns_name: None,
             trust_nx_responses: false,
+            bind_addr: None,
         }],
         Duration::from_secs(5),
     )?);
