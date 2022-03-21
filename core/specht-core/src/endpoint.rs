@@ -39,9 +39,7 @@ impl FromStr for Endpoint {
         value.parse().map(Endpoint::new_from_addr).or_else(|_| {
             value
                 .rsplit_once(':')
-                .ok_or(anyhow!(
-                    "Endpoint string not valid, most likely port is missing"
-                ))
+                .ok_or_else(|| anyhow!("Endpoint string not valid, most likely port is missing"))
                 .and_then(|(host, port)| {
                     Ok(Endpoint::new_from_domain(
                         host,

@@ -48,9 +48,7 @@ async fn main() -> Result<()> {
                 .map(|p| Path::new(&p).join("./.specht2/config.ron"))
                 .ok()
         })
-        .ok_or(anyhow::anyhow!(
-            "Failed to load config file from $SNAP_COMMON and $HOME"
-        ))?;
+        .ok_or_else(|| anyhow::anyhow!("Failed to load config file from $SNAP_COMMON and $HOME"))?;
 
     let config: ServerConfig = ron::de::from_str(&read_to_string(path)?)?;
     let (_, reg) = AbortHandle::new_pair();
