@@ -8,7 +8,7 @@ license = "MIT"
 tokio = { version = "1.15.0", features = ["io-util", "net", "macros", "rt", "rt-multi-thread"] }
 async-trait = "0.1.52"
 tokio-tungstenite = "0.16.1"
-futures = "0.3.19"
+futures = "0.3.21"
 async-compat = "0.2.1"
 http = "0.2.5"
 pin-project = "1.0.8"
