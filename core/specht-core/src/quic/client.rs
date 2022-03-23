@@ -2,7 +2,7 @@ use super::{QuicMessage, QuicStream};
 use crate::{endpoint::Endpoint, resolver::Resolver, Result};
 use anyhow::bail;
 use futures::{future::select_ok, FutureExt};
-use quinn::{Endpoint as QuicEndpoint, NewConnection};
+use quinn::{ClientConfig, Endpoint as QuicEndpoint, NewConnection};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 pub async fn create_quic_connection<R: Resolver>(
@@ -25,12 +25,20 @@ pub async fn create_quic_connection<R: Resolver>(
                     match a {
                         std::net::IpAddr::V4(addr_v4) => Ok::<_, anyhow::Error>(
                             QuicEndpoint::client("0.0.0.0:0".parse().unwrap())?
-                                .connect((addr_v4, port).into(), host_ref)?
+                                .connect_with(
+                                    ClientConfig::with_native_roots(),
+                                    (addr_v4, port).into(),
+                                    host_ref,
+                                )?
                                 .await?,
                         ),
                         std::net::IpAddr::V6(addr_v6) => {
                             Ok(QuicEndpoint::client("[::]:0".parse().unwrap())?
-                                .connect((addr_v6, port).into(), host_ref)?
+                                .connect_with(
+                                    ClientConfig::with_native_roots(),
+                                    (addr_v6, port).into(),
+                                    host_ref,
+                                )?
                                 .await?)
                         }
                     }
