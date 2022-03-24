@@ -25,8 +25,7 @@ async fn main() -> Result<()> {
     #[cfg(not(target_os = "windows"))]
     {
         use fdlimit::raise_fd_limit;
-        use tracing::info;
-        use tracing::warn;
+        use tracing::{info, warn};
 
         match raise_fd_limit() {
             Some(limit) => info!("Raised fd limit to {}", limit),

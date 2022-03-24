@@ -1,8 +1,7 @@
 use super::{QuicMessage, QuicStream};
 use crate::Result;
 use anyhow::bail;
-use futures::stream::once;
-use futures::{FutureExt, Stream, StreamExt, TryStreamExt};
+use futures::{stream::once, FutureExt, Stream, StreamExt, TryStreamExt};
 use quinn::{Endpoint, NewConnection, ServerConfig};
 use rustls::{Certificate, PrivateKey};
 use std::{net::SocketAddr, time::Duration};
