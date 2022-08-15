@@ -2,17 +2,20 @@
 
 set -euxo pipefail
 
-bin_dir="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+bin_dir="$(
+	cd -- "$(dirname "$0")" >/dev/null 2>&1
+	pwd -P
+)"
 project_dir="${bin_dir}/../.."
 
 # Obtain Sparkle release
 sparkle_tmp=$(mktemp -d)
 cd "${sparkle_tmp}"
 curl -L \
-    https://github.com/sparkle-project/Sparkle/releases/download/2.0.0-rc.1/Sparkle-2.0.0-rc.1.tar.xz \
-    | tar -xJ
+	https://github.com/sparkle-project/Sparkle/releases/download/2.0.0-rc.1/Sparkle-2.0.0-rc.1.tar.xz |
+	tar -xJ
 
-export PATH="${sparkle_tmp}/bin:$PATH"
+export PATH="${sparkle_tmp}/bin:${PATH}"
 
 # Clone the gh-pages
 git_tmp=$(mktemp -d)
@@ -25,10 +28,10 @@ cp "${project_dir}/app/Specht2.app.zip" "${release_tmp}/"
 cp "${git_tmp}/appcast.xml" "${release_tmp}/" || true
 
 generate_appcast \
-    --download-url-prefix \
-    "https://github.com/zhuhaow/Specht2/releases/download/${GITHUB_REF_NAME}/" \
-    -s "${SPARKLE_KEY}" \
-    "${release_tmp}"
+	--download-url-prefix \
+	"https://github.com/zhuhaow/Specht2/releases/download/${GITHUB_REF_NAME}/" \
+	-s "${SPARKLE_KEY}" \
+	"${release_tmp}"
 
 cp "${release_tmp}/appcast.xml" "${git_tmp}/"
 cd "${git_tmp}"

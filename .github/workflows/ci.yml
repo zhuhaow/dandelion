@@ -65,10 +65,10 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
-            toolchain: stable
-            components: clippy, rustfmt
-            override: true
-            target: aarch64-apple-darwin
+          toolchain: stable
+          components: clippy, rustfmt
+          override: true
+          target: aarch64-apple-darwin
       - uses: Swatinem/rust-cache@v1
         with:
           working-directory: core/
@@ -109,4 +109,3 @@ jobs:
           tags: ghcr.io/zhuhaow/specht2:latest
           cache-from: type=registry,ref=ghcr.io/zhuhaow/specht2:buildcache
           cache-to: type=registry,ref=ghcr.io/zhuhaow/specht2:buildcache,mode=max
-

@@ -2,20 +2,19 @@ FROM rust:1.57-buster as base
 RUN cargo install cargo-chef
 
 FROM base as planner
-WORKDIR app
+WORKDIR /app
 COPY ./core ./
 RUN cargo chef prepare
 
 FROM base as builder
+WORKDIR /app
 COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release
 COPY ./core ./
-RUN cargo build --release
-# So we know where the binary will be
-RUN cargo install --path specht-server --locked
+RUN cargo build --release && cargo install --path specht-server --locked
 
 FROM debian:buster-slim
-RUN apt update && apt install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
             ca-certificates \
             libssl1.1 \
     && rm -rf /var/lib/apt/lists/*

@@ -100,35 +100,35 @@ impl<'a> Future for HappyEyeballConnector<'a> {
         mut self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Self::Output> {
-        // Only need this for swapping IP iterators
-        let this = self.as_mut().project();
-        // First we poll the dns result. It doesn't matter in what we order we
-        // poll it since we are doing it at the same time.
-        if !this.ipv4_future.is_terminated() {
-            if let std::task::Poll::Ready(Ok(addrs)) = this.ipv4_future.poll_unpin(cx) {
-                *this.ip_count += addrs.len();
-                *this.ips = this
-                    .ips
-                    .interleave(addrs.into_iter().map(Into::into))
-                    .collect_vec()
-                    .into_iter();
-            };
-            // Ignore error
-        }
+        {
+            // Only need this for swapping IP iterators
+            let this = self.as_mut().project();
+            // First we poll the dns result. It doesn't matter in what we order we
+            // poll it since we are doing it at the same time.
+            if !this.ipv4_future.is_terminated() {
+                if let std::task::Poll::Ready(Ok(addrs)) = this.ipv4_future.poll_unpin(cx) {
+                    *this.ip_count += addrs.len();
+                    *this.ips = this
+                        .ips
+                        .interleave(addrs.into_iter().map(Into::into))
+                        .collect_vec()
+                        .into_iter();
+                };
+                // Ignore error
+            }
 
-        if !this.ipv6_future.is_terminated() {
-            if let std::task::Poll::Ready(Ok(addrs)) = this.ipv6_future.poll_unpin(cx) {
-                *this.ip_count += addrs.len();
-                *this.ips = this
-                    .ips
-                    .interleave(addrs.into_iter().map(Into::into))
-                    .collect_vec()
-                    .into_iter();
-            };
-            // Ignore error
+            if !this.ipv6_future.is_terminated() {
+                if let std::task::Poll::Ready(Ok(addrs)) = this.ipv6_future.poll_unpin(cx) {
+                    *this.ip_count += addrs.len();
+                    *this.ips = this
+                        .ips
+                        .interleave(addrs.into_iter().map(Into::into))
+                        .collect_vec()
+                        .into_iter();
+                };
+                // Ignore error
+            }
         }
-
-        drop(this);
 
         if !self.is_resolving() && self.ip_count == 0 {
             return std::task::Poll::Ready(Err(anyhow::anyhow!(

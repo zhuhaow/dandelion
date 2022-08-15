@@ -1,5 +1,3 @@
-#![warn(clippy::disallowed_types)]
-
 pub mod acceptor;
 pub mod connector;
 pub mod endpoint;
