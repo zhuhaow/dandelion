@@ -13,7 +13,7 @@ specht-server = { path = "../specht-server" }
 tokio = { version = "1.17.0", features = ["rt", "rt-multi-thread"] }
 async-trait = "0.1.57"
 futures = "0.3.21"
-ron = "0.7.0"
+ron = "0.7.1"
 log = "0.4.17"
 flexi_logger = "0.23.0"
 anyhow = { version = "1.0.56", features = ["backtrace"] }
