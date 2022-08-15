@@ -179,10 +179,8 @@ extension TaskBarController {
     }
 
     @objc func logLevel(item: NSMenuItem) {
-        for level in LogLevel.allCases {
-            if item.title == String(describing: level) {
-                setLogLevel(level: level)
-            }
+        for level in LogLevel.allCases where item.title == String(describing: level) {
+            setLogLevel(level: level)
         }
     }
 }
