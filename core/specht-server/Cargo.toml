@@ -7,7 +7,7 @@ license = "MIT"
 [dependencies]
 specht-core = { path = "../specht-core" }
 tokio = { version = "1.17.0", features = ["io-util", "net"] }
-async-trait = "0.1.52"
+async-trait = "0.1.57"
 structopt = "0.3.26"
 futures = "0.3.21"
 ron = "0.7.0"
@@ -24,7 +24,7 @@ tokio-stream = { version = "0.1.8", features = ["net"] }
 tracing = { version = "0.1.32", features = ["log"] }
 tracing-futures = "0.2.5"
 rand = "0.8.5"
-trust-dns-resolver = "0.21.1"
+trust-dns-resolver = "0.21.2"
 
 [dev-dependencies]
 rstest = "0.12.0"
