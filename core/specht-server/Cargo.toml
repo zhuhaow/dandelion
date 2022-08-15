@@ -17,7 +17,7 @@ flexi_logger = "0.22.3"
 anyhow = { version = "1.0.56", features = ["backtrace"] }
 fdlimit = "0.2.1"
 ipnetwork = "0.18.0"
-maxminddb = { version = "0.21.0", features = ["mmap"] }
+maxminddb = { version = "0.23.0", features = ["mmap"] }
 iso3166-1 = "1.0.1"
 # Make sure it's compatible with maxminddb
 memmap2 = "0.5.7"
