@@ -753,9 +753,9 @@ dependencies = [
 
 [[package]]
 name = "hyper-tungstenite"
-version = "0.6.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2e9b2a23919b72e723692a5b81330ecdd640bba2f2d0fc0089b7abf0be67bf7"
+checksum = "36692e7f740cd10fbe3f84f7cb7bfec2a71f929e72f97c19824d3f7f45aeec9b"
 dependencies = [
  "hyper",
  "pin-project",

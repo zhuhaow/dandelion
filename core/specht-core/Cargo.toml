@@ -19,7 +19,7 @@ async-compat = "0.2.1"
 http = "0.2.6"
 pin-project = "1.0.10"
 chrono = "0.4.20"
-hyper-tungstenite = "0.6.0"
+hyper-tungstenite = "0.8.1"
 hyper = { version = "0.14.17", features = ["http1", "server"] }
 bytes = "1.1.0"
 tungstenite = "0.17.2"
