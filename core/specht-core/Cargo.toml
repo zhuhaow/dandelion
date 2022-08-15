@@ -27,7 +27,7 @@ serde = { version = "1.0.143", features = ["derive"] }
 anyhow = { version = "1.0.56", features = ["backtrace"] }
 tokio-native-tls = "0.3.0"
 lazy_static = "1.4.0"
-regex = "1.5.5"
+regex = "1.6.0"
 ipnetwork = "0.18.0"
 maxminddb = { version = "0.21.0", features = ["mmap"] }
 iso3166-1 = "1.0.1"
