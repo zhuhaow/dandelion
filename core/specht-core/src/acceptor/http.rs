@@ -112,7 +112,7 @@ async fn handler(request: Request<Body>, state: Arc<Mutex<State>>) -> Result<Res
 
                     *state = State::Connected((endpoint, send_request));
 
-                    return Ok(response_fut.await?);
+                    Ok(response_fut.await?)
                 }
                 None => {
                     unreachable!()

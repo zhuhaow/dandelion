@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context};
 use serde::Deserialize;
 use std::{fmt::Display, net::SocketAddr, str::FromStr};
 
-#[derive(Debug, Clone, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 pub enum Endpoint {
     Addr(SocketAddr),
     Domain(String, u16),
