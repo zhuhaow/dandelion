@@ -11,7 +11,7 @@ crate-type = ["lib", "staticlib"]
 specht-core = { path = "../specht-core" }
 specht-server = { path = "../specht-server" }
 tokio = { version = "1.17.0", features = ["rt", "rt-multi-thread"] }
-async-trait = "0.1.52"
+async-trait = "0.1.57"
 futures = "0.3.21"
 ron = "0.7.0"
 log = "0.4.17"
