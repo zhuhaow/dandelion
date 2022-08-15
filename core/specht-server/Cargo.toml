@@ -27,4 +27,4 @@ rand = "0.8.5"
 trust-dns-resolver = "0.21.2"
 
 [dev-dependencies]
-rstest = "0.12.0"
+rstest = "0.15.0"
