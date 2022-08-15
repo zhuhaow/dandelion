@@ -1152,9 +1152,9 @@ dependencies = [
 
 [[package]]
 name = "os_socketaddr"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87ff86dee67903f9ffcc3f09712b934761ace77cd34021848a474e7ed7199bd2"
+checksum = "2090877fe9aa15a914d863207ea6d2062d94c1178a854b1571374f9be1a045fb"
 dependencies = [
  "libc",
  "winapi",
