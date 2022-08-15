@@ -2,3 +2,5 @@
 ignored:
   - SC1090
   - SC1091
+  # We don't really care about reproducibility that much
+  - DL3008
