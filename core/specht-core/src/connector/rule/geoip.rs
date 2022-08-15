@@ -1,8 +1,7 @@
 use super::Rule;
 use crate::{connector::Connector, endpoint::Endpoint, resolver::Resolver};
 use iso3166_1::CountryCode;
-use maxminddb::{geoip2::Country, MaxMindDBError, Reader};
-use memmap2::Mmap;
+use maxminddb::{geoip2::Country, MaxMindDBError, Mmap, Reader};
 use std::{net::IpAddr, sync::Arc};
 use tracing::{debug, warn};
 

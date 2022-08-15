@@ -1,5 +1,4 @@
-use maxminddb::Reader;
-use memmap2::Mmap;
+use maxminddb::{Mmap, Reader};
 use specht_core::{
     geoip::{create_reader, Source},
     Result,

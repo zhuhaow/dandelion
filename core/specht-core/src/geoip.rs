@@ -1,7 +1,6 @@
 use crate::Result;
 use flate2::read::GzDecoder;
-use maxminddb::Reader;
-use memmap2::Mmap;
+use maxminddb::{Mmap, Reader};
 use serde::Deserialize;
 use std::{
     env,
