@@ -18,7 +18,7 @@ futures = "0.3.21"
 async-compat = "0.2.1"
 http = "0.2.6"
 pin-project = "1.0.10"
-chrono = "0.4.20"
+chrono = "0.4.22"
 hyper-tungstenite = "0.8.1"
 hyper = { version = "0.14.17", features = ["http1", "server"] }
 bytes = "1.1.0"
