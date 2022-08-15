@@ -863,6 +863,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ipnetwork"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf466541e9d546596ee94f9f69590f89473455f88372423e0008fc1a7daf100e"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "iso3166-1"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -964,7 +973,7 @@ version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe2ba61113f9f7a9f0e87c519682d39c43a6f3f79c2cc42c3ba3dda83b1fa334"
 dependencies = [
- "ipnetwork",
+ "ipnetwork 0.18.0",
  "log",
  "memchr",
  "memmap2",
@@ -1831,7 +1840,7 @@ dependencies = [
  "http",
  "hyper",
  "hyper-tungstenite",
- "ipnetwork",
+ "ipnetwork 0.20.0",
  "iso3166-1",
  "itertools",
  "lazy_static",
@@ -1879,7 +1888,7 @@ dependencies = [
  "ffi_helpers",
  "flexi_logger",
  "futures",
- "ipnetwork",
+ "ipnetwork 0.20.0",
  "libc",
  "log",
  "rich-phantoms",
@@ -1899,7 +1908,7 @@ dependencies = [
  "fdlimit",
  "flexi_logger",
  "futures",
- "ipnetwork",
+ "ipnetwork 0.20.0",
  "iso3166-1",
  "maxminddb",
  "rand",
