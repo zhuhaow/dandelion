@@ -436,9 +436,9 @@ dependencies = [
 
 [[package]]
 name = "flexi_logger"
-version = "0.22.3"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "969940c39bc718475391e53a3a59b0157e64929c80cf83ad5dde5f770ecdc423"
+checksum = "f8790f70905b203171c21060222f18f1df5cba07317860215b7880b32aaef290"
 dependencies = [
  "ansi_term",
  "atty",
@@ -2131,9 +2131,9 @@ dependencies = [
 
 [[package]]
 name = "tower"
-version = "0.4.12"
+version = "0.4.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a89fd63ad6adf737582df5db40d286574513c69a11dac5214dc3b5603d6713e"
+checksum = "b8fa9be0de6cf49e536ce1851f987bd21a43b771b09473c3549a6c853db37c1c"
 dependencies = [
  "futures-core",
  "futures-util",
