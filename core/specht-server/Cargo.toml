@@ -12,7 +12,7 @@ structopt = "0.3.26"
 futures = "0.3.23"
 ron = "0.7.1"
 serde = { version = "1.0.143", features = ["derive"] }
-serde_with = "1.12.0"
+serde_with = "2.0.0"
 flexi_logger = "0.23.0"
 anyhow = { version = "1.0.61", features = ["backtrace"] }
 fdlimit = "0.2.1"
