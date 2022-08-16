@@ -1,4 +1,4 @@
-FROM rust:1.57-buster as base
+FROM rust:1.63-buster as base
 RUN cargo install cargo-chef
 
 FROM base as planner
