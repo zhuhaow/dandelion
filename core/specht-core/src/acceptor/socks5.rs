@@ -1,27 +1,8 @@
-use super::{Acceptor, HandshakeResult};
 use crate::{endpoint::Endpoint, io::Io, Result};
 use anyhow::{bail, ensure, Context};
-use futures::{Future, FutureExt};
+use futures::Future;
 use std::net::{IpAddr, SocketAddr};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-
-#[derive(Clone, Debug, Default)]
-pub struct Socks5Acceptor {}
-
-#[async_trait::async_trait]
-impl<I: Io> Acceptor<I> for Socks5Acceptor {
-    async fn do_handshake(&self, io: I) -> HandshakeResult {
-        let (endpoint, fut) = handshake(io).await?;
-        Ok((
-            endpoint,
-            async move {
-                let io: Box<dyn Io> = Box::new(fut.await?);
-                Ok(io)
-            }
-            .boxed(),
-        ))
-    }
-}
 
 pub async fn handshake(
     mut io: impl Io,

@@ -1,7 +1,7 @@
 use crate::{
+    acceptor::simplex::{io::into_io, Config, ENDPOINT_HEADER_KEY},
     endpoint::Endpoint,
     io::Io,
-    simplex::{io::into_io, Config, ENDPOINT_HEADER_KEY},
     Result,
 };
 use anyhow::Context;
@@ -13,7 +13,7 @@ pub async fn connect<I: Io>(
     endpoint: &Endpoint,
     config: &Config,
     host: String,
-) -> Result<impl Io + 'static> {
+) -> Result<impl Io> {
     let uri = http::uri::Builder::new()
         .authority(host.clone())
         .scheme("ws")

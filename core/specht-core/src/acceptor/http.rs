@@ -1,4 +1,3 @@
-use super::{Acceptor, HandshakeResult};
 use crate::{endpoint::Endpoint, io::Io};
 use anyhow::{bail, ensure, Result};
 use futures::{Future, FutureExt};
@@ -17,24 +16,6 @@ use tokio::{
 };
 use tower::ServiceExt;
 
-#[derive(Debug, Clone, Default)]
-pub struct HttpAcceptor {}
-
-#[async_trait::async_trait]
-impl<I: Io> Acceptor<I> for HttpAcceptor {
-    async fn do_handshake(&self, io: I) -> HandshakeResult {
-        let (endpoint, fut) = handshake(io).await?;
-        Ok((
-            endpoint,
-            async move {
-                let io: Box<dyn Io> = Box::new(fut.await?);
-                Ok(io)
-            }
-            .boxed(),
-        ))
-    }
-}
-
 enum State {
     NotConnected(Option<ConnectSignal>),
     Connected((Endpoint, SendRequest<Body>)),
@@ -46,7 +27,7 @@ struct ConnectSignal {
 }
 
 fn transform_proxy_request(mut request: Request<Body>) -> Option<Request<Body>> {
-    if request.headers().contains_key(HOST) {
+    if !request.headers().contains_key(HOST) {
         let host = request.uri().authority()?.host().parse().ok()?;
         request.headers_mut().insert(HOST, host);
     }
@@ -189,7 +170,7 @@ pub async fn handshake(io: impl Io) -> Result<(Endpoint, impl Future<Output = Re
                 let io: Box<dyn Io> = Box::new(part.io);
                 Ok(io)
             }
-            .boxed(),
+            .boxed_local(),
         ))
     } else {
         Ok((
@@ -206,13 +187,13 @@ pub async fn handshake(io: impl Io) -> Result<(Endpoint, impl Future<Output = Re
 
                 // We don't really care the error from here since it will drop the connection.
                 // We will then read the EOF from the other side.
-                tokio::spawn(conn);
-                tokio::spawn(connection);
+                tokio::task::spawn_local(conn);
+                tokio::task::spawn_local(connection);
 
                 let io: Box<dyn Io> = Box::new(s2);
                 Ok(io)
             }
-            .boxed(),
+            .boxed_local(),
         ))
     }
 }

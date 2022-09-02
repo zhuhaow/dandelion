@@ -1,5 +1,5 @@
 use super::{Config, ENDPOINT_HEADER_KEY};
-use crate::{endpoint::Endpoint, io::Io, simplex::io::into_io, Result};
+use crate::{acceptor::simplex::io::into_io, endpoint::Endpoint, io::Io, Result};
 use anyhow::{anyhow, bail, ensure, Context};
 use bytes::{Buf, Bytes};
 use chrono::Utc;

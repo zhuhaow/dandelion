@@ -1,25 +1,36 @@
 pub mod http;
-pub mod quic;
 pub mod simplex;
 pub mod socks5;
 
 use crate::{endpoint::Endpoint, io::Io, Result};
-use anyhow::bail;
-use futures::future::BoxFuture;
+use futures::{Future, Stream, TryStreamExt};
 
-pub type HandshakeResult = Result<(Endpoint, BoxFuture<'static, Result<Box<dyn Io>>>)>;
-
-#[as_dyn_trait::as_dyn_trait]
-#[async_trait::async_trait]
-pub trait Acceptor<I: Io>: Send + Sync {
-    async fn do_handshake(&self, io: I) -> HandshakeResult;
+pub fn handle_stream<
+    Input: Io,
+    Output: Io,
+    InputStream: Stream<Item = Result<Input>>,
+    F1: Future<Output = Result<(Endpoint, F2)>>,
+    F2: Future<Output = Result<Output>>,
+    Handshake: Fn(Input) -> F1,
+>(
+    s: InputStream,
+    handshake: Handshake,
+) -> impl Stream<Item = Result<(Endpoint, F2)>> {
+    s.and_then(handshake)
 }
 
-pub struct NoOpAcceptor {}
-
-#[async_trait::async_trait]
-impl<I: Io> Acceptor<I> for NoOpAcceptor {
-    async fn do_handshake(&self, _io: I) -> HandshakeResult {
-        bail!("Not implemented")
-    }
+pub fn handle_stream_with_config<
+    Input: Io,
+    Output: Io,
+    C,
+    InputStream: Stream<Item = Result<Input>>,
+    F1: Future<Output = Result<(Endpoint, F2)>>,
+    F2: Future<Output = Result<Output>>,
+    Handshake: Fn(Input, &C) -> F1,
+>(
+    s: InputStream,
+    handshake: Handshake,
+    config: C,
+) -> impl Stream<Item = Result<(Endpoint, F2)>> {
+    s.and_then(move |i| handshake(i, &config))
 }
