@@ -2338,9 +2338,9 @@ checksum = "59547bce71d9c38b83d9c0e92b6066c4253371f15005def0c30d9657f50c7642"
 
 [[package]]
 name = "tun"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1cb3f24867499300ae21771a95bbaede2761497ae51094bbefcfd40646815b2a"
+checksum = "9ad14dc69c82f850bc4c0dc6e7c902893b72827fb34d256fa78e81630a5da86c"
 dependencies = [
  "byteorder",
  "bytes",

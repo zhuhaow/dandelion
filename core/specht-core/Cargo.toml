@@ -66,4 +66,4 @@ rstest = "0.15.0"
 test-log = "0.2.11"
 
 [target.'cfg(unix)'.dependencies]
-tun = { version = "0.5.3", features = ["async"] }
+tun = { version = "0.5.4", features = ["async"] }
