@@ -24,7 +24,7 @@ hyper = { version = "0.14.20", features = ["http1", "server"] }
 bytes = "1.2.1"
 tungstenite = "0.17.2"
 serde = { version = "1.0.144", features = ["derive"] }
-anyhow = { version = "1.0.62", features = ["backtrace"] }
+anyhow = { version = "1.0.64", features = ["backtrace"] }
 tokio-native-tls = "0.3.0"
 lazy_static = "1.4.0"
 regex = "1.6.0"
@@ -40,7 +40,7 @@ tower = { version = "0.4.13", features = ["util"] }
 dns-lookup = "1.0.8"
 itertools = "0.10.3"
 libc = "0.2.132"
-os_socketaddr = "0.2.1"
+os_socketaddr = "0.2.3"
 nix = "0.25.0"
 rand = "0.8.5"
 scopeguard = "1.1.0"

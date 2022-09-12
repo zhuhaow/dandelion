@@ -57,9 +57,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.62"
+version = "1.0.64"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1485d4d2cc45e7b201ee3767015c96faa5904387c9d87c6efdd0fb511f12d305"
+checksum = "b9a8f622bcf6ff3df478e9deba3e03e4e04b300f8e6a139e192c05fa3490afc7"
 dependencies = [
  "backtrace",
 ]
@@ -1220,9 +1220,9 @@ dependencies = [
 
 [[package]]
 name = "os_socketaddr"
-version = "0.2.1"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2090877fe9aa15a914d863207ea6d2062d94c1178a854b1571374f9be1a045fb"
+checksum = "465cf01099d4b72bb9ed20a3690c3d4e851865413c1f5dbe7c07d67870821dbf"
 dependencies = [
  "libc",
  "winapi",
