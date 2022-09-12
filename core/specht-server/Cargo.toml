@@ -14,7 +14,7 @@ ron = "0.8.0"
 serde = { version = "1.0.144", features = ["derive"] }
 serde_with = "2.0.0"
 flexi_logger = "0.23.0"
-anyhow = { version = "1.0.62", features = ["backtrace"] }
+anyhow = { version = "1.0.64", features = ["backtrace"] }
 fdlimit = "0.2.1"
 ipnetwork = "0.20.0"
 maxminddb = { version = "0.23.0", features = ["mmap"] }
