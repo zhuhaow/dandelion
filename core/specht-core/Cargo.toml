@@ -40,7 +40,7 @@ tower = { version = "0.4.13", features = ["util"] }
 dns-lookup = "1.0.8"
 itertools = "0.10.3"
 libc = "0.2.132"
-os_socketaddr = "0.2.1"
+os_socketaddr = "0.2.3"
 nix = "0.25.0"
 rand = "0.8.5"
 scopeguard = "1.1.0"
