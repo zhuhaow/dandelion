@@ -6,6 +6,6 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
 # gem "rails"
 
-gem "fastlane", "2.209.1"
+gem "fastlane", "2.210.0"
 
 eval_gemfile('fastlane/Pluginfile')
