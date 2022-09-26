@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-tokio = { version = "1.17.0", features = [
+tokio = { version = "1.21.1", features = [
   "io-util",
   "net",
   "macros",
