@@ -39,7 +39,7 @@ tempfile = "3.3.0"
 tower = { version = "0.4.13", features = ["util"] }
 dns-lookup = "1.0.8"
 itertools = "0.10.5"
-libc = "0.2.132"
+libc = "0.2.134"
 os_socketaddr = "0.2.3"
 nix = "0.25.0"
 rand = "0.8.5"
@@ -54,7 +54,7 @@ cfg-if = "1.0.0"
 tracing = { version = "0.1.36", features = ["log"] }
 socket2 = { version = "0.4.7", features = ["all"] }
 multi-map = "1.3.0"
-lru = "0.8.0"
+lru = "0.8.1"
 rustc-hash = "1.1.0"
 trust-dns-resolver = "0.21.2"
 quinn = "0.8.5"
