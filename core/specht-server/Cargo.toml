@@ -24,7 +24,7 @@ tokio-stream = { version = "0.1.10", features = ["net"] }
 tracing = { version = "0.1.37", features = ["log"] }
 tracing-futures = "0.2.5"
 rand = "0.8.5"
-trust-dns-resolver = "0.21.2"
+trust-dns-resolver = "0.22.0"
 
 [dev-dependencies]
 rstest = "0.15.0"
