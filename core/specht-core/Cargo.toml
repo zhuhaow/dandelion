@@ -44,7 +44,7 @@ os_socketaddr = "0.2.3"
 nix = "0.25.0"
 rand = "0.8.5"
 scopeguard = "1.1.0"
-trust-dns-proto = "0.21.2"
+trust-dns-proto = "0.22.0"
 tokio-util = { version = "0.7.4", features = ["codec"] }
 pnet_packet = "0.31.0"
 as-dyn-trait = "0.2.0"
