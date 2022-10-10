@@ -13,7 +13,7 @@ futures = "0.3.24"
 ron = "0.8.0"
 serde = { version = "1.0.145", features = ["derive"] }
 serde_with = "2.0.1"
-flexi_logger = "0.23.3"
+flexi_logger = "0.24.0"
 anyhow = { version = "1.0.65", features = ["backtrace"] }
 fdlimit = "0.2.1"
 ipnetwork = "0.20.0"

@@ -445,19 +445,19 @@ dependencies = [
 
 [[package]]
 name = "flexi_logger"
-version = "0.23.3"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4a12e3b5a8775259ee83ac38aea8cdf9c3a1667c02178d207378c0837808fa9"
+checksum = "f2d3febd79960eb01b008e874319f1268b53dd5e7e54fca89b547b8a9685cebc"
 dependencies = [
  "ansi_term",
  "atty",
+ "chrono",
  "glob",
  "lazy_static",
  "log",
  "regex",
  "rustversion",
  "thiserror",
- "time 0.3.14",
 ]
 
 [[package]]
@@ -2100,14 +2100,7 @@ dependencies = [
  "libc",
  "num_threads",
  "serde",
- "time-macros",
 ]
-
-[[package]]
-name = "time-macros"
-version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42657b1a6f4d817cda8e7a0ace261fe0cc946cf3a80314390b22cc61ae080792"
 
 [[package]]
 name = "tinyvec"
