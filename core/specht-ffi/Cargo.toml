@@ -16,7 +16,7 @@ futures = "0.3.24"
 ron = "0.8.0"
 log = "0.4.17"
 flexi_logger = "0.24.0"
-anyhow = { version = "1.0.65", features = ["backtrace"] }
+anyhow = { version = "1.0.66", features = ["backtrace"] }
 fdlimit = "0.2.1"
 ipnetwork = "0.20.0"
 libc = "0.2.135"
