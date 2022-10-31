@@ -9,7 +9,7 @@ specht-core = { path = "../specht-core" }
 tokio = { version = "1.21.2", features = ["io-util", "net"] }
 async-trait = "0.1.58"
 structopt = "0.3.26"
-futures = "0.3.24"
+futures = "0.3.25"
 ron = "0.8.0"
 serde = { version = "1.0.145", features = ["derive"] }
 serde_with = "2.0.1"
