@@ -20,7 +20,7 @@ http = "0.2.8"
 pin-project = "1.0.12"
 chrono = "0.4.22"
 hyper-tungstenite = "0.8.1"
-hyper = { version = "0.14.20", features = ["http1", "server"] }
+hyper = { version = "0.14.23", features = ["http1", "server"] }
 bytes = "1.2.1"
 tungstenite = "0.17.2"
 serde = { version = "1.0.147", features = ["derive"] }
