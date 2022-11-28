@@ -16,7 +16,7 @@ jobs:
           toolchain: stable
           components: clippy, rustfmt
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
           working-directory: core/
       - name: cargo fmt
@@ -69,7 +69,7 @@ jobs:
           components: clippy, rustfmt
           override: true
           target: aarch64-apple-darwin
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
           working-directory: core/
       - uses: ruby/setup-ruby@v1
