@@ -10,7 +10,7 @@ crate-type = ["lib", "staticlib"]
 [dependencies]
 specht-core = { path = "../specht-core" }
 specht-server = { path = "../specht-server" }
-tokio = { version = "1.21.2", features = ["rt", "rt-multi-thread"] }
+tokio = { version = "1.26.0", features = ["rt", "rt-multi-thread"] }
 async-trait = "0.1.58"
 futures = "0.3.25"
 ron = "0.8.0"
