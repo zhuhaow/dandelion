@@ -3,7 +3,7 @@ use anyhow::Context;
 use futures::Future;
 use tokio_native_tls::TlsStream;
 
-pub async fn connect<I: Io, F: Future<Output = Result<I>>, C: Fn(&Endpoint) -> F>(
+pub async fn connect<I: Io, F: Future<Output = Result<I>>, C: FnOnce(&Endpoint) -> F>(
     connector: C,
     endpoint: &Endpoint,
 ) -> Result<TlsStream<I>> {

@@ -3,7 +3,7 @@ use anyhow::{bail, ensure, Context};
 use futures::Future;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-pub async fn connect<I: Io, F: Future<Output = Result<I>>, C: Fn(&Endpoint) -> F>(
+pub async fn connect<I: Io, F: Future<Output = Result<I>>, C: FnOnce(&Endpoint) -> F>(
     connector: C,
     endpoint: &Endpoint,
     next_hop: &Endpoint,

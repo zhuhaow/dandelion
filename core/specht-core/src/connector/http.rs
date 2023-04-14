@@ -6,7 +6,7 @@ use httparse::{Response, EMPTY_HEADER};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tracing::debug;
 
-pub async fn connect<I: Io, F: Future<Output = Result<I>>, C: Fn(&Endpoint) -> F>(
+pub async fn connect<I: Io, F: Future<Output = Result<I>>, C: FnOnce(&Endpoint) -> F>(
     connector: C,
     endpoint: &Endpoint,
     next_hop: &Endpoint,
