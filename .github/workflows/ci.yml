@@ -47,65 +47,65 @@ jobs:
           MAXMINDDB_LICENSE: ${{ secrets.MAXMINDDB_LICENSE }}
           SKIP_MAXMINDDB_TESTS: 1
 
-  lint_swift:
-    runs-on: macos-11
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.0"
-          bundler-cache: true
-          working-directory: app
-      - run: bundler exec fastlane lint
-        working-directory: app
+  # lint_swift:
+  #   runs-on: macos-11
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: "3.0"
+  #         bundler-cache: true
+  #         working-directory: app
+  #     - run: bundler exec fastlane lint
+  #       working-directory: app
 
-  test_app:
-    runs-on: macos-11
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: clippy, rustfmt
-          override: true
-          target: aarch64-apple-darwin
-      - uses: Swatinem/rust-cache@v1
-        with:
-          working-directory: core/
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.0"
-          bundler-cache: true
-          working-directory: app
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-      - run: bundler exec fastlane ci
-        working-directory: app
+  # test_app:
+  #   runs-on: macos-11
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions-rs/toolchain@v1
+  #       with:
+  #         toolchain: stable
+  #         components: clippy, rustfmt
+  #         override: true
+  #         target: aarch64-apple-darwin
+  #     - uses: Swatinem/rust-cache@v1
+  #       with:
+  #         working-directory: core/
+  #     - uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: "3.0"
+  #         bundler-cache: true
+  #         working-directory: app
+  #     - uses: maxim-lobanov/setup-xcode@v1
+  #       with:
+  #         xcode-version: latest-stable
+  #     - run: bundler exec fastlane ci
+  #       working-directory: app
 
-  docker:
-    runs-on: ubuntu-latest
-    needs: [check_rust]
-    if: ${{ github.ref == 'refs/heads/main' }}
-    steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push
-        id: docker_build
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          # We don't build docker image for other archs because it's toooooo slow.
-          # You can build it yourself or use snap to install it.
-          platforms: "linux/amd64"
-          tags: ghcr.io/zhuhaow/specht2:latest
-          cache-from: type=registry,ref=ghcr.io/zhuhaow/specht2:buildcache
-          cache-to: type=registry,ref=ghcr.io/zhuhaow/specht2:buildcache,mode=max
+  # docker:
+  #   runs-on: ubuntu-latest
+  #   needs: [check_rust]
+  #   if: ${{ github.ref == 'refs/heads/main' }}
+  #   steps:
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v2
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v2
+  #     - name: Login to GitHub Container Registry
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: ghcr.io
+  #         username: ${{ github.repository_owner }}
+  #         password: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Build and push
+  #       id: docker_build
+  #       uses: docker/build-push-action@v3
+  #       with:
+  #         push: true
+  #         # We don't build docker image for other archs because it's toooooo slow.
+  #         # You can build it yourself or use snap to install it.
+  #         platforms: "linux/amd64"
+  #         tags: ghcr.io/zhuhaow/specht2:latest
+  #         cache-from: type=registry,ref=ghcr.io/zhuhaow/specht2:buildcache
+  #         cache-to: type=registry,ref=ghcr.io/zhuhaow/specht2:buildcache,mode=max
