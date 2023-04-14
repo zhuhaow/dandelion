@@ -3,5 +3,5 @@ use anyhow::bail;
 use futures::never::Never;
 
 pub async fn connect(endpoint: &Endpoint) -> Result<Never> {
-    bail!("Connection to {} blocked", endpoint);
+    bail!("Connection to {} is blocked", endpoint);
 }
