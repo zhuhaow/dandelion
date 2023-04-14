@@ -7,4 +7,4 @@ pub mod http;
 // pub mod socks5;
 // pub mod speed;
 // pub mod tcp;
-// pub mod tls;
+pub mod tls;
