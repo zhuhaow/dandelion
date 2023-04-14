@@ -1,4 +1,3 @@
-use super::Connector;
 use crate::{endpoint::Endpoint, resolver::Resolver, Result};
 use futures::{future::FusedFuture, Future, FutureExt, TryFutureExt};
 use itertools::Itertools;
@@ -15,39 +14,23 @@ use tokio::{
     time::{sleep_until, Sleep},
 };
 
-#[derive(Debug, Default)]
-pub struct TcpConnector<R: Resolver> {
-    resolver: R,
-}
+// TODO: Test the connector and add support for select IP versions.
 
-impl<R: Resolver> TcpConnector<R> {
-    pub fn new(resolver: R) -> Self {
-        Self { resolver }
-    }
-}
-
-#[async_trait::async_trait]
-impl<R: Resolver> Connector for TcpConnector<R> {
-    type Stream = TcpStream;
-
-    async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
-        match endpoint {
-            Endpoint::Addr(addr) => Ok(TcpStream::connect(addr).await?),
-            Endpoint::Domain(host, port) => {
-                Ok(HappyEyeballConnector::new(&self.resolver, host, *port)
-                    .await
-                    .map(|s| {
-                        let s: Socket = s.into_std().unwrap().into();
-                        let _ = s.set_tcp_keepalive(
-                            &TcpKeepalive::new()
-                                .with_time(Duration::from_secs(60))
-                                .with_interval(Duration::from_secs(60)),
-                        );
-                        let s: std::net::TcpStream = s.into();
-                        TcpStream::from_std(s).unwrap()
-                    })?)
-            }
-        }
+pub async fn connect<R: Resolver>(endpoint: &Endpoint, resolver: R) -> Result<TcpStream> {
+    match endpoint {
+        Endpoint::Addr(addr) => Ok(TcpStream::connect(addr).await?),
+        Endpoint::Domain(host, port) => Ok(HappyEyeballConnector::new(&resolver, host, *port)
+            .await
+            .map(|s| {
+                let s: Socket = s.into_std().unwrap().into();
+                let _ = s.set_tcp_keepalive(
+                    &TcpKeepalive::new()
+                        .with_time(Duration::from_secs(60))
+                        .with_interval(Duration::from_secs(60)),
+                );
+                let s: std::net::TcpStream = s.into();
+                TcpStream::from_std(s).unwrap()
+            })?),
     }
 }
 
