@@ -1,0 +1,38 @@
+ServerConfig(
+    resolver: System,
+    acceptors:
+        [Socks5(
+            addr: "127.0.0.1:8086",
+        )],
+    connector:
+        Rule(
+            connectors: {
+                "direct": Direct,
+                "tls": Tls(Direct),
+                "block": Block,
+            },
+            rules: [
+                All("direct"),
+                DnsFail("tls"),
+                Domain(
+                    modes: [
+                        Prefix("prefix"),
+                        Suffix("suffix"),
+                        Keyword("keyword"),
+                        Regex(".*gg"),
+                    ],
+                    index: "direct",
+                ),
+                Domain(
+                    modes: [
+                        Keyword("some_ad_site.com"),
+                    ],
+                    index: "block",
+                ),
+                Ip(
+                    subnets: ["10.0.0.0/8", "fe::/64"],
+                    index: "direct"
+                ),
+            ]
+        )
+)

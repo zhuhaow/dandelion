@@ -1,5 +1,5 @@
 use super::{Config, ENDPOINT_HEADER_KEY};
-use crate::{acceptor::simplex::io::into_io, endpoint::Endpoint, io::Io, Result};
+use crate::{endpoint::Endpoint, io::Io, simplex::io::into_io, Result};
 use anyhow::{anyhow, bail, ensure, Context};
 use bytes::{Buf, Bytes};
 use chrono::Utc;
@@ -7,7 +7,7 @@ use futures::{Future, FutureExt};
 use hyper::{server::conn::Http, service::service_fn, Body, Request, Response};
 use hyper_tungstenite::{
     is_upgrade_request,
-    tungstenite::{error::ProtocolError, handshake::derive_accept_key, protocol::Role},
+    tungstenite::{error::ProtocolError, handshake::derive_accept_key},
     WebSocketStream,
 };
 use std::sync::Arc;
@@ -19,6 +19,7 @@ use tokio::{
     },
 };
 use tracing::info;
+use tungstenite::protocol::Role;
 
 async fn hide_error_handler(
     request: Request<Body>,

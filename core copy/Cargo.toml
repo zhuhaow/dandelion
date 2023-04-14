@@ -1,0 +1,2 @@
+[workspace]
+members = ["specht-core", "specht-server", "specht-ffi"]

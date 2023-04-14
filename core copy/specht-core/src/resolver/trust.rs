@@ -5,7 +5,10 @@ use std::{
     net::{IpAddr, Ipv4Addr, Ipv6Addr},
     time::Duration,
 };
-use trust_dns_proto::op::{Message, MessageType};
+use trust_dns_proto::{
+    op::{Message, MessageType},
+    xfer::DnsRequestOptions,
+};
 use trust_dns_resolver::{
     config::{NameServerConfig, ResolverConfig, ResolverOpts},
     TokioAsyncResolver,
@@ -76,7 +79,11 @@ impl Resolver for TrustResolver {
 
         let result = self
             .client
-            .lookup(query.name().clone(), query.query_type())
+            .lookup(
+                query.name().clone(),
+                query.query_type(),
+                DnsRequestOptions::default(),
+            )
             .await?;
 
         message

@@ -5,60 +5,60 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-tokio = { version = "1.17.0", features = ["io-util", "net", "macros", "rt"] }
-async-trait = "0.1.57"
-tokio-tungstenite = "0.17.2"
-futures = "0.3.23"
+tokio = { version = "1.27.0", features = ["io-util", "net", "macros", "rt"] }
+async-trait = "0.1.68"
+tokio-tungstenite = "0.18.0"
+futures = "0.3.28"
 async-compat = "0.2.1"
-http = "0.2.8"
+http = "0.2.9"
 pin-project = "1.0.12"
-chrono = "0.4.22"
-hyper-tungstenite = "0.8.1"
-hyper = { version = "0.14.20", features = ["http1", "server"] }
-bytes = "1.2.1"
-tungstenite = "0.17.2"
-serde = { version = "1.0.144", features = ["derive"] }
-anyhow = { version = "1.0.62", features = ["backtrace"] }
-tokio-native-tls = "0.3.0"
+chrono = "0.4.24"
+hyper-tungstenite = "0.9.0"
+hyper = { version = "0.14.26", features = ["http1", "server"] }
+bytes = "1.4.0"
+tungstenite = "0.19.0"
+serde = { version = "1.0.160", features = ["derive"] }
+anyhow = { version = "1.0.70", features = ["backtrace"] }
+tokio-native-tls = "0.3.1"
 lazy_static = "1.4.0"
-regex = "1.6.0"
+regex = "1.7.3"
 ipnetwork = "0.20.0"
 maxminddb = { version = "0.23.0", features = ["mmap"] }
 iso3166-1 = "1.0.1"
-flate2 = "1.0.24"
+flate2 = "1.0.25"
 tar = "0.4.38"
-reqwest = "0.11.11"
+reqwest = "0.11.16"
 serde_regex = "1.1.0"
-tempfile = "3.3.0"
+tempfile = "3.5.0"
 tower = { version = "0.4.13", features = ["util"] }
 dns-lookup = "1.0.8"
-itertools = "0.10.3"
-libc = "0.2.132"
-os_socketaddr = "0.2.1"
-nix = "0.25.0"
+itertools = "0.10.5"
+libc = "0.2.141"
+os_socketaddr = "0.2.4"
+nix = "0.26.2"
 rand = "0.8.5"
 scopeguard = "1.1.0"
-trust-dns-proto = "0.21.2"
-tokio-util = { version = "0.7.3", features = ["codec"] }
-pnet_packet = "0.31.0"
+trust-dns-proto = "0.22.0"
+tokio-util = { version = "0.7.7", features = ["codec"] }
+pnet_packet = "0.33.0"
 as-dyn-trait = "0.2.0"
 byteorder = "1.4.3"
-async-stream = "0.3.3"
+async-stream = "0.3.5"
 cfg-if = "1.0.0"
-tracing = { version = "0.1.36", features = ["log"] }
-socket2 = { version = "0.4.4", features = ["all"] }
+tracing = { version = "0.1.37", features = ["log"] }
+socket2 = { version = "0.5.2", features = ["all"] }
 multi-map = "1.3.0"
-lru = "0.7.8"
+lru = "0.10.0"
 rustc-hash = "1.1.0"
-trust-dns-resolver = "0.21.2"
-quinn = "0.8.4"
-rustls = "0.20.6"
-httparse = "1.7.1"
+trust-dns-resolver = "0.22.0"
+quinn = "0.9.3"
+rustls = "0.21.0"
+httparse = "1.8.0"
 
 [dev-dependencies]
-env_logger = "0.9.0"
-rstest = "0.15.0"
+env_logger = "0.10.0"
+rstest = "0.17.0"
 test-log = "0.2.11"
 
 [target.'cfg(unix)'.dependencies]
-tun = { version = "0.5.3", features = ["async"] }
+tun = { version = "0.5.5", features = ["async"] }

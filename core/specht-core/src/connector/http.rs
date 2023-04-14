@@ -1,14 +1,12 @@
 use crate::{endpoint::Endpoint, io::Io, Result};
-use anyhow::{bail, ensure, Context};
-use bytes::{Bytes, BytesMut};
+use anyhow::{bail, Context};
+use bytes::BytesMut;
 use futures::Future;
-use http::{Request, StatusCode};
-use httparse::{Response, Status, EMPTY_HEADER};
-use hyper::Body;
+use httparse::{Response, EMPTY_HEADER};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tracing::debug;
 
-async fn connect<I: Io, F: Future<Output = Result<I>>, C: Fn(&Endpoint) -> F>(
+pub async fn connect<I: Io, F: Future<Output = Result<I>>, C: Fn(&Endpoint) -> F>(
     connector: C,
     endpoint: &Endpoint,
     next_hop: &Endpoint,

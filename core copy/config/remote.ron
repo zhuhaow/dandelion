@@ -1,0 +1,12 @@
+ServerConfig (
+    resolver: System,
+    acceptors:
+        [Simplex(
+            addr: "127.0.0.1:8089",
+            path: "/test",
+            secret_key: "Simplex-Secret",
+            secret_value: "SimplexSecret",
+        )],
+    connector:
+        Direct
+)

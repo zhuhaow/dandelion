@@ -1,0 +1,30 @@
+[package]
+name = "specht-server"
+version = "0.0.1"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+specht-core = { path = "../specht-core" }
+tokio = { version = "1.17.0", features = ["io-util", "net"] }
+async-trait = "0.1.57"
+structopt = "0.3.26"
+futures = "0.3.23"
+ron = "0.8.0"
+serde = { version = "1.0.144", features = ["derive"] }
+serde_with = "2.0.0"
+flexi_logger = "0.23.0"
+anyhow = { version = "1.0.62", features = ["backtrace"] }
+fdlimit = "0.2.1"
+ipnetwork = "0.20.0"
+maxminddb = { version = "0.23.0", features = ["mmap"] }
+iso3166-1 = "1.0.1"
+async-recursion = "1.0.0"
+tokio-stream = { version = "0.1.9", features = ["net"] }
+tracing = { version = "0.1.36", features = ["log"] }
+tracing-futures = "0.2.5"
+rand = "0.8.5"
+trust-dns-resolver = "0.21.2"
+
+[dev-dependencies]
+rstest = "0.15.0"

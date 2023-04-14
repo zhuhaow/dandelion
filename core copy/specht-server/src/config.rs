@@ -1,0 +1,389 @@
+use super::geoip::GeoIpBuilder;
+use anyhow::Error;
+use futures::{Future, StreamExt, TryStreamExt};
+use ipnetwork::{IpNetwork, Ipv4Network};
+use iso3166_1::CountryCode;
+use serde::Deserialize;
+use serde_with::{serde_as, DisplayFromStr, DurationMilliSeconds};
+use specht_core::{
+    connector::{
+        block::BlockConnector,
+        http::HttpConnector,
+        pool::PoolConnector,
+        rule::{
+            all::AllRule,
+            dns_fail::DnsFailRule,
+            domain::{DomainRule, Mode},
+            geoip::GeoRule,
+            ip::IpRule,
+            Rule, RuleConnector,
+        },
+        simplex::SimplexConnector,
+        socks5::Socks5Connector,
+        speed::SpeedConnector,
+        tcp::TcpConnector,
+        tls::TlsConnector,
+        ArcConnector, Connector,
+    },
+    endpoint::Endpoint,
+    geoip::Source,
+    resolver::{system::SystemResolver, trust::TrustResolver, Resolver},
+    simplex::Config,
+    tun::listening_address_for_subnet,
+    Result,
+};
+use std::{collections::HashMap, net::SocketAddr, sync::Arc, time::Duration};
+use trust_dns_resolver::config::NameServerConfig;
+
+#[derive(Debug, Deserialize)]
+pub struct ServerConfig {
+    pub acceptors: Vec<AcceptorConfig>,
+    pub connector: ConnectorConfig,
+    pub resolver: ResolverConfig,
+}
+
+impl ServerConfig {
+    pub fn tun_enabled(&self) -> bool {
+        self.acceptors
+            .iter()
+            .any(|a| matches!(a, &AcceptorConfig::Tun { .. }))
+    }
+}
+
+#[serde_as]
+#[derive(Debug, Deserialize)]
+pub enum ResolverConfig {
+    System,
+    Udp(
+        SocketAddr,
+        #[serde_as(as = "DurationMilliSeconds")] Duration,
+    ),
+}
+
+impl ResolverConfig {
+    pub fn is_system(&self) -> bool {
+        matches!(self, &ResolverConfig::System)
+    }
+
+    pub async fn get_resolver(&self) -> Result<Arc<dyn Resolver>> {
+        match self {
+            ResolverConfig::System => Ok(Arc::new(SystemResolver::new())),
+            ResolverConfig::Udp(addr, timeout) => Ok(Arc::new(TrustResolver::new(
+                vec![NameServerConfig {
+                    socket_addr: *addr,
+                    protocol: trust_dns_resolver::config::Protocol::Udp,
+                    tls_dns_name: None,
+                    trust_nx_responses: true,
+                    bind_addr: None,
+                }],
+                *timeout,
+            )?)),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub enum AcceptorConfig {
+    Socks5 {
+        addr: SocketAddr,
+        #[serde(default)]
+        managed: bool,
+    },
+    Simplex {
+        addr: SocketAddr,
+        path: String,
+        secret_key: String,
+        secret_value: String,
+    },
+    Http {
+        addr: SocketAddr,
+        #[serde(default)]
+        managed: bool,
+    },
+    Tun {
+        subnet: Ipv4Network,
+    },
+}
+
+impl AcceptorConfig {
+    pub fn server_addr(&self) -> SocketAddr {
+        match self {
+            AcceptorConfig::Socks5 { addr, .. }
+            | AcceptorConfig::Simplex { addr, .. }
+            | AcceptorConfig::Http { addr, .. } => *addr,
+            AcceptorConfig::Tun { subnet, .. } => {
+                SocketAddr::V4(listening_address_for_subnet(subnet))
+            }
+        }
+    }
+}
+
+type ConnectorIndex = String;
+
+serde_with::serde_conv!(
+    Iso31661,
+    CountryCode<'static>,
+    |code: &CountryCode| code.alpha2.to_owned(),
+    |value: String| -> Result<_, Error> {
+        iso3166_1::alpha2(value.as_str())
+            .ok_or_else(|| anyhow::anyhow!("{} is not a valid ISO3166-1 name.", value))
+    }
+);
+
+#[serde_as]
+#[derive(Debug, Deserialize)]
+pub enum RuleEntry {
+    All(ConnectorIndex),
+    DnsFail(ConnectorIndex),
+    Domain {
+        modes: Vec<Mode>,
+        index: ConnectorIndex,
+    },
+    GeoIp {
+        #[serde_as(as = "Option<Iso31661>")]
+        country: Option<CountryCode<'static>>,
+        equal: bool,
+        index: ConnectorIndex,
+    },
+    Ip {
+        subnets: Vec<IpNetwork>,
+        index: ConnectorIndex,
+    },
+}
+
+// Workaround issue https://github.com/rust-lang/rust/issues/63033
+#[allow(clippy::manual_async_fn)]
+fn get_rule_connector<'a>(
+    geoip_config: &'a Option<Source>,
+    connectors: &'a HashMap<String, Box<ConnectorConfig>>,
+    rules: &'a [RuleEntry],
+    resolver: Arc<dyn Resolver>,
+) -> impl Future<Output = Result<ArcConnector>> + 'a {
+    #[allow(clippy::manual_async_fn)]
+    fn get_connector<'a>(
+        connectors: &'a HashMap<String, Box<ConnectorConfig>>,
+        ind: &'a str,
+        resolver: Arc<dyn Resolver>,
+    ) -> impl Future<Output = Result<ArcConnector>> + 'a {
+        async move {
+            let config = connectors
+                .get(ind)
+                .ok_or_else(|| anyhow::anyhow!("Failed to find connector named {}", ind))?;
+
+            config.get_connector(resolver).await
+        }
+    }
+
+    async move {
+        let mut geo_ip_builder = geoip_config
+            .as_ref()
+            .map(|s| GeoIpBuilder::new(s.to_owned()));
+        let mut connector_rules: Vec<Box<dyn Rule<ArcConnector>>> = Vec::new();
+        for entry in rules.iter() {
+            let rule: Box<dyn Rule<_>> = match entry {
+                RuleEntry::All(ind) => Box::new(AllRule::new(
+                    get_connector(connectors, ind, resolver.clone()).await?,
+                )),
+                RuleEntry::DnsFail(ind) => Box::new(DnsFailRule::new(
+                    get_connector(connectors, ind, resolver.clone()).await?,
+                    resolver.clone(),
+                )),
+                RuleEntry::Domain { modes, index } => Box::new(DomainRule::new(
+                    modes.clone(),
+                    get_connector(connectors, index, resolver.clone()).await?,
+                )),
+                RuleEntry::GeoIp {
+                    country,
+                    equal,
+                    index,
+                } => Box::new(GeoRule::new(
+                    get_connector(connectors, index, resolver.clone()).await?,
+                    geo_ip_builder
+                        .as_mut()
+                        .ok_or_else(|| {
+                            anyhow::anyhow!("Must provide geoip config to enable geo based rule.")
+                        })?
+                        .get()
+                        .await?,
+                    country.clone(),
+                    *equal,
+                    resolver.clone(),
+                )),
+                RuleEntry::Ip { subnets, index } => Box::new(IpRule::new(
+                    subnets.clone(),
+                    get_connector(connectors, index, resolver.clone()).await?,
+                    resolver.clone(),
+                )),
+            };
+
+            connector_rules.push(rule);
+        }
+
+        Ok(RuleConnector::new(connector_rules).arc())
+    }
+}
+
+#[serde_as]
+#[derive(Debug, Deserialize)]
+pub enum ConnectorConfig {
+    Direct,
+    Pool {
+        #[serde_as(as = "DisplayFromStr")]
+        endpoint: Endpoint,
+        size: usize,
+        next: Box<ConnectorConfig>,
+        #[serde_as(as = "DurationMilliSeconds")]
+        timeout: Duration,
+    },
+    Simplex {
+        #[serde_as(as = "DisplayFromStr")]
+        endpoint: Endpoint,
+        path: String,
+        secret_key: String,
+        secret_value: String,
+        next: Box<ConnectorConfig>,
+    },
+    Tls(Box<ConnectorConfig>),
+    Rule {
+        geoip: Option<Source>,
+        connectors: HashMap<String, Box<ConnectorConfig>>,
+        rules: Vec<RuleEntry>,
+    },
+    Speed(#[serde_as(as = "Vec<(DurationMilliSeconds, _)>")] Vec<(Duration, Box<ConnectorConfig>)>),
+    Http {
+        #[serde_as(as = "DisplayFromStr")]
+        endpoint: Endpoint,
+        next: Box<ConnectorConfig>,
+    },
+    Socks5 {
+        #[serde_as(as = "DisplayFromStr")]
+        endpoint: Endpoint,
+        next: Box<ConnectorConfig>,
+    },
+    Block,
+}
+
+impl ConnectorConfig {
+    #[async_recursion::async_recursion]
+    pub async fn get_connector(&self, resolver: Arc<dyn Resolver>) -> Result<ArcConnector> {
+        match self {
+            ConnectorConfig::Direct => Ok(TcpConnector::new(resolver).arc()),
+            ConnectorConfig::Pool {
+                endpoint,
+                size,
+                next,
+                timeout,
+            } => Ok(PoolConnector::new(
+                next.get_connector(resolver).await?,
+                endpoint.clone(),
+                *size,
+                *timeout,
+            )
+            .arc()),
+            ConnectorConfig::Simplex {
+                endpoint,
+                path,
+                secret_key,
+                secret_value,
+                next,
+            } => Ok(SimplexConnector::new(
+                endpoint.clone(),
+                Config::new(
+                    path.to_owned(),
+                    (secret_key.to_owned(), secret_value.to_owned()),
+                ),
+                next.get_connector(resolver).await?,
+            )
+            .arc()),
+            ConnectorConfig::Tls(c) => {
+                Ok(TlsConnector::new(c.get_connector(resolver).await?).arc())
+            }
+            ConnectorConfig::Rule {
+                geoip,
+                connectors,
+                rules,
+            } => get_rule_connector(geoip, connectors, rules, resolver).await,
+            ConnectorConfig::Speed(c) => Ok(SpeedConnector::new(
+                futures::stream::iter(c.iter())
+                    .then(|c| async {
+                        Ok::<_, Error>((c.0, c.1.get_connector(resolver.clone()).await?))
+                    })
+                    .try_collect()
+                    .await?,
+            )
+            .arc()),
+            ConnectorConfig::Http { endpoint, next } => {
+                Ok(HttpConnector::new(next.get_connector(resolver).await?, endpoint.clone()).arc())
+            }
+            ConnectorConfig::Socks5 { endpoint, next } => Ok(Socks5Connector::new(
+                next.get_connector(resolver).await?,
+                endpoint.clone(),
+            )
+            .arc()),
+            ConnectorConfig::Block => Ok(BlockConnector {}.arc()),
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::ServerConfig;
+    use crate::Result;
+    use rstest::rstest;
+    use std::{env, fs::read_to_string, path::Path};
+
+    async fn test_config_file(content: &str, success: bool) -> Result<()> {
+        let config: ServerConfig = ron::de::from_str(content)?;
+
+        let factory_result = config
+            .connector
+            .get_connector(config.resolver.get_resolver().await?)
+            .await;
+
+        if success {
+            factory_result?;
+        } else {
+            assert!(factory_result.is_err());
+        }
+
+        Ok(())
+    }
+
+    #[rstest]
+    #[case("local.ron", true)]
+    #[case("remote.ron", true)]
+    #[case("rule_without_geo.ron", true)]
+    #[case("wrong_rule.ron", false)]
+    #[case("multiple_acceptors.ron", true)]
+    #[trace]
+    #[tokio::test]
+    async fn config_file_without_geo(#[case] filename: &str, #[case] success: bool) -> Result<()> {
+        let path = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("../config")
+            .join(filename);
+        let content = read_to_string(path)?;
+        test_config_file(&content, success).await
+    }
+
+    #[rstest]
+    #[case("rule_with_geo.ron", true)]
+    #[ignore]
+    #[trace]
+    #[tokio::test]
+    async fn config_file_with_geo(#[case] filename: &str, #[case] success: bool) -> Result<()> {
+        let path = Path::new(&env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("../config")
+            .join(filename);
+        let content = read_to_string(path)?;
+
+        // We skip test when we explicitly disable it.
+        if env::var_os("SKIP_MAXMINDDB_TESTS").is_some() {
+            return Ok(());
+        }
+
+        let license = env::var("MAXMINDDB_LICENSE")?;
+        let content = content.replace("$$LICENSE$$", &license);
+
+        test_config_file(&content, success).await
+    }
+}
