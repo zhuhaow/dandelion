@@ -1,34 +1,28 @@
-use super::Connector;
-use crate::endpoint::Endpoint;
+use crate::{endpoint::Endpoint, io::Io};
 use anyhow::Result;
-use futures::future::{select_ok, FutureExt};
+use futures::{
+    future::{select_ok, FutureExt},
+    Future,
+};
 use std::time::Duration;
 use tokio::time::sleep;
 
-pub struct SpeedConnector<C: Connector> {
+pub async fn connect<
+    I: Io,
+    F: Future<Output = Result<I>> + Send,
+    C: (FnOnce(&Endpoint) -> F) + Send,
+>(
     connectors: Vec<(Duration, C)>,
-}
+    endpoint: &Endpoint,
+) -> Result<I> {
+    select_ok(connectors.into_iter().map(|c| {
+        async move {
+            sleep(c.0).await;
 
-impl<C: Connector> SpeedConnector<C> {
-    pub fn new(connectors: Vec<(Duration, C)>) -> Self {
-        Self { connectors }
-    }
-}
-
-#[async_trait::async_trait]
-impl<C: Connector> Connector for SpeedConnector<C> {
-    type Stream = C::Stream;
-
-    async fn connect(&self, endpoint: &Endpoint) -> Result<Self::Stream> {
-        select_ok(self.connectors.iter().map(|c| {
-            async move {
-                sleep(c.0).await;
-
-                c.1.connect(endpoint).await
-            }
-            .boxed()
-        }))
-        .await
-        .map(|r| r.0)
-    }
+            c.1(endpoint).await
+        }
+        .boxed()
+    }))
+    .await
+    .map(|r| r.0)
 }
