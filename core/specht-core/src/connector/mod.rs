@@ -1,6 +1,5 @@
 pub mod block;
 pub mod http;
-// pub mod pool;
 // pub mod quic;
 // pub mod rule;
 pub mod simplex;
