@@ -1,7 +1,7 @@
 use crate::{
-    acceptor::simplex::{io::into_io, Config, ENDPOINT_HEADER_KEY},
     endpoint::Endpoint,
     io::Io,
+    simplex::{io::into_io, Config, ENDPOINT_HEADER_KEY},
     Result,
 };
 use anyhow::Context;

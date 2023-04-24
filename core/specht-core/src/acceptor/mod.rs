@@ -1,5 +1,4 @@
 pub mod http;
-pub mod simplex;
 pub mod socks5;
 
 use crate::{endpoint::Endpoint, io::Io, Result};

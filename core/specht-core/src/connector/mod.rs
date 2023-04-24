@@ -3,7 +3,7 @@ pub mod http;
 // pub mod pool;
 // pub mod quic;
 // pub mod rule;
-// pub mod simplex;
+pub mod simplex;
 pub mod socks5;
 pub mod speed;
 pub mod tcp;
