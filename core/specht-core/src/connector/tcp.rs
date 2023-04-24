@@ -16,7 +16,7 @@ use tokio::{
 
 // TODO: Test the connector and add support for select IP versions.
 
-pub async fn connect<R: Resolver>(endpoint: &Endpoint, resolver: R) -> Result<TcpStream> {
+pub async fn connect(endpoint: &Endpoint, resolver: impl Resolver) -> Result<TcpStream> {
     match endpoint {
         Endpoint::Addr(addr) => Ok(TcpStream::connect(addr).await?),
         Endpoint::Domain(host, port) => Ok(HappyEyeballConnector::new(&resolver, host, *port)

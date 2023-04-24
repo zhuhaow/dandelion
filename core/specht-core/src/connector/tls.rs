@@ -1,12 +1,11 @@
 use crate::{endpoint::Endpoint, io::Io, Result};
 use anyhow::Context;
 use futures::Future;
-use tokio_native_tls::TlsStream;
 
-pub async fn connect<I: Io, F: Future<Output = Result<I>>, C: FnOnce(&Endpoint) -> F>(
+pub async fn connect<F: Future<Output = Result<impl Io>>, C: FnOnce(&Endpoint) -> F>(
     connector: C,
     endpoint: &Endpoint,
-) -> Result<TlsStream<I>> {
+) -> Result<impl Io> {
     let s = connector(endpoint)
         .await
         .with_context(|| format!("Failed to connect to the next hop {}", endpoint))?;

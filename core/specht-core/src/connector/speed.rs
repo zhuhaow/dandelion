@@ -8,13 +8,12 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 pub async fn connect<
-    I: Io,
-    F: Future<Output = Result<I>> + Send,
+    F: Future<Output = Result<impl Io>> + Send,
     C: (FnOnce(&Endpoint) -> F) + Send,
 >(
     connectors: Vec<(Duration, C)>,
     endpoint: &Endpoint,
-) -> Result<I> {
+) -> Result<impl Io> {
     select_ok(connectors.into_iter().map(|c| {
         async move {
             sleep(c.0).await;

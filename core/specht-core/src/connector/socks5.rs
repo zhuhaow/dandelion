@@ -3,11 +3,11 @@ use anyhow::{bail, ensure, Context};
 use futures::Future;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-pub async fn connect<I: Io, F: Future<Output = Result<I>>, C: FnOnce(&Endpoint) -> F>(
+pub async fn connect<F: Future<Output = Result<impl Io>>, C: FnOnce(&Endpoint) -> F>(
     connector: C,
     endpoint: &Endpoint,
     next_hop: &Endpoint,
-) -> Result<I> {
+) -> Result<impl Io> {
     let mut s = connector(next_hop)
         .await
         .with_context(|| format!("Failed to connect to next hop {}", &next_hop))?;
