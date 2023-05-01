@@ -39,7 +39,7 @@ nix = "0.26.2"
 rand = "0.8.5"
 scopeguard = "1.1.0"
 trust-dns-proto = "0.22.0"
-tokio-util = { version = "0.7.7", features = ["codec"] }
+tokio-util = { version = "0.7.8", features = ["codec"] }
 pnet_packet = "0.33.0"
 as-dyn-trait = "0.2.0"
 byteorder = "1.4.3"
