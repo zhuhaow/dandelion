@@ -31,7 +31,7 @@ reqwest = "0.11.17"
 serde_regex = "1.1.0"
 tempfile = "3.5.0"
 tower = { version = "0.4.13", features = ["util"] }
-dns-lookup = "1.0.8"
+dns-lookup = "2.0.2"
 itertools = "0.10.5"
 libc = "0.2.144"
 os_socketaddr = "0.2.4"
