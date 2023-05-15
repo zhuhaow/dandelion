@@ -11,7 +11,7 @@ tokio-tungstenite = "0.18.0"
 futures = "0.3.28"
 async-compat = "0.2.1"
 http = "0.2.9"
-pin-project = "1.0.12"
+pin-project = "1.1.0"
 chrono = "0.4.24"
 hyper-tungstenite = "0.9.0"
 hyper = { version = "0.14.26", features = ["http1", "server"] }
