@@ -726,15 +726,15 @@ dependencies = [
 
 [[package]]
 name = "hyper-tungstenite"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "880b8b1c98a5ec2a505c7c90db6d3f6f1f480af5655d9c5b55facc9382a5a5b5"
+checksum = "226df6fd0aece319a325419d770aa9d947defa60463f142cd82b329121f906a3"
 dependencies = [
  "hyper",
  "pin-project",
  "tokio",
- "tokio-tungstenite",
- "tungstenite 0.18.0",
+ "tokio-tungstenite 0.19.0",
+ "tungstenite 0.19.0",
 ]
 
 [[package]]
@@ -1838,7 +1838,7 @@ dependencies = [
  "test-log",
  "tokio",
  "tokio-native-tls",
- "tokio-tungstenite",
+ "tokio-tungstenite 0.18.0",
  "tokio-util 0.7.8",
  "tower",
  "tracing",
@@ -2020,6 +2020,18 @@ dependencies = [
  "log",
  "tokio",
  "tungstenite 0.18.0",
+]
+
+[[package]]
+name = "tokio-tungstenite"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec509ac96e9a0c43427c74f003127d953a265737636129424288d27cb5c4b12c"
+dependencies = [
+ "futures-util",
+ "log",
+ "tokio",
+ "tungstenite 0.19.0",
 ]
 
 [[package]]
