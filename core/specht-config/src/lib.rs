@@ -3,3 +3,5 @@
 mod acceptor;
 mod engine;
 mod instance;
+
+pub use instance::Instance;
