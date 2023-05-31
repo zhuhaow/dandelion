@@ -1,0 +1,16 @@
+[package]
+name = "specht-config"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+serde = "1.0.160"
+rhai = { version = "1.13.0", features = ["serde", "sync"] }
+specht-core = { path = "../specht-core" }
+futures = "0.3.28"
+tokio-stream = { version = "0.1.9", features = ["net"] }
+tracing = { version = "0.1.36", features = ["log"] }
+tracing-futures = "0.2.5"
+tokio = { version = "1.27.0", features = ["rt", "macros"] }
+rand = "0.8.5"

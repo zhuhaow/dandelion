@@ -1,2 +1,2 @@
 [workspace]
-members = ["specht-core"]
+members = ["specht-core", "specht-config"]

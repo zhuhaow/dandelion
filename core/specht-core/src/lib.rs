@@ -6,4 +6,4 @@ pub mod quic;
 pub mod resolver;
 pub mod simplex;
 
-pub use anyhow::Result;
+pub use anyhow::{Error, Result};
