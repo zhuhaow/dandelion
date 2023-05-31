@@ -5,54 +5,54 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-tokio = { version = "1.27.0", features = ["io-util", "net", "macros", "rt"] }
+tokio = { version = "1.28.2", features = ["io-util", "net", "macros", "rt"] }
 async-trait = "0.1.68"
-tokio-tungstenite = "0.18.0"
+tokio-tungstenite = "0.19.0"
 futures = "0.3.28"
 async-compat = "0.2.1"
 http = "0.2.9"
-pin-project = "1.0.12"
-chrono = "0.4.24"
-hyper-tungstenite = "0.9.0"
+pin-project = "1.1.0"
+chrono = "0.4.26"
+hyper-tungstenite = "0.10.0"
 hyper = { version = "0.14.26", features = ["http1", "server"] }
 bytes = "1.4.0"
 tungstenite = "0.19.0"
-serde = { version = "1.0.160", features = ["derive"] }
-anyhow = { version = "1.0.70", features = ["backtrace"] }
+serde = { version = "1.0.163", features = ["derive"] }
+anyhow = { version = "1.0.71", features = ["backtrace"] }
 tokio-native-tls = "0.3.1"
 lazy_static = "1.4.0"
-regex = "1.7.3"
+regex = "1.8.3"
 ipnetwork = "0.20.0"
 maxminddb = { version = "0.23.0", features = ["mmap"] }
 iso3166-1 = "1.0.1"
-flate2 = "1.0.25"
+flate2 = "1.0.26"
 tar = "0.4.38"
-reqwest = "0.11.16"
+reqwest = "0.11.18"
 serde_regex = "1.1.0"
 tempfile = "3.5.0"
 tower = { version = "0.4.13", features = ["util"] }
-dns-lookup = "1.0.8"
+dns-lookup = "2.0.2"
 itertools = "0.10.5"
-libc = "0.2.141"
+libc = "0.2.144"
 os_socketaddr = "0.2.4"
 nix = "0.26.2"
 rand = "0.8.5"
 scopeguard = "1.1.0"
 trust-dns-proto = "0.22.0"
-tokio-util = { version = "0.7.7", features = ["codec"] }
+tokio-util = { version = "0.7.8", features = ["codec"] }
 pnet_packet = "0.33.0"
 as-dyn-trait = "0.2.0"
 byteorder = "1.4.3"
 async-stream = "0.3.5"
 cfg-if = "1.0.0"
 tracing = { version = "0.1.37", features = ["log"] }
-socket2 = { version = "0.5.2", features = ["all"] }
+socket2 = { version = "0.5.3", features = ["all"] }
 multi-map = "1.3.0"
 lru = "0.10.0"
 rustc-hash = "1.1.0"
 trust-dns-resolver = "0.22.0"
-quinn = "0.9.3"
-rustls = "0.21.0"
+quinn = "0.10.1"
+rustls = "0.21.1"
 httparse = "1.8.0"
 
 [dev-dependencies]
