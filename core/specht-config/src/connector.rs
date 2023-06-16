@@ -228,7 +228,7 @@ mod tests {
 
         if !diagnostics.is_empty() {
             let mut writer = StandardStream::stderr(ColorChoice::Always);
-            diagnostics.emit(&mut writer, &sources)?;
+            diagnostics.emit(&mut writer, sources)?;
         }
 
         Ok(Vm::new(Arc::new(context.runtime()), Arc::new(result?)))
@@ -256,7 +256,7 @@ mod tests {
 
         let mut vm = get_vm(&mut sources)?;
 
-        let output = T::from_value(vm.call(&["main"], (request,))?)?;
+        let output = T::from_value(vm.call(["main"], (request,))?)?;
 
         Ok(output)
     }
@@ -325,10 +325,7 @@ mod tests {
     fn test_connect_request_resolve(#[case] endpoint: &str) -> Result<()> {
         let mut request = Endpoint::from_str(endpoint)?.into();
 
-        assert_eq!(
-            test_request::<bool>("is_resolved", &request, &["\"dns\""])?,
-            false
-        );
+        assert!(!(test_request::<bool>("is_resolved", &request, &["\"dns\""])?));
 
         let result = test_request::<Result<()>>("ensure_resolved", &request, &["\"dns\""])?;
 
@@ -341,19 +338,13 @@ mod tests {
 
         request.add_resolve_result("dns", Ok(vec![IpAddr::from_str("1.1.1.1").unwrap()]));
 
-        assert_eq!(
-            test_request::<bool>("is_resolved", &request, &["\"dns\""])?,
-            true
-        );
+        assert!(test_request::<bool>("is_resolved", &request, &["\"dns\""])?);
 
         let result = test_request::<Result<()>>("ensure_resolved", &request, &["\"dns\""])?;
 
         assert!(result.is_ok());
 
-        assert_eq!(
-            test_request::<bool>("is_resolved", &request, &["\"dns1\""])?,
-            false
-        );
+        assert!(!(test_request::<bool>("is_resolved", &request, &["\"dns1\""])?));
 
         let result = test_request::<Result<()>>("ensure_resolved", &request, &["\"dns1\""])?;
 
