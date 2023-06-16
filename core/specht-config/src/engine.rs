@@ -1,17 +1,23 @@
-use std::net::{AddrParseError, SocketAddr};
+use std::{net::SocketAddr, sync::Arc};
 
-use rhai::{CustomType, Engine, EvalAltResult, TypeBuilder, AST};
-use specht_core::{endpoint::Endpoint, io::Io, Result};
+use rune::{
+    runtime::RuntimeContext,
+    termcolor::{ColorChoice, StandardStream},
+    Any, Context, Diagnostics, FromValue, Module, Source, Sources, Unit, Vm,
+};
+use specht_core::Result;
+
+use crate::connector::{ConnectRequest, Connector};
 
 type HandlerName = String;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum AcceptorConfig {
     Socks5(SocketAddr, HandlerName),
     Http(SocketAddr, HandlerName),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, PartialEq, Any)]
 pub struct InstanceConfig {
     pub acceptors: Vec<AcceptorConfig>,
 }
@@ -21,95 +27,143 @@ impl InstanceConfig {
         Self { acceptors: vec![] }
     }
 
-    pub fn add_socks5_acceptor(
-        &mut self,
-        addr: &str,
-        handler_name: &str,
-    ) -> Result<(), Box<EvalAltResult>> {
+    pub fn add_socks5_acceptor(&mut self, addr: &str, handler_name: &str) -> Result<()> {
         self.acceptors.push(AcceptorConfig::Socks5(
-            addr.parse().map_err(|e: AddrParseError| e.to_string())?,
+            addr.parse()?,
             handler_name.to_owned(),
         ));
 
         Ok(())
     }
 
-    pub fn add_http_acceptor(
-        &mut self,
-        addr: &str,
-        handler_name: &str,
-    ) -> Result<(), Box<EvalAltResult>> {
-        self.acceptors.push(AcceptorConfig::Http(
-            addr.parse().map_err(|e: AddrParseError| e.to_string())?,
-            handler_name.to_owned(),
-        ));
+    pub fn add_http_acceptor(&mut self, addr: &str, handler_name: &str) -> Result<()> {
+        self.acceptors
+            .push(AcceptorConfig::Http(addr.parse()?, handler_name.to_owned()));
 
         Ok(())
     }
 }
 
-impl CustomType for InstanceConfig {
-    fn build(mut builder: TypeBuilder<Self>) {
-        builder
-            .with_name("InstanceConfig")
-            .with_fn("new_config", Self::new)
-            .with_fn("add_socks5", Self::add_socks5_acceptor)
-            .with_fn("add_http", Self::add_http_acceptor);
+impl InstanceConfig {
+    fn module() -> Result<Module> {
+        let mut module = Module::new();
+
+        module.ty::<Self>()?;
+        module.function(["Config", "new"], Self::new)?;
+        module.inst_fn("add_socks5", Self::add_socks5_acceptor)?;
+        module.inst_fn("add_http", Self::add_http_acceptor)?;
+
+        Ok(module)
     }
 }
+
+impl Default for InstanceConfig {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub struct ConfigEngine {
-    engine: Engine,
-    ast: AST,
+    context: Arc<RuntimeContext>,
+    unit: Arc<Unit>,
 }
 
 impl ConfigEngine {
-    pub fn compile_config(code: impl AsRef<str>) -> Result<ConfigEngine> {
-        let mut engine = Engine::new();
+    pub fn compile_config(name: impl AsRef<str>, code: impl AsRef<str>) -> Result<ConfigEngine> {
+        let mut sources = Sources::new();
+        sources.insert(Source::new(name, code));
 
-        engine.build_type::<InstanceConfig>();
+        let mut context = Context::with_default_modules()?;
+        context.install(InstanceConfig::module()?)?;
+        context.install(ConnectRequest::module()?)?;
+        context.install(Connector::module()?)?;
 
-        let ast = engine.compile(code)?;
+        let mut diagnostics = Diagnostics::new();
+        let result = rune::prepare(&mut sources)
+            .with_context(&context)
+            .with_diagnostics(&mut diagnostics)
+            .build();
 
-        Ok(Self { engine, ast })
+        if !diagnostics.is_empty() {
+            let mut writer = StandardStream::stderr(ColorChoice::Always);
+            diagnostics.emit(&mut writer, &sources)?;
+        }
+
+        Ok(Self {
+            context: Arc::new(context.runtime()),
+            unit: Arc::new(result?),
+        })
+    }
+
+    fn vm(&self) -> Vm {
+        Vm::new(self.context.clone(), self.unit.clone())
     }
 
     pub fn eval_config(&self) -> Result<InstanceConfig> {
-        self.engine.eval_ast(&self.ast).map_err(Into::into)
+        Ok(InstanceConfig::from_value(self.vm().call(["config"], ())?)?)
     }
 
-    pub async fn run_handler(
-        &self,
-        _name: String,
-        _endpoint: Endpoint,
-    ) -> Result<Box<dyn Io + Send>> {
-        todo!()
+    pub fn run_handler(&self, name: impl AsRef<str>, request: ConnectRequest) -> Result<Connector> {
+        Ok(Connector::from_value(
+            self.vm().call([name.as_ref()], (request,))?,
+        )?)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use super::*;
 
-    #[tokio::test]
-    async fn test_add_acceptor() {
+    #[test]
+    fn test_add_acceptor() -> Result<()> {
         let engine = ConfigEngine::compile_config(
+            "config",
             r#"
-            let config = new_config();
+            pub fn config() {
+                let config = Config::new();
 
-            config.add_socks5("127.0.0.1:8080", "handler");
-            config.add_http("127.0.0.1:8081", "handler");
+                config.add_socks5("127.0.0.1:8080", "handler");
+                config.add_http("127.0.0.1:8081", "handler");
 
-            config
+                config
+            }
         "#,
-        )
-        .unwrap();
+        )?;
 
         assert_eq!(
-            engine.eval_config().unwrap().acceptors,
+            engine.eval_config()?.acceptors,
             vec![
-                AcceptorConfig::Socks5("127.0.0.1:8080".parse().unwrap(), "handler".to_owned()),
-                AcceptorConfig::Http("127.0.0.1:8081".parse().unwrap(), "handler".to_owned())
+                AcceptorConfig::Socks5("127.0.0.1:8080".parse()?, "handler".to_owned()),
+                AcceptorConfig::Http("127.0.0.1:8081".parse()?, "handler".to_owned())
             ]
         );
+
+        Ok(())
+    }
+
+    #[rstest]
+    #[case(
+        r#"
+            pub fn handler(request) {
+                Connector::tcp(request.endpoint(), "id")
+            }
+        "#,
+        "example.com:80",
+        Connector::tcp("example.com:80", "id")
+    )]
+    fn test_connect_request_bridge(
+        #[case] config: &str,
+        #[case] endpoint: Endpoint,
+        #[case] expect: Connector,
+    ) -> Result<()> {
+        let engine = ConfigEngine::compile_config("config", config)?;
+
+        let connector = engine.run_handler("handler", endpoint.into())?;
+
+        assert_eq!(connector, expect);
+
+        Ok(())
     }
 }

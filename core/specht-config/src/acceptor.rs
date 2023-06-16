@@ -30,7 +30,8 @@ pub async fn handle_acceptors<
         tokio::task::spawn_local(async move {
             let (endpoint, fut) = handshake(io).await?;
 
-            let mut remote = engine.run_handler(eval_fn, endpoint).await?;
+            let connnector = engine.run_handler(eval_fn, endpoint.into())?;
+            let mut remote = connnector.connect().await?;
 
             let mut local = fut.await?;
 

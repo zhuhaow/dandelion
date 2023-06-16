@@ -1,4 +1,3 @@
-
 use std::sync::Arc;
 
 use futures::future::select_all;
@@ -20,8 +19,8 @@ pub struct Instance {
 }
 
 impl Instance {
-    pub async fn load_config(code: impl AsRef<str>) -> Result<Self> {
-        let engine = Arc::new(ConfigEngine::compile_config(code)?);
+    pub fn load_config(name: impl AsRef<str>, code: impl AsRef<str>) -> Result<Self> {
+        let engine = Arc::new(ConfigEngine::compile_config(name, code)?);
 
         let config = engine.eval_config()?;
 
