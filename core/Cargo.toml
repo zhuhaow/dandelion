@@ -1,2 +1,3 @@
 [workspace]
 members = ["specht-core", "specht-config"]
+resolver = "2"
