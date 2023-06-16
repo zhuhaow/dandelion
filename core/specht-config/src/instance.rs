@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
-use futures::future::select_all;
-use futures::FutureExt;
+use futures::{future::select_all, FutureExt};
 
 use specht_core::{
     acceptor::{http, socks5},

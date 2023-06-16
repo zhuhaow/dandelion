@@ -1,5 +1,4 @@
-use std::net::SocketAddr;
-use std::sync::Arc;
+use std::{net::SocketAddr, sync::Arc};
 
 use futures::{Future, TryStreamExt};
 use specht_core::{endpoint::Endpoint, io::Io, Error, Result};

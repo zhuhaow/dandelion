@@ -1,8 +1,6 @@
 use rune::{Any, Module};
-use specht_core::Result;
-use specht_core::{endpoint::Endpoint, io::Io};
-use std::error::Error;
-use std::{collections::HashMap, fmt::Display, net::IpAddr};
+use specht_core::{endpoint::Endpoint, io::Io, Result};
+use std::{collections::HashMap, error::Error, fmt::Display, net::IpAddr};
 
 #[derive(Debug, PartialEq, Any)]
 pub enum Connector {
