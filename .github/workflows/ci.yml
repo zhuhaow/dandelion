@@ -15,7 +15,7 @@ jobs:
         with:
           toolchain: nightly
           components: clippy, rustfmt
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
         with:
           working-directory: core/
       - name: cargo fmt
