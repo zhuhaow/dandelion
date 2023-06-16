@@ -17,7 +17,8 @@ jobs:
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
         with:
-          working-directory: core/
+          workspaces: |
+            core
       - name: cargo fmt
         uses: actions-rs/cargo@v1
         with:
