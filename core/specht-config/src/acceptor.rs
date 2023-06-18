@@ -26,18 +26,18 @@ pub async fn handle_acceptors<
         let engine = engine.clone();
         let eval_fn = eval_fn.clone();
 
-        tokio::task::spawn_local(async move {
-            let (endpoint, fut) = handshake(io).await?;
+        // tokio::task::spawn_local(async move {
+        //     let (endpoint, fut) = handshake(io).await?;
 
-            let connnector = engine.run_handler(eval_fn, endpoint.into())?;
-            let mut remote = connnector.connect().await?;
+        //     let remote = engine.run_handler(eval_fn, endpoint.into()).await?;
+        //     let mut remote = connnector.connect().await?;
 
-            let mut local = fut.await?;
+        //     let mut local = fut.await?;
 
-            copy_bidirectional(&mut local, &mut remote).await?;
+        //     copy_bidirectional(&mut local, &mut remote).await?;
 
-            Ok::<(), Error>(())
-        });
+        //     Ok::<(), Error>(())
+        // });
     }
 
     Ok(())

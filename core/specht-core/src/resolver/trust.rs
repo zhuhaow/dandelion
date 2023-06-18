@@ -11,6 +11,7 @@ use trust_dns_resolver::{
     TokioAsyncResolver,
 };
 
+#[derive(Debug)]
 pub struct TrustResolver {
     client: TokioAsyncResolver,
 }

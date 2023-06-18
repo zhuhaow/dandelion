@@ -7,7 +7,7 @@ use rune::{
 };
 use specht_core::Result;
 
-use crate::connector::{ConnectRequest, Connector};
+use crate::connector::Connector;
 
 type HandlerName = String;
 
@@ -75,7 +75,6 @@ impl ConfigEngine {
 
         let mut context = Context::with_default_modules()?;
         context.install(InstanceConfig::module()?)?;
-        context.install(ConnectRequest::module()?)?;
         context.install(Connector::module()?)?;
 
         let mut diagnostics = Diagnostics::new();
@@ -103,9 +102,9 @@ impl ConfigEngine {
         Ok(InstanceConfig::from_value(self.vm().call(["config"], ())?)?)
     }
 
-    pub fn run_handler(&self, name: impl AsRef<str>, request: ConnectRequest) -> Result<Connector> {
+    pub fn run_handler(&self, name: impl AsRef<str>, connector: Connector) -> Result<Connector> {
         Ok(Connector::from_value(
-            self.vm().call([name.as_ref()], (request,))?,
+            self.vm().call([name.as_ref()], (connector,))?,
         )?)
     }
 }
@@ -144,27 +143,27 @@ mod tests {
         Ok(())
     }
 
-    #[rstest]
-    #[case(
-        r#"
-            pub fn handler(request) {
-                Connector::tcp(request.endpoint(), "id")
-            }
-        "#,
-        "example.com:80",
-        Connector::tcp("example.com:80", "id")
-    )]
-    fn test_connect_request_bridge(
-        #[case] config: &str,
-        #[case] endpoint: Endpoint,
-        #[case] expect: Connector,
-    ) -> Result<()> {
-        let engine = ConfigEngine::compile_config("config", config)?;
+    // #[rstest]
+    // #[case(
+    //     r#"
+    //         pub fn handler(request) {
+    //             Connector::tcp(request.endpoint(), "id")
+    //         }
+    //     "#,
+    //     "example.com:80",
+    //     Connector::tcp("example.com:80", "id")
+    // )]
+    // fn test_connect_request_bridge(
+    //     #[case] config: &str,
+    //     #[case] endpoint: Endpoint,
+    //     #[case] expect: Connector,
+    // ) -> Result<()> {
+    //     let engine = ConfigEngine::compile_config("config", config)?;
 
-        let connector = engine.run_handler("handler", endpoint.into())?;
+    //     let connector = engine.run_handler("handler", endpoint.into())?;
 
-        assert_eq!(connector, expect);
+    //     assert_eq!(connector, expect);
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 }

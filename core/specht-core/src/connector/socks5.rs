@@ -1,21 +1,12 @@
 use crate::{endpoint::Endpoint, io::Io, Result};
 use anyhow::{bail, ensure, Context};
-use futures::Future;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-pub async fn connect<F: Future<Output = Result<impl Io>>, C: FnOnce(&Endpoint) -> F>(
-    connector: C,
-    endpoint: &Endpoint,
-    next_hop: &Endpoint,
-) -> Result<impl Io> {
-    let mut s = connector(next_hop)
-        .await
-        .with_context(|| format!("Failed to connect to next hop {}", &next_hop))?;
-
-    s.write_all(&[5, 1, 0]).await?;
+pub async fn connect(endpoint: &Endpoint, mut nexthop: impl Io) -> Result<impl Io> {
+    nexthop.write_all(&[5, 1, 0]).await?;
 
     let mut buf = [0; 2];
-    s.read_exact(&mut buf).await?;
+    nexthop.read_exact(&mut buf).await?;
 
     ensure!(buf[0] == 5, "Unsupported socks version: {}", buf[0]);
     ensure!(
@@ -29,13 +20,15 @@ pub async fn connect<F: Future<Output = Result<impl Io>>, C: FnOnce(&Endpoint) -
         .as_bytes()
         .len()
         .try_into()
-        .with_context(|| "The socks5 protocol cannot support domain longer than 255 bytes.")?;
-    s.write_all(&[5, 1, 0, 3, len]).await?;
-    s.write_all(endpoint.hostname().as_bytes()).await?;
-    s.write_all(&endpoint.port().to_be_bytes()).await?;
+        .with_context(|| {
+            "The socks5 protocol cannot support domain longer than 255 bytenexthop."
+        })?;
+    nexthop.write_all(&[5, 1, 0, 3, len]).await?;
+    nexthop.write_all(endpoint.hostname().as_bytes()).await?;
+    nexthop.write_all(&endpoint.port().to_be_bytes()).await?;
 
     let mut buf = [0; 4];
-    s.read_exact(&mut buf).await?;
+    nexthop.read_exact(&mut buf).await?;
     ensure!(buf[0] == 5, "Unsupported socks version: {}", buf[0]);
     ensure!(
         buf[1] == 0,
@@ -46,21 +39,21 @@ pub async fn connect<F: Future<Output = Result<impl Io>>, C: FnOnce(&Endpoint) -
     match buf[3] {
         1 => {
             let mut buf = [0; 6];
-            s.read_exact(&mut buf).await?;
+            nexthop.read_exact(&mut buf).await?;
         }
         3 => {
-            let len: usize = s.read_u8().await?.into();
+            let len: usize = nexthop.read_u8().await?.into();
             let mut buf = vec![0; len + 2];
-            s.read_exact(&mut buf).await?;
+            nexthop.read_exact(&mut buf).await?;
         }
         4 => {
             let mut buf = [0; 18];
-            s.read_exact(&mut buf).await?;
+            nexthop.read_exact(&mut buf).await?;
         }
         _ => {
             bail!("Not recognized address type {}", buf[3]);
         }
     }
 
-    Ok(s)
+    Ok(nexthop)
 }

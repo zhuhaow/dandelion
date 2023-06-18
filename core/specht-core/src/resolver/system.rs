@@ -3,7 +3,7 @@ use crate::Result;
 use dns_lookup::{getaddrinfo, lookup_host, AddrFamily, AddrInfoHints, SockType};
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default)]
 pub struct SystemResolver {}
 
 #[async_trait::async_trait]

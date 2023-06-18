@@ -4,21 +4,14 @@ use crate::{
     simplex::{client::connect as simplex_connect, Config},
     Result,
 };
-use futures::Future;
 
-pub async fn connect<F: Future<Output = Result<impl Io>>, C: FnOnce(&Endpoint) -> F>(
-    connector: C,
+pub async fn connect(
     endpoint: &Endpoint,
-    next_hop: &Endpoint,
+    host: &str,
     config: &Config,
+    nexthop: impl Io,
 ) -> Result<impl Io> {
-    let s = simplex_connect(
-        connector(next_hop).await?,
-        endpoint,
-        config,
-        next_hop.to_string(),
-    )
-    .await?;
+    let s = simplex_connect(nexthop, endpoint, config, host.to_owned()).await?;
 
     Ok(s)
 }
