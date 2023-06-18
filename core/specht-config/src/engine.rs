@@ -120,8 +120,6 @@ impl ConfigEngine {
 
 #[cfg(test)]
 mod tests {
-    use rstest::rstest;
-    use specht_core::endpoint::Endpoint;
 
     use super::*;
 

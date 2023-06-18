@@ -1,8 +1,7 @@
 use std::{collections::HashMap, error::Error, fmt::Display, net::IpAddr, sync::Arc};
 
 use rune::{Any, Module};
-use specht_core::resolver::Resolver;
-use specht_core::Result;
+use specht_core::{resolver::Resolver, Result};
 
 #[derive(Any, Debug, PartialEq)]
 pub struct IpSet {
@@ -37,12 +36,6 @@ impl Display for ResolverNotFound {
 }
 
 impl Error for ResolverNotFound {}
-
-pub enum DnsType {
-    A,
-    AAAA,
-    Any,
-}
 
 // TODO: Cache the response
 #[derive(Default, Debug)]

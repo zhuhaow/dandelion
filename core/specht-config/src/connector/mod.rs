@@ -1,5 +1,4 @@
 mod resolver;
-pub use resolver::ResolverGroup;
 
 use rune::{Any, Module};
 use specht_core::{
@@ -10,22 +9,13 @@ use specht_core::{
     },
     endpoint::Endpoint,
     io::Io,
-    resolver::Resolver,
     simplex::Config,
     Result,
 };
-use std::{
-    cell::{Cell, RefCell},
-    collections::HashMap,
-    error::Error,
-    fmt::Debug,
-    fmt::Display,
-    net::IpAddr,
-    sync::Arc,
-};
-use tokio::sync::Mutex;
+use std::{fmt::Debug, net::IpAddr};
 
-use self::resolver::{IpSet, ResolverGroup, ResolverNotFound};
+pub use resolver::ResolverGroup;
+use resolver::{IpSet, ResolverNotFound};
 
 #[derive(Debug, Any)]
 pub struct Connector {
@@ -135,9 +125,7 @@ impl Connector {
 
     pub async fn resolve(&self, resolver_name: &str) -> Result<IpSet> {
         match self.hostname_as_ip() {
-            Some(ip) => {
-                return Ok(vec![ip].into());
-            }
+            Some(ip) => Ok(vec![ip].into()),
             None => {
                 self.resolver_group
                     .resolve(resolver_name, self.hostname().as_str())
@@ -175,14 +163,14 @@ impl Connector {
 
 #[cfg(test)]
 mod tests {
-    use std::{str::FromStr, sync::Arc, time::Duration};
+    use std::{str::FromStr, sync::Arc};
 
     use rstest::rstest;
     use rune::{
         termcolor::{ColorChoice, StandardStream},
         Context, Diagnostics, FromValue, Source, Sources, Vm,
     };
-    use specht_core::resolver::{system::SystemResolver, trust::TrustResolver};
+    use specht_core::resolver::system::SystemResolver;
 
     use super::*;
 
@@ -234,7 +222,7 @@ mod tests {
     #[case("[::1]:80", 80)]
     #[case("example.com:80", 80)]
     fn test_connect_request_port(#[case] endpoint: &str, #[case] port: u16) -> Result<()> {
-        let request = Endpoint::from_str(endpoint)?.into();
+        let request = Endpoint::from_str(endpoint)?;
 
         assert_eq!(test_request::<u16>("port", request)?, port);
 
@@ -246,7 +234,7 @@ mod tests {
     #[case("[::1]:80", "::1")]
     #[case("example.com:80", "example.com")]
     fn test_connect_request_hostname(#[case] endpoint: &str, #[case] hostname: &str) -> Result<()> {
-        let request = Endpoint::from_str(endpoint)?.into();
+        let request = Endpoint::from_str(endpoint)?;
 
         assert_eq!(test_request::<String>("hostname", request)?, hostname);
 
@@ -261,7 +249,7 @@ mod tests {
         #[case] endpoint: &str,
         #[case] expect_endpoint: &str,
     ) -> Result<()> {
-        let request = Endpoint::from_str(endpoint)?.into();
+        let request = Endpoint::from_str(endpoint)?;
 
         assert_eq!(
             test_request::<String>("endpoint", request)?,
@@ -276,7 +264,7 @@ mod tests {
     #[case("[::1]:80", true)]
     #[case("example.com:80", false)]
     fn test_connect_request_host_is_ip(#[case] endpoint: &str, #[case] is_ip: bool) -> Result<()> {
-        let request = Endpoint::from_str(endpoint)?.into();
+        let request = Endpoint::from_str(endpoint)?;
 
         assert_eq!(test_request::<bool>("hostname_is_ip", request)?, is_ip);
 
@@ -308,7 +296,7 @@ mod tests {
         let mut resolver_group = ResolverGroup::default();
         resolver_group.add_resolver("system", Arc::new(SystemResolver::default()));
 
-        let connector = Connector::new(Endpoint::from_str(endpoint)?.into(), resolver_group);
+        let connector = Connector::new(Endpoint::from_str(endpoint)?, resolver_group);
 
         let output = vm
             .async_call(["main"], (connector, "nothing"))
@@ -329,7 +317,7 @@ mod tests {
         let mut resolver_group = ResolverGroup::default();
         resolver_group.add_resolver("system", Arc::new(SystemResolver::default()));
 
-        let connector = Connector::new(Endpoint::from_str(endpoint)?.into(), resolver_group);
+        let connector = Connector::new(Endpoint::from_str(endpoint)?, resolver_group);
 
         let output = vm
             .async_call(["main"], (connector, "system"))
