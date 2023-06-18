@@ -25,7 +25,7 @@ pub async fn connect(endpoint: &Endpoint, mut nexthop: impl Io) -> Result<impl I
     while nexthop
         .read_buf(&mut buf)
         .await
-        .with_context(|| format!("Failed to read CONNECT response"))?
+        .context("Failed to read CONNECT response")?
         != 0
     {
         let mut headers = [EMPTY_HEADER; 64];
