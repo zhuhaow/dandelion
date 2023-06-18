@@ -5,9 +5,9 @@ use rune::{
     termcolor::{ColorChoice, StandardStream},
     Any, Context, Diagnostics, FromValue, Module, Source, Sources, Unit, Vm,
 };
-use specht_core::Result;
+use specht_core::{endpoint::Endpoint, Result};
 
-use crate::connector::Connector;
+use crate::connector::{Connector, IoWrapper, ResolverGroup};
 
 type HandlerName = String;
 
@@ -102,9 +102,18 @@ impl ConfigEngine {
         Ok(InstanceConfig::from_value(self.vm().call(["config"], ())?)?)
     }
 
-    pub fn run_handler(&self, name: impl AsRef<str>, connector: Connector) -> Result<Connector> {
-        Ok(Connector::from_value(
-            self.vm().call([name.as_ref()], (connector,))?,
+    pub async fn run_handler(
+        &self,
+        name: impl AsRef<str>,
+        endpoint: Endpoint,
+    ) -> Result<IoWrapper> {
+        Ok(IoWrapper::from_value(
+            self.vm()
+                .async_call(
+                    [name.as_ref()],
+                    (Connector::new(endpoint, ResolverGroup::default()),),
+                )
+                .await?,
         )?)
     }
 }
@@ -142,28 +151,4 @@ mod tests {
 
         Ok(())
     }
-
-    // #[rstest]
-    // #[case(
-    //     r#"
-    //         pub fn handler(request) {
-    //             Connector::tcp(request.endpoint(), "id")
-    //         }
-    //     "#,
-    //     "example.com:80",
-    //     Connector::tcp("example.com:80", "id")
-    // )]
-    // fn test_connect_request_bridge(
-    //     #[case] config: &str,
-    //     #[case] endpoint: Endpoint,
-    //     #[case] expect: Connector,
-    // ) -> Result<()> {
-    //     let engine = ConfigEngine::compile_config("config", config)?;
-
-    //     let connector = engine.run_handler("handler", endpoint.into())?;
-
-    //     assert_eq!(connector, expect);
-
-    //     Ok(())
-    // }
 }

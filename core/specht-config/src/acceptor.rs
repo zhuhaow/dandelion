@@ -8,7 +8,7 @@ use tokio::{
 };
 use tokio_stream::wrappers::TcpListenerStream;
 
-use crate::engine::ConfigEngine;
+use crate::{connector::Connector, engine::ConfigEngine};
 
 pub async fn handle_acceptors<
     F: Future<Output = Result<(Endpoint, impl Future<Output = Result<impl Io>>)>> + 'static,
@@ -26,18 +26,17 @@ pub async fn handle_acceptors<
         let engine = engine.clone();
         let eval_fn = eval_fn.clone();
 
-        // tokio::task::spawn_local(async move {
-        //     let (endpoint, fut) = handshake(io).await?;
+        tokio::task::spawn_local(async move {
+            let (endpoint, fut) = handshake(io).await?;
 
-        //     let remote = engine.run_handler(eval_fn, endpoint.into()).await?;
-        //     let mut remote = connnector.connect().await?;
+            let mut remote = engine.run_handler(eval_fn, endpoint).await?.into_inner();
 
-        //     let mut local = fut.await?;
+            let mut local = fut.await?;
 
-        //     copy_bidirectional(&mut local, &mut remote).await?;
+            copy_bidirectional(&mut local, &mut remote).await?;
 
-        //     Ok::<(), Error>(())
-        // });
+            Ok::<(), Error>(())
+        });
     }
 
     Ok(())

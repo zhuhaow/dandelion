@@ -1,4 +1,5 @@
 mod resolver;
+pub use resolver::ResolverGroup;
 
 use rune::{Any, Module};
 use specht_core::{
@@ -39,6 +40,12 @@ pub struct IoWrapper(Box<dyn Io>);
 impl<T: Io> From<T> for IoWrapper {
     fn from(io: T) -> Self {
         Self(Box::new(io))
+    }
+}
+
+impl IoWrapper {
+    pub fn into_inner(self) -> Box<dyn Io> {
+        self.0
     }
 }
 
