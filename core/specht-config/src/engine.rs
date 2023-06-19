@@ -1,13 +1,17 @@
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, sync::Arc, time::Duration};
 
 use rune::{
-    runtime::RuntimeContext,
+    runtime::Vec as RuneVec,
     termcolor::{ColorChoice, StandardStream},
-    Any, Context, Diagnostics, FromValue, Module, Source, Sources, Unit, Vm,
+    Any, Context, Diagnostics, FromValue, Module, Source, Sources, Vm,
 };
-use specht_core::{endpoint::Endpoint, Result};
+use specht_core::{endpoint::Endpoint, resolver::system::SystemResolver, Result};
+use trust_dns_resolver::config::{NameServerConfig, Protocol};
 
-use crate::connector::{Connector, IoWrapper, ResolverGroup};
+use crate::{
+    connector::{Connector, IoWrapper, ResolverGroup},
+    rune::value_to_result,
+};
 
 type HandlerName = String;
 
@@ -17,14 +21,18 @@ pub enum AcceptorConfig {
     Http(SocketAddr, HandlerName),
 }
 
-#[derive(Debug, PartialEq, Any)]
+#[derive(Debug, Any)]
 pub struct InstanceConfig {
     pub acceptors: Vec<AcceptorConfig>,
+    pub resolver_group: ResolverGroup,
 }
 
 impl InstanceConfig {
     pub fn new() -> Self {
-        Self { acceptors: vec![] }
+        Self {
+            acceptors: Vec::new(),
+            resolver_group: ResolverGroup::new(),
+        }
     }
 
     pub fn add_socks5_acceptor(&mut self, addr: &str, handler_name: &str) -> Result<()> {
@@ -42,6 +50,31 @@ impl InstanceConfig {
 
         Ok(())
     }
+
+    pub fn add_system_resolver(&mut self, name: &str) -> Result<()> {
+        self.resolver_group
+            .add_resolver(name, Arc::new(SystemResolver::default()));
+
+        Ok(())
+    }
+
+    pub fn add_udp_resolver(&mut self, name: &str, addrs: RuneVec) -> Result<()> {
+        self.resolver_group.add_resolver(
+            name,
+            Arc::new(specht_core::resolver::trust::TrustResolver::new(
+                addrs
+                    .into_iter()
+                    .map(|addr| anyhow::Ok(String::from_value(addr)?.parse()?))
+                    .try_collect::<Vec<SocketAddr>>()?
+                    .into_iter()
+                    .map(|s| NameServerConfig::new(s, Protocol::Udp))
+                    .collect(),
+                Duration::from_secs(5),
+            )?),
+        );
+
+        Ok(())
+    }
 }
 
 impl InstanceConfig {
@@ -50,8 +83,10 @@ impl InstanceConfig {
 
         module.ty::<Self>()?;
         module.function(["Config", "new"], Self::new)?;
-        module.inst_fn("add_socks5", Self::add_socks5_acceptor)?;
-        module.inst_fn("add_http", Self::add_http_acceptor)?;
+        module.inst_fn("add_socks5_acceptor", Self::add_socks5_acceptor)?;
+        module.inst_fn("add_http_acceptor", Self::add_http_acceptor)?;
+        module.inst_fn("add_system_resolver", Self::add_system_resolver)?;
+        module.inst_fn("add_udp_resolver", Self::add_udp_resolver)?;
 
         Ok(module)
     }
@@ -63,13 +98,14 @@ impl Default for InstanceConfig {
     }
 }
 
-pub struct ConfigEngine {
-    context: Arc<RuntimeContext>,
-    unit: Arc<Unit>,
+pub struct Engine {
+    vm: Vm,
+    acceptors: Vec<AcceptorConfig>,
+    resolver_group: Arc<ResolverGroup>,
 }
 
-impl ConfigEngine {
-    pub fn compile_config(name: impl AsRef<str>, code: impl AsRef<str>) -> Result<ConfigEngine> {
+impl Engine {
+    pub async fn load_config(name: impl AsRef<str>, code: impl AsRef<str>) -> Result<Engine> {
         let mut sources = Sources::new();
         sources.insert(Source::new(name, code));
 
@@ -88,18 +124,20 @@ impl ConfigEngine {
             diagnostics.emit(&mut writer, &sources)?;
         }
 
+        let mut vm = Vm::new(Arc::new(context.runtime()), Arc::new(result?));
+
+        let config: InstanceConfig =
+            value_to_result(vm.async_call(["config"], ()).await?.into_result()?)?;
+
         Ok(Self {
-            context: Arc::new(context.runtime()),
-            unit: Arc::new(result?),
+            vm,
+            acceptors: config.acceptors,
+            resolver_group: Arc::new(config.resolver_group),
         })
     }
 
     fn vm(&self) -> Vm {
-        Vm::new(self.context.clone(), self.unit.clone())
-    }
-
-    pub fn eval_config(&self) -> Result<InstanceConfig> {
-        Ok(InstanceConfig::from_value(self.vm().call(["config"], ())?)?)
+        self.vm.clone()
     }
 
     pub async fn run_handler(
@@ -107,14 +145,19 @@ impl ConfigEngine {
         name: impl AsRef<str>,
         endpoint: Endpoint,
     ) -> Result<IoWrapper> {
-        Ok(IoWrapper::from_value(
+        value_to_result(
             self.vm()
                 .async_call(
                     [name.as_ref()],
-                    (Connector::new(endpoint, ResolverGroup::default()),),
+                    (Connector::new(endpoint, self.resolver_group.clone()),),
                 )
-                .await?,
-        )?)
+                .await?
+                .into_result()?,
+        )
+    }
+
+    pub fn get_acceptors(&self) -> &[AcceptorConfig] {
+        &self.acceptors
     }
 }
 
@@ -123,29 +166,55 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn test_add_acceptor() -> Result<()> {
-        let engine = ConfigEngine::compile_config(
+    #[tokio::test]
+    async fn test_add_acceptor() -> Result<()> {
+        let engine = Engine::load_config(
             "config",
             r#"
-            pub fn config() {
+            pub async fn config() {
                 let config = Config::new();
 
-                config.add_socks5("127.0.0.1:8080", "handler");
-                config.add_http("127.0.0.1:8081", "handler");
+                config.add_socks5("127.0.0.1:8080", "handler")?;
+                config.add_http("127.0.0.1:8081", "handler")?;
 
-                config
+                Ok(config)
             }
         "#,
-        )?;
+        )
+        .await?;
 
         assert_eq!(
-            engine.eval_config()?.acceptors,
+            engine.acceptors,
             vec![
-                AcceptorConfig::Socks5("127.0.0.1:8080".parse()?, "handler".to_owned()),
-                AcceptorConfig::Http("127.0.0.1:8081".parse()?, "handler".to_owned())
+                AcceptorConfig::Socks5("127.0.0.1:8080".parse().unwrap(), "handler".to_owned()),
+                AcceptorConfig::Http("127.0.0.1:8081".parse().unwrap(), "handler".to_owned())
             ]
         );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_add_resolver() -> Result<()> {
+        let engine = Engine::load_config(
+            "config",
+            r#"
+
+            pub async fn config() {
+                let config = Config::new();
+
+                config.add_system_resolver("system")?;
+                config.add_udp_resolver("udp", ["8.8.8.8:53", "114.114.114.114:53"])?;
+
+                Ok(config)
+            }
+        "#,
+        )
+        .await?;
+
+        assert!(engine.resolver_group.get_resolver("system").is_ok());
+
+        assert!(engine.resolver_group.get_resolver("udp").is_ok());
 
         Ok(())
     }

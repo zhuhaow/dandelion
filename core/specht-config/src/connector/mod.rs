@@ -12,14 +12,14 @@ use specht_core::{
     simplex::Config,
     Result,
 };
-use std::{fmt::Debug, net::IpAddr};
+use std::{fmt::Debug, net::IpAddr, sync::Arc};
 
 pub use resolver::ResolverGroup;
 use resolver::{IpSet, ResolverNotFound};
 
 #[derive(Debug, Any)]
 pub struct Connector {
-    resolver_group: ResolverGroup,
+    resolver_group: Arc<ResolverGroup>,
     endpoint: Endpoint,
 }
 
@@ -40,7 +40,7 @@ impl IoWrapper {
 }
 
 impl Connector {
-    pub fn new(endpoint: Endpoint, resolver_group: ResolverGroup) -> Self {
+    pub fn new(endpoint: Endpoint, resolver_group: Arc<ResolverGroup>) -> Self {
         Self {
             resolver_group,
             endpoint,
@@ -172,6 +172,8 @@ mod tests {
     };
     use specht_core::resolver::system::SystemResolver;
 
+    use crate::rune::value_to_result;
+
     use super::*;
 
     fn get_vm(sources: &mut Sources) -> Result<Vm> {
@@ -210,7 +212,7 @@ mod tests {
 
         let mut vm = get_vm(&mut sources)?;
 
-        let connector = Connector::new(endpoint, ResolverGroup::default());
+        let connector = Connector::new(endpoint, Arc::new(ResolverGroup::default()));
 
         let output = T::from_value(vm.call(["main"], (connector,))?)?;
 
@@ -296,28 +298,21 @@ mod tests {
         let mut resolver_group = ResolverGroup::default();
         resolver_group.add_resolver("system", Arc::new(SystemResolver::default()));
 
-        let connector = Connector::new(Endpoint::from_str(endpoint)?, resolver_group);
+        let connector = Connector::new(Endpoint::from_str(endpoint)?, Arc::new(resolver_group));
 
-        let output = vm
-            .async_call(["main"], (connector, "nothing"))
-            .await?
-            .into_result()?
-            .take()
-            .unwrap()
-            .map(|v| IpSet::from_value(v).unwrap())
-            .map_err(|v| {
-                anyhow::Error::from_value(v)
-                    .unwrap()
-                    .downcast::<ResolverNotFound>()
-                    .unwrap()
-            });
+        let output = value_to_result(
+            vm.async_call(["main"], (connector, "nothing"))
+                .await?
+                .into_result()?,
+        )
+        .map_err(|e| e.downcast::<ResolverNotFound>().unwrap());
 
         assert_eq!(output, expect);
 
         let mut resolver_group = ResolverGroup::default();
         resolver_group.add_resolver("system", Arc::new(SystemResolver::default()));
 
-        let connector = Connector::new(Endpoint::from_str(endpoint)?, resolver_group);
+        let connector = Connector::new(Endpoint::from_str(endpoint)?, Arc::new(resolver_group));
 
         let output = vm
             .async_call(["main"], (connector, "system"))

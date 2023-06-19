@@ -187,8 +187,8 @@ pub async fn handshake(io: impl Io) -> Result<(Endpoint, impl Future<Output = Re
 
                 // We don't really care the error from here since it will drop the connection.
                 // We will then read the EOF from the other side.
-                tokio::task::spawn_local(conn);
-                tokio::task::spawn_local(connection);
+                tokio::task::spawn(conn);
+                tokio::task::spawn(connection);
 
                 let io: Box<dyn Io> = Box::new(s2);
                 Ok(io)

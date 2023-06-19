@@ -1,0 +1,12 @@
+pub async fn config() {
+    let config = Config::new();
+
+    config.add_http_acceptor("127.0.0.1:8123", "handler")?;
+    config.add_system_resolver("system")?;
+
+    Ok(config)
+}
+
+pub async fn handler(connector) {
+    connector.new_tcp(connector.endpoint(), "system").await
+}

@@ -12,7 +12,7 @@ use trust_dns_proto::op::Message;
 
 #[async_trait::async_trait]
 #[auto_impl::auto_impl(Arc)]
-pub trait Resolver: Debug {
+pub trait Resolver: Debug + Send {
     async fn lookup_ip(&self, name: &str) -> Result<Vec<IpAddr>>;
     async fn lookup_ipv4(&self, name: &str) -> Result<Vec<Ipv4Addr>>;
     async fn lookup_ipv6(&self, name: &str) -> Result<Vec<Ipv6Addr>>;
