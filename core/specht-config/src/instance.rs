@@ -1,4 +1,5 @@
 use crate::engine::{AcceptorConfig, Engine};
+use anyhow::Context;
 use futures::{future::select_all, Future, FutureExt, TryStreamExt};
 use specht_core::{
     acceptor::{http, socks5},
@@ -68,17 +69,22 @@ pub async fn handle_acceptors<
             if let Err(e) = async {
                 let (endpoint, fut) = handshake(io).await?;
 
-                let mut remote = engine.run_handler(eval_fn, endpoint).await?.into_inner();
+                let endpoint_cloned = endpoint.clone();
+                async {
+                    let mut remote = engine.run_handler(eval_fn, endpoint).await?.into_inner();
 
-                let mut local = fut.await?;
+                    let mut local = fut.await?;
 
-                copy_bidirectional(&mut local, &mut remote).await?;
+                    copy_bidirectional(&mut local, &mut remote).await?;
 
-                Ok::<(), Error>(())
+                    Ok::<(), Error>(())
+                }
+                .await
+                .with_context(|| format!("target endpoint {}", endpoint_cloned))
             }
             .await
             {
-                tracing::error!("Failed to handle connection {}", e)
+                tracing::error!("{:#?}", e)
             }
         });
     }
