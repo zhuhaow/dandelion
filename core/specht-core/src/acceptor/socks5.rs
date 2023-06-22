@@ -49,7 +49,9 @@ pub async fn handshake(
         Domain(String),
     }
 
-    let ip_or_domain = match buf[3] {
+    let request_type = buf[3];
+
+    let ip_or_domain = match request_type {
         1 => {
             let mut buf = [0; 4];
             io.read_exact(&mut buf).await?;
@@ -78,8 +80,16 @@ pub async fn handshake(
         IpOrDomain::Ip(ip) => Endpoint::new_from_addr(SocketAddr::new(ip, port)),
     };
 
+    let response: &[u8] = match request_type {
+        1 | 3 => &[5, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+        4 => &[
+            5, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ],
+        _ => unreachable!(),
+    };
+
     Ok((endpoint, async move {
-        io.write_all(&[5, 0, 0, 1, 0, 0, 0, 0, 0, 0]).await?;
+        io.write_all(response).await?;
         Ok(io)
     }))
 }
