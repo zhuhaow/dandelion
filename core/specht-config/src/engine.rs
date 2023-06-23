@@ -1,15 +1,15 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
 use rune::{
-    runtime::Vec as RuneVec,
+    runtime::{RuntimeContext, Vec as RuneVec, VmSendExecution},
     termcolor::{ColorChoice, StandardStream},
-    Any, Context, Diagnostics, FromValue, Module, Source, Sources, Vm,
+    Any, Context, Diagnostics, FromValue, Module, Source, Sources, Unit, Vm,
 };
 use specht_core::{endpoint::Endpoint, resolver::system::SystemResolver, Result};
 use trust_dns_resolver::config::{NameServerConfig, Protocol};
 
 use crate::{
-    connector::{Connector, IoWrapper, ResolverGroup},
+    connector::{Connector, ResolverGroup},
     rune::value_to_result,
 };
 
@@ -99,7 +99,8 @@ impl Default for InstanceConfig {
 }
 
 pub struct Engine {
-    vm: Vm,
+    context: Arc<RuntimeContext>,
+    unit: Arc<Unit>,
     acceptors: Vec<AcceptorConfig>,
     resolver_group: Arc<ResolverGroup>,
 }
@@ -124,36 +125,35 @@ impl Engine {
             diagnostics.emit(&mut writer, &sources)?;
         }
 
-        let mut vm = Vm::new(Arc::new(context.runtime()), Arc::new(result?));
+        let context = Arc::new(context.runtime());
+        let unit = Arc::new(result?);
+
+        let mut vm = Vm::new(context.clone(), unit.clone());
 
         let config: InstanceConfig =
             value_to_result(vm.async_call(["config"], ()).await?.into_result()?)?;
 
         Ok(Self {
-            vm,
+            context,
+            unit,
             acceptors: config.acceptors,
             resolver_group: Arc::new(config.resolver_group),
         })
     }
 
     fn vm(&self) -> Vm {
-        self.vm.clone()
+        Vm::new(self.context.clone(), self.unit.clone())
     }
 
-    pub async fn run_handler(
+    pub fn create_handler_execution(
         &self,
         name: impl AsRef<str>,
         endpoint: Endpoint,
-    ) -> Result<IoWrapper> {
-        value_to_result(
-            self.vm()
-                .async_call(
-                    [name.as_ref()],
-                    (Connector::new(endpoint, self.resolver_group.clone()),),
-                )
-                .await?
-                .into_result()?,
-        )
+    ) -> Result<VmSendExecution> {
+        Ok(self.vm().send_execute(
+            [name.as_ref()],
+            (Connector::new(endpoint, self.resolver_group.clone()),),
+        )?)
     }
 
     pub fn get_acceptors(&self) -> &[AcceptorConfig] {

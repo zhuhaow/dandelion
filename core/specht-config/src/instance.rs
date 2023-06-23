@@ -1,6 +1,10 @@
-use crate::engine::{AcceptorConfig, Engine};
+use crate::{
+    connector::IoWrapper,
+    engine::{AcceptorConfig, Engine},
+    rune::value_to_result,
+};
 use anyhow::Context;
-use futures::{future::select_all, Future, FutureExt, TryStreamExt};
+use futures::{future::select_all, Future, FutureExt};
 use specht_core::{
     acceptor::{http, socks5},
     endpoint::Endpoint,
@@ -12,7 +16,6 @@ use tokio::{
     io::copy_bidirectional,
     net::{TcpListener, TcpStream},
 };
-use tokio_stream::wrappers::TcpListenerStream;
 
 pub struct Instance {
     engine: Arc<Engine>,
@@ -34,14 +37,14 @@ impl Instance {
                     self.engine.clone(),
                     handler.to_owned(),
                 )
-                .boxed_local(),
+                .boxed(),
                 AcceptorConfig::Http(addr, handler) => handle_acceptors(
                     addr,
                     http::handshake,
                     self.engine.clone(),
                     handler.to_owned(),
                 )
-                .boxed_local(),
+                .boxed(),
             }
         }))
         .await
@@ -50,32 +53,41 @@ impl Instance {
 }
 
 pub async fn handle_acceptors<
-    F: Future<Output = Result<(Endpoint, impl Future<Output = Result<impl Io>>)>> + 'static,
+    F: Future<Output = Result<(Endpoint, impl Future<Output = Result<impl Io>> + Send)>>
+        + 'static
+        + Send,
 >(
     addr: &SocketAddr,
     handshake: fn(TcpStream) -> F,
     engine: Arc<Engine>,
     eval_fn: String,
 ) -> Result<()> {
-    while let Some(io) = TcpListenerStream::new(TcpListener::bind(addr).await?)
-        .map_err(Into::<Error>::into)
-        .try_next()
-        .await?
-    {
+    let listener = TcpListener::bind(addr).await?;
+
+    loop {
+        let io = listener.accept().await?.0;
+
         let engine = engine.clone();
         let eval_fn = eval_fn.clone();
 
-        tokio::task::spawn_local(async move {
-            if let Err(e) = async {
+        tokio::task::spawn(async move {
+            if let Err(e) = async move {
                 let (endpoint, fut) = handshake(io).await?;
 
                 let endpoint_cloned = endpoint.clone();
-                async {
-                    let mut remote = engine.run_handler(eval_fn, endpoint).await?.into_inner();
+                async move {
+                    let execution = engine.create_handler_execution(eval_fn, endpoint)?;
+
+                    let mut remote = value_to_result::<IoWrapper>(
+                        execution.async_complete().await?.into_result()?,
+                    )?
+                    .into_inner();
 
                     let mut local = fut.await?;
 
-                    copy_bidirectional(&mut local, &mut remote).await?;
+                    copy_bidirectional(&mut local, &mut remote)
+                        .await
+                        .context("Error happened when forwarding data")?;
 
                     Ok::<(), Error>(())
                 }
@@ -88,6 +100,4 @@ pub async fn handle_acceptors<
             }
         });
     }
-
-    Ok(())
 }

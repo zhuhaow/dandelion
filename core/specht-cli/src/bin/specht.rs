@@ -7,7 +7,6 @@ use std::{
     path::{Path, PathBuf},
 };
 use structopt::StructOpt;
-use tokio::task::LocalSet;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "specht2", about = "CLI version of the Specht2 client")]
@@ -50,15 +49,7 @@ async fn main() -> Result<()> {
             )?,
     };
 
-    let local_set = LocalSet::new();
+    let instance = Instance::load_config("config", code).await?;
 
-    local_set
-        .run_until(async move {
-            let instance = Instance::load_config("config", code).await?;
-
-            instance.run().await
-        })
-        .await?;
-
-    Ok(())
+    instance.run().await
 }

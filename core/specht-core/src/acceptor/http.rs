@@ -122,7 +122,9 @@ async fn handler(request: Request<Body>, state: Arc<Mutex<State>>) -> Result<Res
     }
 }
 
-pub async fn handshake(io: impl Io) -> Result<(Endpoint, impl Future<Output = Result<impl Io>>)> {
+pub async fn handshake(
+    io: impl Io,
+) -> Result<(Endpoint, impl Future<Output = Result<impl Io>> + Send)> {
     let (endpoint_tx, endpoint_rx) = channel();
     let (done_tx, done_rx) = channel();
 
@@ -170,7 +172,7 @@ pub async fn handshake(io: impl Io) -> Result<(Endpoint, impl Future<Output = Re
                 let io: Box<dyn Io> = Box::new(part.io);
                 Ok(io)
             }
-            .boxed_local(),
+            .boxed(),
         ))
     } else {
         Ok((
@@ -187,13 +189,13 @@ pub async fn handshake(io: impl Io) -> Result<(Endpoint, impl Future<Output = Re
 
                 // We don't really care the error from here since it will drop the connection.
                 // We will then read the EOF from the other side.
-                tokio::task::spawn_local(conn);
-                tokio::task::spawn_local(connection);
+                tokio::task::spawn(conn);
+                tokio::task::spawn(connection);
 
                 let io: Box<dyn Io> = Box::new(s2);
                 Ok(io)
             }
-            .boxed_local(),
+            .boxed(),
         ))
     }
 }
