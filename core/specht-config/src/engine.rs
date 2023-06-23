@@ -174,8 +174,8 @@ mod tests {
             pub async fn config() {
                 let config = Config::new();
 
-                config.add_socks5("127.0.0.1:8080", "handler")?;
-                config.add_http("127.0.0.1:8081", "handler")?;
+                config.add_socks5_acceptor("127.0.0.1:8080", "handler")?;
+                config.add_http_acceptor("127.0.0.1:8081", "handler")?;
 
                 Ok(config)
             }
