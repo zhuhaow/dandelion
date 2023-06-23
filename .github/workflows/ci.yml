@@ -5,9 +5,7 @@ jobs:
   check_rust:
     strategy:
       matrix:
-        # The macos-latest tag currently refers to 10.15
-        # https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idruns-on
-        os: [macos-11, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
