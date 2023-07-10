@@ -6,7 +6,7 @@ license = "MIT"
 
 [dependencies]
 tokio = { version = "1.28.2", features = ["io-util", "net", "macros", "rt"] }
-async-trait = "0.1.68"
+async-trait = "0.1.71"
 tokio-tungstenite = "0.19.0"
 futures = "0.3.28"
 async-compat = "0.2.1"

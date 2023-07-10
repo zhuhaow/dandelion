@@ -8,7 +8,7 @@ license = "MIT"
 specht-core = { path = "../specht-core" }
 specht-config = { path = "../specht-config" }
 tokio = { version = "1.28.2", features = ["io-util", "net"] }
-async-trait = "0.1.68"
+async-trait = "0.1.71"
 structopt = "0.3.26"
 futures = "0.3.28"
 flexi_logger = "0.25.5"
