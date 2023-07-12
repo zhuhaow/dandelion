@@ -1,7 +1,9 @@
 use crate::io::Io;
-use async_compat::Compat;
-use futures::{stream::TryStreamExt, task::AtomicWaker, SinkExt, Stream};
+use bytes::{Buf, Bytes};
+// use async_compat::Compat;
+use futures::{stream::TryStreamExt, task::AtomicWaker, SinkExt};
 use std::task::Poll;
+use tokio::io::{AsyncBufRead, AsyncRead};
 use tokio_tungstenite::{
     tungstenite::{error::Error as WsError, Message},
     WebSocketStream,
@@ -12,16 +14,17 @@ lazy_static::lazy_static! {
 }
 
 pub fn into_io<C: Io>(stream: WebSocketStream<C>) -> impl Io {
-    let stream = WebSocketStreamToAsyncWrite::new(stream).into_async_read();
-    Compat::new(stream)
+    WebSocketStreamToAsyncWrite::new(stream)
 }
 
+#[derive(Debug)]
 #[pin_project::pin_project]
 pub struct WebSocketStreamToAsyncWrite<C: Io> {
     stream: WebSocketStream<C>,
     read_closed: bool,
     write_closed: bool,
     waker: AtomicWaker,
+    chunk: Option<Bytes>,
 }
 
 impl<C: Io> WebSocketStreamToAsyncWrite<C> {
@@ -31,6 +34,7 @@ impl<C: Io> WebSocketStreamToAsyncWrite<C> {
             read_closed: false,
             write_closed: false,
             waker: AtomicWaker::default(),
+            chunk: None,
         }
     }
 }
@@ -44,7 +48,7 @@ fn is_eof(message: &Message) -> bool {
 }
 
 // Here we implement futures AsyncWrite and then use Compat to support tokio's.
-impl<C: Io> futures::io::AsyncWrite for WebSocketStreamToAsyncWrite<C> {
+impl<C: Io> tokio::io::AsyncWrite for WebSocketStreamToAsyncWrite<C> {
     fn poll_write(
         self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
@@ -77,7 +81,7 @@ impl<C: Io> futures::io::AsyncWrite for WebSocketStreamToAsyncWrite<C> {
         Poll::Ready(result.map_err(ws_to_io_error))
     }
 
-    fn poll_close(
+    fn poll_shutdown(
         self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> Poll<std::io::Result<()>> {
@@ -121,46 +125,82 @@ impl<C: Io> futures::io::AsyncWrite for WebSocketStreamToAsyncWrite<C> {
     }
 }
 
-pub struct MessageWrapper(Message);
-
-static EMPTY_BUF: [u8; 0] = [];
-
-impl AsRef<[u8]> for MessageWrapper {
-    fn as_ref(&self) -> &[u8] {
-        match self.0 {
-            Message::Binary(ref bytes) => bytes.as_ref(),
-            _ => EMPTY_BUF.as_ref(),
-        }
-    }
-}
-
-impl<C: Io> Stream for WebSocketStreamToAsyncWrite<C> {
-    type Item = std::io::Result<MessageWrapper>;
-
-    fn poll_next(
+impl<C: Io> AsyncBufRead for WebSocketStreamToAsyncWrite<C> {
+    fn poll_fill_buf(
         self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
-    ) -> Poll<Option<Self::Item>> {
+    ) -> Poll<std::io::Result<&[u8]>> {
         let this = self.project();
         let stream = this.stream;
-        let message = futures::ready!(stream.try_poll_next_unpin(cx));
 
-        match message {
-            Some(m) => match m {
-                Ok(m) => {
-                    if is_eof(&m) {
+        if this.chunk.is_none() {
+            let message = futures::ready!(stream.try_poll_next_unpin(cx));
+
+            match message {
+                Some(m) => match m {
+                    Ok(m) => {
+                        if is_eof(&m) {
+                            *this.read_closed = true;
+                            if *this.write_closed {
+                                this.waker.wake();
+                            }
+                            Poll::Ready(Ok(&[]))
+                        } else {
+                            *this.chunk = Some(Bytes::from(m.into_data()));
+                            let chunk = this.chunk.as_ref().unwrap();
+                            Poll::Ready(Ok(chunk))
+                        }
+                    }
+                    Err(err) => Poll::Ready(Err(ws_to_io_error(err))),
+                },
+                None => {
+                    if !*this.read_closed {
+                        // Somehow real EOF came before EOF command
                         *this.read_closed = true;
                         if *this.write_closed {
                             this.waker.wake();
                         }
-                        Poll::Ready(None)
-                    } else {
-                        Poll::Ready(Some(Ok(MessageWrapper(m))))
                     }
+
+                    Poll::Ready(Ok(&[]))
                 }
-                Err(err) => Poll::Ready(Some(Err(ws_to_io_error(err)))),
-            },
-            None => Poll::Ready(None),
+            }
+        } else {
+            let chunk = this.chunk.as_ref().unwrap();
+            Poll::Ready(Ok(chunk))
         }
+    }
+
+    fn consume(self: std::pin::Pin<&mut Self>, amt: usize) {
+        if amt > 0 {
+            self.project()
+                .chunk
+                .as_mut()
+                .expect("No check present")
+                .advance(amt)
+        }
+    }
+}
+
+impl<C: Io> AsyncRead for WebSocketStreamToAsyncWrite<C> {
+    fn poll_read(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+        buf: &mut tokio::io::ReadBuf<'_>,
+    ) -> Poll<std::io::Result<()>> {
+        if buf.remaining() == 0 {
+            return Poll::Ready(Ok(()));
+        }
+
+        let inner_buf = match self.as_mut().poll_fill_buf(cx) {
+            Poll::Ready(Ok(buf)) => buf,
+            Poll::Ready(Err(err)) => return Poll::Ready(Err(err)),
+            Poll::Pending => return Poll::Pending,
+        };
+        let len = std::cmp::min(inner_buf.len(), buf.remaining());
+        buf.put_slice(&inner_buf[..len]);
+
+        self.consume(len);
+        Poll::Ready(Ok(()))
     }
 }

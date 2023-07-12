@@ -16,6 +16,10 @@ rand = "0.8.5"
 rune = "0.12.4"
 anyhow = "1.0.71"
 trust-dns-resolver = "0.22.0"
+ipnetwork = "0.20.0"
+flate2 = "1.0.24"
+maxminddb = "0.23.0"
+tar = "0.4.38"
 
 [dev-dependencies]
-rstest = "0.17.0"
+rstest = "0.18.1"

@@ -192,6 +192,7 @@ pub async fn handshake(
     }))
 }
 
+#[derive(Debug)]
 #[pin_project::pin_project]
 struct ChainReadBufAndIo<I: Io> {
     // TODO: Make this Option<>

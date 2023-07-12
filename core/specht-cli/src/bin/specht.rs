@@ -1,5 +1,5 @@
 use anyhow::{Context, Ok};
-use specht_config::Instance;
+use specht_config::Engine;
 use specht_core::Result;
 use std::{
     env,
@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
             )?,
     };
 
-    let instance = Instance::load_config("config", code).await?;
+    let engine = Engine::load_config("config", code).await?;
 
-    instance.run().await
+    engine.run().await
 }
