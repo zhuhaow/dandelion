@@ -88,8 +88,8 @@ impl Cache {
         let mut module = Module::new();
 
         module.ty::<Self>()?;
-        module.inst_fn("get_resolver", Self::get_resolver)?;
-        module.inst_fn("get_iplist", Self::get_iplist)?;
+        module.inst_fn("try_get_resolver", Self::get_resolver)?;
+        module.inst_fn("try_get_iplist", Self::get_iplist)?;
         module.inst_fn("insert_resolver", Self::insert_resolver)?;
         module.inst_fn("insert_iplist", Self::insert_iplist)?;
 
@@ -135,8 +135,8 @@ impl EngineConfig {
 
         module.ty::<Self>()?;
         module.function(["Config", "new"], Self::new)?;
-        module.inst_fn("add_socks5_acceptor", Self::add_socks5_acceptor)?;
-        module.inst_fn("add_http_acceptor", Self::add_http_acceptor)?;
+        module.inst_fn("try_add_socks5_acceptor", Self::add_socks5_acceptor)?;
+        module.inst_fn("try_add_http_acceptor", Self::add_http_acceptor)?;
 
         Ok(module)
     }
@@ -296,11 +296,11 @@ mod tests {
             pub async fn config() {
                 let config = Config::new();
 
-                config.add_socks5_acceptor("127.0.0.1:8080", "handler")?;
-                config.add_http_acceptor("127.0.0.1:8081", "handler")?;
+                config.try_add_socks5_acceptor("127.0.0.1:8080", "handler")?;
+                config.try_add_http_acceptor("127.0.0.1:8081", "handler")?;
 
-                config.cache.insert_resolver("system", create_system_resolver()?);
-                config.cache.insert_resolver("google_dns", create_udp_resolver(["8.8.8.8:53"])?);
+                config.cache.insert_resolver("system", try_create_system_resolver()?);
+                config.cache.insert_resolver("google_dns", try_create_udp_resolver(["8.8.8.8:53"])?);
 
                 Ok(config)
             }

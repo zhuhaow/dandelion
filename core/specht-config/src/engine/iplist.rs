@@ -38,8 +38,8 @@ impl IpNetworkSetWrapper {
         let mut module = Module::new();
 
         module.ty::<Self>()?;
-        module.inst_fn("contains", Self::contains)?;
-        module.inst_fn("contains_any", Self::contains_any)?;
+        module.inst_fn("try_contains", Self::contains)?;
+        module.inst_fn("try_contains_any", Self::contains_any)?;
 
         Ok(module)
     }

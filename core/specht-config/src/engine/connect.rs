@@ -104,12 +104,12 @@ impl ConnectRequest {
         module.ty::<Self>()?;
         module.ty::<IoWrapper>()?;
 
-        module.async_function(["new_tcp_async"], new_tcp)?;
-        module.async_function(["new_tls_async"], new_tls)?;
-        module.async_function(["new_block_async"], new_block)?;
-        module.async_function(["new_http_async"], new_http)?;
-        module.async_function(["new_simplex_async"], new_simplex)?;
-        module.async_function(["new_socks5_async"], new_socks5)?;
+        module.async_function(["try_new_tcp_async"], new_tcp)?;
+        module.async_function(["try_new_tls_async"], new_tls)?;
+        module.async_function(["try_new_block_async"], new_block)?;
+        module.async_function(["try_new_http_async"], new_http)?;
+        module.async_function(["try_new_simplex_async"], new_simplex)?;
+        module.async_function(["try_new_socks5_async"], new_socks5)?;
 
         module.inst_fn("port", Self::port)?;
         module.inst_fn("hostname", Self::hostname)?;

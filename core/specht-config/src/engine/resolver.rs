@@ -39,13 +39,13 @@ impl ResolverWrapper {
     pub fn module() -> Result<Module> {
         let mut module = Module::new();
 
-        module.function(&["create_system_resolver"], create_system_resolver)?;
-        module.function(&["create_udp_resolver"], create_udp_resolver)?;
+        module.function(&["try_create_system_resolver"], create_system_resolver)?;
+        module.function(&["try_create_udp_resolver"], create_udp_resolver)?;
 
         module.ty::<Self>()?;
-        module.async_inst_fn("lookup", Self::lookup)?;
-        module.async_inst_fn("lookup_ipv4", Self::lookup_ipv4)?;
-        module.async_inst_fn("lookup_ipv6", Self::lookup_ipv6)?;
+        module.async_inst_fn("try_lookup", Self::lookup)?;
+        module.async_inst_fn("try_lookup_ipv4", Self::lookup_ipv4)?;
+        module.async_inst_fn("try_lookup_ipv6", Self::lookup_ipv6)?;
 
         Ok(module)
     }

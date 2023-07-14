@@ -97,8 +97,8 @@ impl GeoIp {
         module.ty::<Self>()?;
         module.inst_fn("lookup", Self::lookup)?;
 
-        module.async_function(["geoip_from_license_async"], Self::from_license)?;
-        module.function(["geoip_from_absolute_path"], Self::from_absolute_path)?;
+        module.async_function(["try_geoip_from_license_async"], Self::from_license)?;
+        module.function(["try_geoip_from_absolute_path"], Self::from_absolute_path)?;
 
         Ok(module)
     }
