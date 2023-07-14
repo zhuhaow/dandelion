@@ -1,6 +1,5 @@
 use crate::io::Io;
 use bytes::{Buf, Bytes};
-// use async_compat::Compat;
 use futures::{stream::TryStreamExt, task::AtomicWaker, SinkExt};
 use std::task::Poll;
 use tokio::io::{AsyncBufRead, AsyncRead};
@@ -172,12 +171,14 @@ impl<C: Io> AsyncBufRead for WebSocketStreamToAsyncWrite<C> {
     }
 
     fn consume(self: std::pin::Pin<&mut Self>, amt: usize) {
+        let chunk = self.project().chunk;
+
         if amt > 0 {
-            self.project()
-                .chunk
-                .as_mut()
-                .expect("No check present")
-                .advance(amt)
+            chunk.as_mut().expect("No check present").advance(amt);
+
+            if chunk.as_ref().unwrap().is_empty() {
+                *chunk = None;
+            }
         }
     }
 }

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::{
     endpoint::Endpoint,
     io::Io,
@@ -5,8 +7,9 @@ use crate::{
     Result,
 };
 use anyhow::Context;
-use http::Request;
+use http::HeaderName;
 use tokio_tungstenite::client_async;
+use tungstenite::client::IntoClientRequest;
 
 pub async fn connect<I: Io>(
     io: I,
@@ -26,17 +29,15 @@ pub async fn connect<I: Io>(
             )
         })?;
 
-    let request = Request::builder()
-        .uri(uri)
-        .header(&config.secret_header.0, &config.secret_header.1)
-        .header(ENDPOINT_HEADER_KEY, endpoint.to_string())
-        .body(())
-        .with_context(|| {
-            format!(
-                "Failed to create simplex request connecting to {}",
-                endpoint
-            )
-        })?;
+    let mut request = uri.into_client_request()?;
+    request.headers_mut().insert(
+        HeaderName::from_str(&config.secret_header.0)?,
+        config.secret_header.1.parse()?,
+    );
+
+    request
+        .headers_mut()
+        .insert(ENDPOINT_HEADER_KEY, endpoint.to_string().parse()?);
 
     let (stream, _response) = client_async(request, io)
         .await

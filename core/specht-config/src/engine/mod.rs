@@ -22,6 +22,7 @@ use tokio::{
     io::copy_bidirectional,
     net::{TcpListener, TcpStream},
 };
+use tracing::warn;
 
 use crate::rune::value_to_result;
 
@@ -70,18 +71,6 @@ impl Cache {
             .ok_or_else(|| anyhow::anyhow!("iplist {} not found", name))
     }
 
-    pub fn insert_resolver(&mut self, name: &str, resolver: ResolverWrapper) {
-        self.resolvers.insert(name.to_owned(), resolver);
-    }
-
-    pub fn insert_iplist(&mut self, name: &str, iplist: IpNetworkSetWrapper) {
-        self.iplist.insert(name.to_owned(), iplist);
-    }
-
-    pub fn set_geoip_db(&mut self, db: GeoIp) {
-        self.geoip = Some(db);
-    }
-
     pub fn get_geoip_db(&self) -> Result<GeoIp> {
         self.geoip
             .clone()
@@ -101,13 +90,8 @@ impl Cache {
 
         module.ty::<Self>()?;
         module.inst_fn("try_get_resolver", Self::get_resolver)?;
-        module.inst_fn("insert_resolver", Self::insert_resolver)?;
-
         module.inst_fn("try_get_iplist", Self::get_iplist)?;
-        module.inst_fn("insert_iplist", Self::insert_iplist)?;
-
         module.inst_fn("try_get_geoip_db", Self::get_geoip_db)?;
-        module.inst_fn("set_geoip_db", Self::set_geoip_db)?;
 
         Ok(module)
     }
@@ -143,6 +127,18 @@ impl EngineConfig {
 
         Ok(())
     }
+
+    pub fn cache_resolver(&mut self, name: &str, resolver: ResolverWrapper) {
+        self.cache.resolvers.insert(name.to_owned(), resolver);
+    }
+
+    pub fn cache_iplist(&mut self, name: &str, iplist: IpNetworkSetWrapper) {
+        self.cache.iplist.insert(name.to_owned(), iplist);
+    }
+
+    pub fn cache_geoip_db(&mut self, db: GeoIp) {
+        self.cache.geoip = Some(db);
+    }
 }
 
 impl EngineConfig {
@@ -153,6 +149,9 @@ impl EngineConfig {
         module.function(["Config", "new"], Self::new)?;
         module.inst_fn("try_add_socks5_acceptor", Self::add_socks5_acceptor)?;
         module.inst_fn("try_add_http_acceptor", Self::add_http_acceptor)?;
+        module.inst_fn("cache_resolver", Self::cache_resolver)?;
+        module.inst_fn("cache_iplist", Self::cache_iplist)?;
+        module.inst_fn("cache_geoip_db", Self::cache_geoip_db)?;
 
         Ok(module)
     }
