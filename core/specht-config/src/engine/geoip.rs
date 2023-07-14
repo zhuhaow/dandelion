@@ -7,20 +7,23 @@ use std::{
     env,
     fs::{create_dir_all, read_dir},
     net::IpAddr,
+    sync::Arc,
 };
 use tar::Archive;
 use tempfile::tempdir;
 use tracing::{debug, info};
 
-#[derive(Any)]
+#[derive(Any, Debug, Clone)]
 pub struct GeoIp {
-    reader: Reader<Mmap>,
+    reader: Arc<Reader<Mmap>>,
 }
 
 impl GeoIp {
     pub fn from_absolute_path(path: &str) -> Result<Self> {
         let reader = Reader::open_mmap(path)?;
-        Ok(Self { reader })
+        Ok(Self {
+            reader: Arc::new(reader),
+        })
     }
 
     pub async fn from_license(license: &str) -> Result<Self> {
@@ -33,7 +36,9 @@ impl GeoIp {
                 "Found existing GeoList2 database from {}",
                 db_path.to_str().unwrap()
             );
-            return Ok(Self { reader });
+            return Ok(Self {
+                reader: Arc::new(reader),
+            });
         }
 
         let dir = tempdir()?;
@@ -75,7 +80,7 @@ impl GeoIp {
         info!("Downloaded GeoLite2 database");
 
         Ok(Self {
-            reader: Reader::open_mmap(&db_path)?,
+            reader: Arc::new(Reader::open_mmap(&db_path)?),
         })
     }
 

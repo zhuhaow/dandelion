@@ -44,6 +44,7 @@ pub enum AcceptorConfig {
 struct Cache {
     resolvers: HashMap<String, ResolverWrapper>,
     iplist: HashMap<String, IpNetworkSetWrapper>,
+    geoip: Option<GeoIp>,
 }
 
 impl Cache {
@@ -51,6 +52,7 @@ impl Cache {
         Self {
             resolvers: HashMap::new(),
             iplist: HashMap::new(),
+            geoip: None,
         }
     }
 
@@ -75,6 +77,16 @@ impl Cache {
     pub fn insert_iplist(&mut self, name: &str, iplist: IpNetworkSetWrapper) {
         self.iplist.insert(name.to_owned(), iplist);
     }
+
+    pub fn set_geoip_db(&mut self, db: GeoIp) {
+        self.geoip = Some(db);
+    }
+
+    pub fn get_geoip_db(&self) -> Result<GeoIp> {
+        self.geoip
+            .clone()
+            .ok_or_else(|| anyhow::anyhow!("geoip db not found"))
+    }
 }
 
 impl Default for Cache {
@@ -89,9 +101,13 @@ impl Cache {
 
         module.ty::<Self>()?;
         module.inst_fn("try_get_resolver", Self::get_resolver)?;
-        module.inst_fn("try_get_iplist", Self::get_iplist)?;
         module.inst_fn("insert_resolver", Self::insert_resolver)?;
+
+        module.inst_fn("try_get_iplist", Self::get_iplist)?;
         module.inst_fn("insert_iplist", Self::insert_iplist)?;
+
+        module.inst_fn("try_get_geoip_db", Self::get_geoip_db)?;
+        module.inst_fn("set_geoip_db", Self::set_geoip_db)?;
 
         Ok(module)
     }
