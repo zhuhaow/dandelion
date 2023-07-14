@@ -1,4 +1,5 @@
 mod connect;
+mod geoip;
 mod iplist;
 mod resolver;
 
@@ -26,6 +27,7 @@ use crate::rune::value_to_result;
 
 use self::{
     connect::{ConnectRequest, IoWrapper},
+    geoip::GeoIp,
     iplist::IpNetworkSetWrapper,
     resolver::ResolverWrapper,
 };
@@ -164,6 +166,7 @@ impl Engine {
         context.install(ResolverWrapper::module()?)?;
         context.install(IpNetworkSetWrapper::module()?)?;
         context.install(Cache::module()?)?;
+        context.install(GeoIp::module()?)?;
 
         let mut diagnostics = Diagnostics::new();
         let result = rune::prepare(&mut sources)
