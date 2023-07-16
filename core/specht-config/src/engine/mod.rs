@@ -22,7 +22,6 @@ use tokio::{
     io::copy_bidirectional,
     net::{TcpListener, TcpStream},
 };
-use tracing::warn;
 
 use crate::rune::value_to_result;
 
