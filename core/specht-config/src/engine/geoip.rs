@@ -1,5 +1,5 @@
 use flate2::read::GzDecoder;
-use maxminddb::{geoip2::country::Country, Mmap, Reader};
+use maxminddb::{geoip2::Country, Mmap, Reader};
 use reqwest::ClientBuilder;
 use rune::Any;
 use specht_core::Result;
@@ -87,13 +87,16 @@ impl GeoIp {
     // We don't differentiate any error here, just return an empty string.
     // User should not care about the internal implementation of maxminddb.
     pub fn lookup(&self, ip: &str) -> String {
-        ip.parse::<IpAddr>()
-            .map(|ip| match self.reader.lookup::<Country>(ip) {
-                Ok(country) => country.iso_code.unwrap_or(""),
-                Err(_) => "",
-            })
-            .map(|s| s.to_owned())
-            .unwrap_or_else(|_| "".to_owned())
+        let ip: IpAddr = match ip.parse() {
+            Ok(ip) => ip,
+            Err(_) => return "".to_owned(),
+        };
+
+        match self.reader.lookup::<Country>(ip) {
+            Ok(country) => country.country.and_then(|c| c.iso_code).unwrap_or(""),
+            Err(_) => "",
+        }
+        .to_owned()
     }
 
     pub fn module() -> Result<rune::Module> {
