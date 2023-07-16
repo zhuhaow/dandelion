@@ -38,6 +38,7 @@ impl IpNetworkSetWrapper {
         let mut module = Module::new();
 
         module.ty::<Self>()?;
+        module.function(&["try_create_iplist"], Self::new)?;
         module.inst_fn("try_contains", Self::contains)?;
         module.inst_fn("try_contains_any", Self::contains_any)?;
 
