@@ -292,7 +292,7 @@ pub async fn handle_acceptors<
             }
             .await
             {
-                tracing::error!("{:#?}", e)
+                tracing::error!("{:?}", e)
             }
         });
     }
