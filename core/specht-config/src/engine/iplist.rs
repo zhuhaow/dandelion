@@ -1,7 +1,7 @@
 use std::{net::IpAddr, sync::Arc};
 
 use ipnetwork::IpNetwork;
-use rune::{runtime::Vec as RuneVec, Any, FromValue, Module};
+use rune::{runtime::Vec as RuneVec, Any, FromValue, Module, Value};
 use specht_core::Result;
 
 use crate::rune::create_wrapper;
@@ -24,9 +24,15 @@ impl IpNetworkSetWrapper {
         Ok(self.inner().iter().any(|network| network.contains(ip)))
     }
 
-    pub fn contains_any(&self, ips: RuneVec) -> Result<bool> {
+    pub fn contains_any(&self, ips: &RuneVec) -> Result<bool> {
         for ip in ips {
-            if self.contains(&String::from_value(ip)?)? {
+            let result = match ip {
+                Value::String(s) => self.contains(s.borrow_ref()?.as_str()),
+                Value::StaticString(s) => self.contains(s.as_str()),
+                _ => anyhow::bail!("not a string"),
+            }?;
+
+            if result {
                 return Ok(true);
             }
         }
