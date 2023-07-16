@@ -99,7 +99,6 @@ impl Cache {
 #[derive(Debug, Any)]
 struct EngineConfig {
     acceptors: Vec<AcceptorConfig>,
-    #[rune(get)]
     cache: Cache,
 }
 
