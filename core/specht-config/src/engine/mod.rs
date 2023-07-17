@@ -312,8 +312,8 @@ mod tests {
                 config.try_add_socks5_acceptor("127.0.0.1:8080", "handler")?;
                 config.try_add_http_acceptor("127.0.0.1:8081", "handler")?;
 
-                config.cache.insert_resolver("system", try_create_system_resolver()?);
-                config.cache.insert_resolver("google_dns", try_create_udp_resolver(["8.8.8.8:53"])?);
+                config.cache_resolver("system", try_create_system_resolver()?);
+                config.cache_resolver("google_dns", try_create_udp_resolver(["8.8.8.8:53"])?);
 
                 Ok(config)
             }
