@@ -1,8 +1,8 @@
-name: specht2
+name: dandelion
 version: git
-summary: A light and fast proxy server
+summary: A fully programmable proxy
 description: |
-  specht2 is a rewrite of Specht in rust with speed in mind.
+  A proxy where the rule can be defined with dynamic language for extreme flexibility
 
 grade: stable
 base: core18
@@ -18,8 +18,8 @@ parts:
       - libssl-dev
 
 apps:
-  specht2:
-    command: bin/specht2
+  dandelion:
+    command: bin/dandelion
     daemon: simple
     plugs:
       - network
