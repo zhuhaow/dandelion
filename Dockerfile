@@ -1,4 +1,4 @@
-FROM rust:1.71-buster as base
+FROM ghcr.io/rust-lang/rust:nightly-bookworm as base
 RUN cargo install cargo-chef
 
 FROM base as planner
