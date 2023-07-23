@@ -9,7 +9,7 @@ base: core18
 confinement: strict
 
 parts:
-  specht2:
+  dandelion:
     plugin: rust
     rust-channel: nightly
     source: core/
