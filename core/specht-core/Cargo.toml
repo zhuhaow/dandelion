@@ -18,7 +18,7 @@ hyper = { version = "0.14.27", features = ["http1", "server"] }
 bytes = "1.4.0"
 tungstenite = "0.19.0"
 serde = { version = "1.0.171", features = ["derive"] }
-anyhow = { version = "1.0.71", features = ["backtrace"] }
+anyhow = { version = "1.0.72", features = ["backtrace"] }
 tokio-native-tls = "0.3.1"
 lazy_static = "1.4.0"
 regex = "1.9.1"
