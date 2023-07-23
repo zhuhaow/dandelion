@@ -19,7 +19,7 @@ trust-dns-resolver = "0.22.0"
 ipnetwork = "0.20.0"
 flate2 = "1.0.26"
 maxminddb = "0.23.0"
-tar = "0.4.38"
+tar = "0.4.39"
 reqwest = { version = "0.11.18" }
 tempfile = "3.6.0"
 
