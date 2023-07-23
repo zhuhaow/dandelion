@@ -18,29 +18,17 @@ jobs:
           workspaces: |
             core
       - name: cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all --manifest-path core/Cargo.toml  -- --check
+        run: cargo fmt --all --manifest-path core/Cargo.toml -- --check
       - name: cargo clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: --all-targets --all-features --manifest-path core/Cargo.toml -- -D warnings
+        run: cargo clippy --all-targets --all-features --manifest-path core/Cargo.toml -- -D warnings
       - name: cargo test
         if: ${{ env.MAXMINDDB_LICENSE != 0 }}
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --manifest-path core/Cargo.toml -- --include-ignored
+        run: cargo test --manifest-path core/Cargo.toml -- --include-ignored
         env:
           MAXMINDDB_LICENSE: ${{ secrets.MAXMINDDB_LICENSE }}
       - name: cargo test (no secrets)
         if: ${{ env.MAXMINDDB_LICENSE == 0 }}
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --manifest-path core/Cargo.toml -- --include-ignored
+        run: cargo test --manifest-path core/Cargo.toml -- --include-ignored
         env:
           MAXMINDDB_LICENSE: ${{ secrets.MAXMINDDB_LICENSE }}
           SKIP_MAXMINDDB_TESTS: 1
