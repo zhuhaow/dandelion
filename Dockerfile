@@ -1,4 +1,4 @@
-FROM ghcr.io/rust-lang/rust:nightly-bookworm as base
+FROM 1-bookworm as base
 RUN cargo install cargo-chef
 
 FROM base as planner

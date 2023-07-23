@@ -5,13 +5,13 @@ description: |
   A proxy where the rule can be defined with dynamic language for extreme flexibility
 
 grade: stable
-base: core18
+base: cor22
 confinement: strict
 
 parts:
   dandelion:
     plugin: rust
-    rust-channel: nightly
+    rust-channel: stable
     source: core/
     build-packages:
       - pkg-config
