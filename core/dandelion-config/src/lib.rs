@@ -1,5 +1,3 @@
-#![feature(async_closure)]
-
 mod engine;
 mod rune;
 
