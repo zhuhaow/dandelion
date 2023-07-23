@@ -1,5 +1,5 @@
+use dandelion_core::Result;
 use rune::{runtime::Shared, FromValue, Value};
-use specht_core::Result;
 
 macro_rules! create_wrapper {
     ($name:ident, $inner:ty) => {

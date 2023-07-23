@@ -1,8 +1,8 @@
+use dandelion_core::Result;
 use flate2::read::GzDecoder;
 use maxminddb::{geoip2::Country, Mmap, Reader};
 use reqwest::ClientBuilder;
 use rune::Any;
-use specht_core::Result;
 use std::{
     env,
     fs::{create_dir_all, read_dir},
@@ -27,7 +27,7 @@ impl GeoIp {
     }
 
     pub async fn from_license(license: &str) -> Result<Self> {
-        let temp_dir = env::temp_dir().join("specht2/geoip");
+        let temp_dir = env::temp_dir().join("dandelion/geoip");
         let db_path = temp_dir.join("GeoLite2-Country.mmdb");
 
         // first try to load the file

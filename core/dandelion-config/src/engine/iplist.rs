@@ -1,8 +1,8 @@
 use std::{net::IpAddr, sync::Arc};
 
+use dandelion_core::Result;
 use ipnetwork::IpNetwork;
 use rune::{runtime::Vec as RuneVec, Any, FromValue, Module, Value};
-use specht_core::Result;
 
 use crate::rune::create_wrapper;
 

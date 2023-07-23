@@ -1,12 +1,12 @@
 [package]
-name = "specht-cli"
+name = "dandelion-cli"
 version = "0.0.1"
 edition = "2021"
 license = "MIT"
 
 [dependencies]
-specht-core = { path = "../specht-core" }
-specht-config = { path = "../specht-config" }
+dandelion-core = { path = "../dandelion-core" }
+dandelion-config = { path = "../dandelion-config" }
 tokio = { version = "1.29.1", features = ["io-util", "net"] }
 async-trait = "0.1.71"
 structopt = "0.3.26"

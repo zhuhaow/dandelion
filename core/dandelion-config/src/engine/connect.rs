@@ -1,5 +1,4 @@
-use rune::{Any, Module};
-use specht_core::{
+use dandelion_core::{
     connector::{
         block::connect as block_connect, http::connect as http_connect,
         simplex::connect as simplex_connect, socks5::connect as socks5_connect,
@@ -10,6 +9,7 @@ use specht_core::{
     simplex::Config,
     Result,
 };
+use rune::{Any, Module};
 use std::{fmt::Debug, net::IpAddr};
 
 use crate::{engine::resolver::ResolverWrapper, rune::create_wrapper};

@@ -1,10 +1,10 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
-use rune::{runtime::Vec as RuneVec, Any, FromValue, Module, Value};
-use specht_core::{
+use dandelion_core::{
     resolver::{system::SystemResolver, trust::TrustResolver, Resolver},
     Result,
 };
+use rune::{runtime::Vec as RuneVec, Any, FromValue, Module, Value};
 use trust_dns_resolver::config::{NameServerConfig, Protocol};
 
 use crate::rune::create_wrapper;

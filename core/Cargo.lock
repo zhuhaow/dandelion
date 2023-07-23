@@ -341,6 +341,117 @@ dependencies = [
 ]
 
 [[package]]
+name = "dandelion-cli"
+version = "0.0.1"
+dependencies = [
+ "anyhow",
+ "async-recursion",
+ "async-trait",
+ "dandelion-config",
+ "dandelion-core",
+ "fdlimit",
+ "flexi_logger",
+ "futures",
+ "ipnetwork 0.20.0",
+ "iso3166-1",
+ "maxminddb",
+ "rand",
+ "rstest",
+ "structopt",
+ "tokio",
+ "tokio-stream",
+ "tracing",
+ "tracing-futures",
+ "trust-dns-resolver",
+]
+
+[[package]]
+name = "dandelion-config"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "dandelion-core",
+ "env_logger",
+ "flate2",
+ "futures",
+ "ipnetwork 0.20.0",
+ "maxminddb",
+ "rand",
+ "reqwest",
+ "rstest",
+ "rune",
+ "serde",
+ "tar",
+ "tempfile",
+ "test-log",
+ "tokio",
+ "tokio-stream",
+ "tracing",
+ "tracing-futures",
+ "trust-dns-resolver",
+]
+
+[[package]]
+name = "dandelion-core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "as-dyn-trait",
+ "async-compat",
+ "async-stream",
+ "async-trait",
+ "auto_impl",
+ "byteorder",
+ "bytes",
+ "cfg-if",
+ "chrono",
+ "dns-lookup",
+ "env_logger",
+ "flate2",
+ "futures",
+ "http",
+ "httparse",
+ "hyper",
+ "hyper-tungstenite",
+ "ipnetwork 0.20.0",
+ "iso3166-1",
+ "itertools",
+ "lazy_static",
+ "libc",
+ "lru",
+ "maxminddb",
+ "multi-map",
+ "nix",
+ "os_socketaddr",
+ "pin-project",
+ "pnet_packet",
+ "quinn",
+ "rand",
+ "regex",
+ "reqwest",
+ "rstest",
+ "rustc-hash",
+ "rustls",
+ "scopeguard",
+ "serde",
+ "serde_regex",
+ "socket2 0.5.3",
+ "tar",
+ "tempfile",
+ "test-log",
+ "tokio",
+ "tokio-native-tls",
+ "tokio-tungstenite",
+ "tokio-util 0.7.8",
+ "tower",
+ "tracing",
+ "trust-dns-proto",
+ "trust-dns-resolver",
+ "tun",
+ "tungstenite",
+]
+
+[[package]]
 name = "data-encoding"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2012,117 +2123,6 @@ checksum = "2538b18701741680e0322a2302176d3253a35388e2e62f172f64f4f16605f877"
 dependencies = [
  "libc",
  "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "specht-cli"
-version = "0.0.1"
-dependencies = [
- "anyhow",
- "async-recursion",
- "async-trait",
- "fdlimit",
- "flexi_logger",
- "futures",
- "ipnetwork 0.20.0",
- "iso3166-1",
- "maxminddb",
- "rand",
- "rstest",
- "specht-config",
- "specht-core",
- "structopt",
- "tokio",
- "tokio-stream",
- "tracing",
- "tracing-futures",
- "trust-dns-resolver",
-]
-
-[[package]]
-name = "specht-config"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "env_logger",
- "flate2",
- "futures",
- "ipnetwork 0.20.0",
- "maxminddb",
- "rand",
- "reqwest",
- "rstest",
- "rune",
- "serde",
- "specht-core",
- "tar",
- "tempfile",
- "test-log",
- "tokio",
- "tokio-stream",
- "tracing",
- "tracing-futures",
- "trust-dns-resolver",
-]
-
-[[package]]
-name = "specht-core"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "as-dyn-trait",
- "async-compat",
- "async-stream",
- "async-trait",
- "auto_impl",
- "byteorder",
- "bytes",
- "cfg-if",
- "chrono",
- "dns-lookup",
- "env_logger",
- "flate2",
- "futures",
- "http",
- "httparse",
- "hyper",
- "hyper-tungstenite",
- "ipnetwork 0.20.0",
- "iso3166-1",
- "itertools",
- "lazy_static",
- "libc",
- "lru",
- "maxminddb",
- "multi-map",
- "nix",
- "os_socketaddr",
- "pin-project",
- "pnet_packet",
- "quinn",
- "rand",
- "regex",
- "reqwest",
- "rstest",
- "rustc-hash",
- "rustls",
- "scopeguard",
- "serde",
- "serde_regex",
- "socket2 0.5.3",
- "tar",
- "tempfile",
- "test-log",
- "tokio",
- "tokio-native-tls",
- "tokio-tungstenite",
- "tokio-util 0.7.8",
- "tower",
- "tracing",
- "trust-dns-proto",
- "trust-dns-resolver",
- "tun",
- "tungstenite",
 ]
 
 [[package]]

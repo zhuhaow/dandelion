@@ -1,6 +1,6 @@
 use anyhow::{Context, Ok};
-use specht_config::Engine;
-use specht_core::Result;
+use dandelion_config::Engine;
+use dandelion_core::Result;
 use std::{
     env,
     fs::read_to_string,
@@ -9,7 +9,7 @@ use std::{
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
-#[structopt(name = "specht2", about = "CLI version of the Specht2 client")]
+#[structopt(name = "dandelion", about = "CLI version of the dandelion client")]
 struct Opt {
     #[structopt(parse(from_os_str))]
     input: Option<PathBuf>,
@@ -17,7 +17,7 @@ struct Opt {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    flexi_logger::Logger::try_with_env_or_str("warn,specht_core=info,specht_config=info")
+    flexi_logger::Logger::try_with_env_or_str("warn,dandelion_core=info,dandelion_config=info")
         .unwrap()
         .start()
         .unwrap();
@@ -43,9 +43,9 @@ async fn main() -> Result<()> {
         Some(path) => read_to_string(&path)
             .with_context(|| format!("Failed to load config file {}", path.to_string_lossy()))?,
         None => load_config_from_env("SNAP_COMMON", "./config.rn")
-            .or_else(|_| load_config_from_env("HOME", "./.specht2/config.rn"))
+            .or_else(|_| load_config_from_env("HOME", "./.dandelion/config.rn"))
             .context(
-                "Failed to load config from $SNAP_COMMON/config.rn or $HOME/.specht2/config.rn",
+                "Failed to load config from $SNAP_COMMON/config.rn or $HOME/.dandelion/config.rn",
             )?,
     };
 

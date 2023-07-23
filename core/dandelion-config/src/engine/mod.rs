@@ -6,17 +6,17 @@ mod resolver;
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 
 use anyhow::Context as AnyhowContext;
+use dandelion_core::{
+    acceptor::{http, socks5},
+    endpoint::Endpoint,
+    io::Io,
+    Result,
+};
 use futures::{future::select_all, Future, FutureExt};
 use rune::{
     runtime::{RuntimeContext, VmSendExecution},
     termcolor::{ColorChoice, StandardStream},
     Any, Context, Diagnostics, Module, Source, Sources, Unit, Vm,
-};
-use specht_core::{
-    acceptor::{http, socks5},
-    endpoint::Endpoint,
-    io::Io,
-    Result,
 };
 use tokio::{
     io::copy_bidirectional,
