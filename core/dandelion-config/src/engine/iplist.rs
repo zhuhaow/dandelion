@@ -13,7 +13,10 @@ impl IpNetworkSetWrapper {
         Ok(Arc::new(
             ips.into_iter()
                 .map(|ip| anyhow::Ok(String::from_value(ip)?.parse()?))
-                .try_collect::<Vec<IpNetwork>>()?,
+                .try_fold(Vec::new(), |mut ips, ip| {
+                    ips.push(ip?);
+                    anyhow::Ok(ips)
+                })?,
         )
         .into())
     }

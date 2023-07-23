@@ -25,8 +25,11 @@ fn create_udp_resolver(addrs: RuneVec) -> Result<ResolverWrapper> {
     Ok(Arc::new(TrustResolver::new(
         addrs
             .into_iter()
-            .map(|addr| anyhow::Ok(String::from_value(addr)?.parse()?))
-            .try_collect::<Vec<SocketAddr>>()?
+            .map(|addr| anyhow::Ok(String::from_value(addr)?.parse::<SocketAddr>()?))
+            .try_fold(Vec::new(), |mut addrs, addr| {
+                addrs.push(addr?);
+                anyhow::Ok(addrs)
+            })?
             .into_iter()
             .map(|s| NameServerConfig::new(s, Protocol::Udp))
             .collect(),
