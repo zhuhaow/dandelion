@@ -448,7 +448,7 @@ dependencies = [
  "trust-dns-proto",
  "trust-dns-resolver",
  "tun",
- "tungstenite",
+ "tungstenite 0.20.0",
 ]
 
 [[package]]
@@ -924,7 +924,7 @@ dependencies = [
  "pin-project",
  "tokio",
  "tokio-tungstenite",
- "tungstenite",
+ "tungstenite 0.19.0",
 ]
 
 [[package]]
@@ -2304,7 +2304,7 @@ dependencies = [
  "futures-util",
  "log",
  "tokio",
- "tungstenite",
+ "tungstenite 0.19.0",
 ]
 
 [[package]]
@@ -2477,6 +2477,25 @@ name = "tungstenite"
 version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "15fba1a6d6bb030745759a9a2a588bfe8490fc8b4751a277db3a0be1c9ebbf67"
+dependencies = [
+ "byteorder",
+ "bytes",
+ "data-encoding",
+ "http",
+ "httparse",
+ "log",
+ "rand",
+ "sha1",
+ "thiserror",
+ "url",
+ "utf-8",
+]
+
+[[package]]
+name = "tungstenite"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e862a1c4128df0112ab625f55cd5c934bcb4312ba80b39ae4b4835a3fd58e649"
 dependencies = [
  "byteorder",
  "bytes",
