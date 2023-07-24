@@ -21,7 +21,7 @@ flate2 = "1.0.26"
 maxminddb = "0.23.0"
 tar = "0.4.39"
 reqwest = { version = "0.11.18" }
-tempfile = "3.6.0"
+tempfile = "3.7.0"
 
 [dev-dependencies]
 rstest = "0.18.1"
