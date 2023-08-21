@@ -17,7 +17,7 @@ rune = "0.12.4"
 anyhow = { version = "1.0.72", features = ["backtrace"] }
 trust-dns-resolver = "0.22.0"
 ipnetwork = "0.20.0"
-flate2 = "1.0.26"
+flate2 = "1.0.27"
 maxminddb = "0.23.0"
 tar = "0.4.39"
 reqwest = { version = "0.11.18" }
