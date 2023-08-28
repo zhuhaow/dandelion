@@ -15,7 +15,7 @@ tokio = { version = "1.31.0", features = ["rt", "macros"] }
 rand = "0.8.5"
 rune = "0.12.4"
 anyhow = { version = "1.0.75", features = ["backtrace"] }
-trust-dns-resolver = "0.22.0"
+trust-dns-resolver = "0.23.0"
 ipnetwork = "0.20.0"
 flate2 = "1.0.27"
 maxminddb = "0.23.0"
