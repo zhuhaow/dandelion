@@ -11,7 +11,7 @@ tokio = { version = "1.32.0", features = ["io-util", "net"] }
 async-trait = "0.1.73"
 structopt = "0.3.26"
 futures = "0.3.28"
-flexi_logger = "0.26.0"
+flexi_logger = "0.27.0"
 anyhow = { version = "1.0.75", features = ["backtrace"] }
 fdlimit = "0.2.1"
 ipnetwork = "0.20.0"
