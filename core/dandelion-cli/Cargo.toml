@@ -17,7 +17,7 @@ fdlimit = "0.2.1"
 ipnetwork = "0.20.0"
 maxminddb = { version = "0.23.0", features = ["mmap"] }
 iso3166-1 = "1.0.1"
-async-recursion = "1.0.4"
+async-recursion = "1.0.5"
 tokio-stream = { version = "0.1.14", features = ["net"] }
 tracing = { version = "0.1.37", features = ["log"] }
 tracing-futures = "0.2.5"
