@@ -5,25 +5,25 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-serde = "1.0.171"
+serde = "1.0.192"
 dandelion-core = { path = "../dandelion-core" }
-futures = "0.3.28"
+futures = "0.3.29"
 tokio-stream = { version = "0.1.14", features = ["net"] }
-tracing = { version = "0.1.37", features = ["log"] }
+tracing = { version = "0.1.40", features = ["log"] }
 tracing-futures = "0.2.5"
-tokio = { version = "1.29.1", features = ["rt", "macros"] }
+tokio = { version = "1.34.0", features = ["rt", "macros"] }
 rand = "0.8.5"
 rune = "0.12.4"
-anyhow = { version = "1.0.72", features = ["backtrace"] }
+anyhow = { version = "1.0.75", features = ["backtrace"] }
 trust-dns-resolver = "0.22.0"
 ipnetwork = "0.20.0"
-flate2 = "1.0.26"
+flate2 = "1.0.28"
 maxminddb = "0.23.0"
-tar = "0.4.39"
-reqwest = { version = "0.11.18" }
-tempfile = "3.6.0"
+tar = "0.4.40"
+reqwest = { version = "0.11.22" }
+tempfile = "3.8.1"
 
 [dev-dependencies]
-rstest = "0.18.1"
-test-log = "0.2.12"
-env_logger = "0.10.0"
+rstest = "0.18.2"
+test-log = "0.2.13"
+env_logger = "0.10.1"
