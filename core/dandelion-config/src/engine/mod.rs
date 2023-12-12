@@ -88,21 +88,22 @@ impl Cache {
         let mut module = Module::new();
 
         module.ty::<Self>()?;
-        module.inst_fn("try_get_resolver", Self::get_resolver)?;
-        module.inst_fn("try_get_iplist", Self::get_iplist)?;
-        module.inst_fn("try_get_geoip_db", Self::get_geoip_db)?;
+        module.associated_function("try_get_resolver", Self::get_resolver)?;
+        module.associated_function("try_get_iplist", Self::get_iplist)?;
+        module.associated_function("try_get_geoip_db", Self::get_geoip_db)?;
 
         Ok(module)
     }
 }
 
 #[derive(Debug, Any)]
-struct EngineConfig {
+struct Config {
     acceptors: Vec<AcceptorConfig>,
     cache: Cache,
 }
 
-impl EngineConfig {
+impl Config {
+    #[rune::function(path = Self::new)]
     pub fn new() -> Self {
         Self {
             acceptors: Vec::new(),
@@ -110,6 +111,7 @@ impl EngineConfig {
         }
     }
 
+    #[rune::function]
     pub fn add_socks5_acceptor(&mut self, addr: &str, handler_name: &str) -> Result<()> {
         self.acceptors.push(AcceptorConfig::Socks5(
             addr.parse()?,
@@ -119,6 +121,7 @@ impl EngineConfig {
         Ok(())
     }
 
+    #[rune::function]
     pub fn add_http_acceptor(&mut self, addr: &str, handler_name: &str) -> Result<()> {
         self.acceptors
             .push(AcceptorConfig::Http(addr.parse()?, handler_name.to_owned()));
@@ -126,38 +129,35 @@ impl EngineConfig {
         Ok(())
     }
 
+    #[rune::function]
     pub fn cache_resolver(&mut self, name: &str, resolver: ResolverWrapper) {
         self.cache.resolvers.insert(name.to_owned(), resolver);
     }
 
+    #[rune::function]
     pub fn cache_iplist(&mut self, name: &str, iplist: IpNetworkSetWrapper) {
         self.cache.iplist.insert(name.to_owned(), iplist);
     }
 
+    #[rune::function]
     pub fn cache_geoip_db(&mut self, db: GeoIp) {
         self.cache.geoip = Some(db);
     }
 }
 
-impl EngineConfig {
+impl Config {
     fn module() -> Result<Module> {
         let mut module = Module::new();
 
         module.ty::<Self>()?;
-        module.function(["Config", "new"], Self::new)?;
-        module.inst_fn("try_add_socks5_acceptor", Self::add_socks5_acceptor)?;
-        module.inst_fn("try_add_http_acceptor", Self::add_http_acceptor)?;
-        module.inst_fn("cache_resolver", Self::cache_resolver)?;
-        module.inst_fn("cache_iplist", Self::cache_iplist)?;
-        module.inst_fn("cache_geoip_db", Self::cache_geoip_db)?;
+        module.function_meta(Self::new)?;
+        module.function_meta(Self::add_socks5_acceptor)?;
+        module.function_meta(Self::add_http_acceptor)?;
+        module.function_meta(Self::cache_resolver)?;
+        module.function_meta(Self::cache_iplist)?;
+        module.function_meta(Self::cache_geoip_db)?;
 
         Ok(module)
-    }
-}
-
-impl Default for EngineConfig {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -171,10 +171,10 @@ pub struct Engine {
 impl Engine {
     pub async fn load_config(name: impl AsRef<str>, code: impl AsRef<str>) -> Result<Engine> {
         let mut sources = Sources::new();
-        sources.insert(Source::new(name, code));
+        sources.insert(Source::new(name, code)?)?;
 
         let mut context = Context::with_default_modules()?;
-        context.install(EngineConfig::module()?)?;
+        context.install(Config::module()?)?;
         context.install(ConnectRequest::module()?)?;
         context.install(ResolverWrapper::module()?)?;
         context.install(IpNetworkSetWrapper::module()?)?;
@@ -192,13 +192,17 @@ impl Engine {
             diagnostics.emit(&mut writer, &sources)?;
         }
 
-        let context = Arc::new(context.runtime());
+        let context = Arc::new(context.runtime()?);
         let unit = Arc::new(result?);
 
         let mut vm = Vm::new(context.clone(), unit.clone());
 
-        let config: EngineConfig =
-            value_to_result(vm.async_call(["config"], ()).await?.into_result()?)?;
+        let config: Config = value_to_result(
+            vm.async_call(["config"], ())
+                .await?
+                .into_result()
+                .into_result()?,
+        )?;
 
         Ok(Self {
             context,
@@ -273,7 +277,16 @@ pub async fn handle_acceptors<
                     let execution = engine.create_handler_execution(eval_fn, endpoint)?;
 
                     let mut remote = value_to_result::<IoWrapper>(
-                        execution.async_complete().await?.into_result()?,
+                        execution
+                            .async_complete()
+                            .await
+                            // a VmResult here
+                            .into_result()?
+                            // Unwrap it gives return value of the call,
+                            // the return value is of type `Value`, but it's actually a `Result`.
+                            .into_result()
+                            // a VmResult here
+                            .into_result()?,
                     )?
                     .into_inner();
 

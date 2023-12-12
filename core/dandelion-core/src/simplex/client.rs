@@ -11,21 +11,16 @@ use http::HeaderName;
 use tokio_tungstenite::client_async;
 use tungstenite::client::IntoClientRequest;
 
-pub async fn connect<I: Io>(
-    io: I,
-    endpoint: &Endpoint,
-    config: &Config,
-    host: String,
-) -> Result<impl Io> {
+pub async fn connect<I: Io>(io: I, endpoint: &Endpoint, config: &Config) -> Result<impl Io> {
     let uri = http::uri::Builder::new()
-        .authority(host.clone())
+        .authority(config.host.clone())
         .scheme("ws")
         .path_and_query(&config.path)
         .build()
         .with_context(|| {
             format!(
                 "Failed to create simplex request URI connecting with server: {} and path: {}",
-                host, &config.path
+                &config.host, &config.path
             )
         })?;
 

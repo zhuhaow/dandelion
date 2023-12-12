@@ -5,13 +5,8 @@ use crate::{
     Result,
 };
 
-pub async fn connect(
-    endpoint: &Endpoint,
-    host: &str,
-    config: &Config,
-    nexthop: impl Io,
-) -> Result<impl Io> {
-    let s = simplex_connect(nexthop, endpoint, config, host.to_owned()).await?;
+pub async fn connect(endpoint: &Endpoint, config: &Config, nexthop: impl Io) -> Result<impl Io> {
+    let s = simplex_connect(nexthop, endpoint, config).await?;
 
     Ok(s)
 }

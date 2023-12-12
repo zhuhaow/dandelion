@@ -1,11 +1,14 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
 use dandelion_core::{
-    resolver::{system::SystemResolver, trust::TrustResolver, Resolver},
+    resolver::{hickory::HickoryResolver, system::SystemResolver, Resolver},
     Result,
 };
-use rune::{runtime::Vec as RuneVec, Any, FromValue, Module, Value};
-use trust_dns_resolver::config::{NameServerConfig, Protocol};
+use hickory_resolver::config::{NameServerConfig, Protocol};
+use rune::{
+    runtime::{Ref, Vec as RuneVec},
+    Any, FromValue, Module, ToValue, Value,
+};
 
 use crate::rune::create_wrapper;
 
@@ -17,15 +20,23 @@ impl Clone for ResolverWrapper {
     }
 }
 
+#[rune::function]
 fn create_system_resolver() -> Result<ResolverWrapper> {
     Ok(Arc::new(SystemResolver::default()).into())
 }
 
+#[rune::function]
 fn create_udp_resolver(addrs: RuneVec) -> Result<ResolverWrapper> {
-    Ok(Arc::new(TrustResolver::new(
+    Ok(Arc::new(HickoryResolver::new(
         addrs
             .into_iter()
-            .map(|addr| anyhow::Ok(String::from_value(addr)?.parse::<SocketAddr>()?))
+            .map(|addr| {
+                anyhow::Ok(
+                    String::from_value(addr)
+                        .into_result()?
+                        .parse::<SocketAddr>()?,
+                )
+            })
             .try_fold(Vec::new(), |mut addrs, addr| {
                 addrs.push(addr?);
                 anyhow::Ok(addrs)
@@ -42,47 +53,53 @@ impl ResolverWrapper {
     pub fn module() -> Result<Module> {
         let mut module = Module::new();
 
-        module.function(&["try_create_system_resolver"], create_system_resolver)?;
-        module.function(&["try_create_udp_resolver"], create_udp_resolver)?;
-
         module.ty::<Self>()?;
-        module.async_inst_fn("try_lookup", Self::lookup)?;
-        module.async_inst_fn("try_lookup_ipv4", Self::lookup_ipv4)?;
-        module.async_inst_fn("try_lookup_ipv6", Self::lookup_ipv6)?;
+
+        module.function_meta(create_system_resolver)?;
+        module.function_meta(create_udp_resolver)?;
+
+        module.function_meta(Self::lookup)?;
+        module.function_meta(Self::lookup_ipv4)?;
+        module.function_meta(Self::lookup_ipv6)?;
 
         Ok(module)
     }
 
-    async fn lookup(&self, hostname: &str) -> Result<RuneVec> {
-        Ok(self
+    // See https://docs.rs/rune/latest/rune/struct.Module.html#method.function_meta
+    // for why use `this` instead of `self`
+    #[rune::function(instance, path = Self::lookup)]
+    async fn lookup(this: Ref<Self>, hostname: Ref<str>) -> Result<RuneVec> {
+        Ok(this
             .inner()
-            .lookup_ip(hostname)
+            .lookup_ip(hostname.as_ref())
             .await?
             .into_iter()
-            .map(|ip| Into::<Value>::into(ip.to_string()))
-            .collect::<Vec<_>>()
-            .into())
+            .map(|ip| ip.to_string().to_value().into_result())
+            .collect::<Result<Vec<Value>, _>>()?
+            .try_into()?)
     }
 
-    async fn lookup_ipv4(&self, hostname: &str) -> Result<RuneVec> {
-        Ok(self
+    #[rune::function(instance, path = Self::lookup_ipv4)]
+    async fn lookup_ipv4(this: Ref<Self>, hostname: Ref<str>) -> Result<RuneVec> {
+        Ok(this
             .inner()
-            .lookup_ipv4(hostname)
+            .lookup_ipv4(hostname.as_ref())
             .await?
             .into_iter()
-            .map(|ip| Into::<Value>::into(ip.to_string()))
-            .collect::<Vec<_>>()
-            .into())
+            .map(|ip| ip.to_string().to_value().into_result())
+            .collect::<Result<Vec<Value>, _>>()?
+            .try_into()?)
     }
 
-    async fn lookup_ipv6(&self, hostname: &str) -> Result<RuneVec> {
-        Ok(self
+    #[rune::function(instance, path = Self::lookup_ipv6)]
+    async fn lookup_ipv6(this: Ref<Self>, hostname: Ref<str>) -> Result<RuneVec> {
+        Ok(this
             .inner()
-            .lookup_ipv6(hostname)
+            .lookup_ipv6(hostname.as_ref())
             .await?
             .into_iter()
-            .map(|ip| Into::<Value>::into(ip.to_string()))
-            .collect::<Vec<_>>()
-            .into())
+            .map(|ip| ip.to_string().to_value().into_result())
+            .collect::<Result<Vec<Value>, _>>()?
+            .try_into()?)
     }
 }

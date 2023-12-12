@@ -1,22 +1,22 @@
 use super::Resolver;
 use crate::Result;
 use anyhow::bail;
+use hickory_proto::op::{Message, MessageType};
+use hickory_resolver::{
+    config::{NameServerConfig, ResolverConfig, ResolverOpts},
+    TokioAsyncResolver,
+};
 use std::{
     net::{IpAddr, Ipv4Addr, Ipv6Addr},
     time::Duration,
 };
-use trust_dns_proto::op::{Message, MessageType};
-use trust_dns_resolver::{
-    config::{NameServerConfig, ResolverConfig, ResolverOpts},
-    TokioAsyncResolver,
-};
 
 #[derive(Debug)]
-pub struct TrustResolver {
+pub struct HickoryResolver {
     client: TokioAsyncResolver,
 }
 
-impl TrustResolver {
+impl HickoryResolver {
     pub fn new(nameservers: Vec<NameServerConfig>, timeout: Duration) -> Result<Self> {
         let mut options = ResolverOpts::default();
         options.timeout = timeout;
@@ -27,15 +27,22 @@ impl TrustResolver {
         }
 
         Ok(Self {
-            client: TokioAsyncResolver::tokio(config, options)?,
+            client: TokioAsyncResolver::tokio(config, options),
         })
     }
 }
 
 #[async_trait::async_trait]
-impl Resolver for TrustResolver {
+impl Resolver for HickoryResolver {
     async fn lookup_ip(&self, name: &str) -> Result<Vec<IpAddr>> {
-        Ok(self.client.lookup_ip(name).await?.into_iter().collect()).and_then(|r: Vec<IpAddr>| {
+        Ok(self
+            .client
+            .lookup_ip(name)
+            .await?
+            .into_iter()
+            .map(Into::into)
+            .collect())
+        .and_then(|r: Vec<IpAddr>| {
             if r.is_empty() {
                 bail!("Failed to find result for domain {}", name)
             } else {
@@ -45,27 +52,37 @@ impl Resolver for TrustResolver {
     }
 
     async fn lookup_ipv4(&self, name: &str) -> Result<Vec<Ipv4Addr>> {
-        Ok(self.client.ipv4_lookup(name).await?.into_iter().collect()).and_then(
-            |r: Vec<Ipv4Addr>| {
-                if r.is_empty() {
-                    bail!("Failed to find result for domain {}", name)
-                } else {
-                    Ok(r)
-                }
-            },
-        )
+        Ok(self
+            .client
+            .ipv4_lookup(name)
+            .await?
+            .into_iter()
+            .map(Into::into)
+            .collect())
+        .and_then(|r: Vec<Ipv4Addr>| {
+            if r.is_empty() {
+                bail!("Failed to find result for domain {}", name)
+            } else {
+                Ok(r)
+            }
+        })
     }
 
     async fn lookup_ipv6(&self, name: &str) -> Result<Vec<Ipv6Addr>> {
-        Ok(self.client.ipv6_lookup(name).await?.into_iter().collect()).and_then(
-            |r: Vec<Ipv6Addr>| {
-                if r.is_empty() {
-                    bail!("Failed to find result for domain {}", name)
-                } else {
-                    Ok(r)
-                }
-            },
-        )
+        Ok(self
+            .client
+            .ipv6_lookup(name)
+            .await?
+            .into_iter()
+            .map(Into::into)
+            .collect())
+        .and_then(|r: Vec<Ipv6Addr>| {
+            if r.is_empty() {
+                bail!("Failed to find result for domain {}", name)
+            } else {
+                Ok(r)
+            }
+        })
     }
 
     async fn lookup_raw(&self, mut message: Message) -> Result<Message> {
@@ -91,21 +108,21 @@ impl Resolver for TrustResolver {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::str::FromStr;
-    use trust_dns_proto::{
+    use hickory_proto::{
         op::{MessageType, OpCode, Query},
         rr::RecordType,
     };
-    use trust_dns_resolver::{config::Protocol, Name};
+    use hickory_resolver::{config::Protocol, Name};
+    use std::str::FromStr;
 
     #[tokio::test]
     async fn resolve() -> Result<()> {
-        let resolver = TrustResolver::new(
+        let resolver = HickoryResolver::new(
             vec![NameServerConfig {
                 socket_addr: "8.8.8.8:53".parse().unwrap(),
                 protocol: Protocol::Udp,
                 tls_dns_name: None,
-                trust_nx_responses: true,
+                trust_negative_responses: true,
                 bind_addr: None,
             }],
             Duration::from_secs(5),
