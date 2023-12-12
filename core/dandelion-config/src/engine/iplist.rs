@@ -12,7 +12,7 @@ impl IpNetworkSetWrapper {
     pub fn new(ips: RuneVec) -> Result<Self> {
         Ok(Arc::new(
             ips.into_iter()
-                .map(|ip| anyhow::Ok(String::from_value(ip)?.parse()?))
+                .map(|ip| anyhow::Ok(String::from_value(ip).into_result()?.parse()?))
                 .try_fold(Vec::new(), |mut ips, ip| {
                     ips.push(ip?);
                     anyhow::Ok(ips)
@@ -21,17 +21,22 @@ impl IpNetworkSetWrapper {
         .into())
     }
 
-    pub fn contains(&self, ip: &str) -> Result<bool> {
+    fn contains_impl(&self, ip: &str) -> Result<bool> {
         let ip: IpAddr = ip.parse()?;
 
         Ok(self.inner().iter().any(|network| network.contains(ip)))
     }
 
+    #[rune::function]
+    pub fn contains(&self, ip: &str) -> Result<bool> {
+        self.contains_impl(ip)
+    }
+
+    #[rune::function]
     pub fn contains_any(&self, ips: &RuneVec) -> Result<bool> {
         for ip in ips {
             let result = match ip {
-                Value::String(s) => self.contains(s.borrow_ref()?.as_str()),
-                Value::StaticString(s) => self.contains(s.as_str()),
+                Value::String(s) => self.contains_impl(s.borrow_ref()?.as_str()),
                 _ => anyhow::bail!("not a string"),
             }?;
 
@@ -47,9 +52,9 @@ impl IpNetworkSetWrapper {
         let mut module = Module::new();
 
         module.ty::<Self>()?;
-        module.function(&["try_create_iplist"], Self::new)?;
-        module.inst_fn("try_contains", Self::contains)?;
-        module.inst_fn("try_contains_any", Self::contains_any)?;
+        // module.function(&["try_create_iplist"], Self::new)?;
+        module.function_meta(Self::contains)?;
+        module.function_meta(Self::contains_any)?;
 
         Ok(module)
     }

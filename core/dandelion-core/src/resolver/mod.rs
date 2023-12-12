@@ -1,14 +1,14 @@
+pub mod hickory;
 pub mod system;
-pub mod trust;
 
 use crate::Result;
 use anyhow::bail;
+use hickory_proto::op::Message;
 use std::{
     fmt::Debug,
     net::{IpAddr, Ipv4Addr, Ipv6Addr},
     vec::Vec,
 };
-use trust_dns_proto::op::Message;
 
 #[async_trait::async_trait]
 #[auto_impl::auto_impl(Arc)]

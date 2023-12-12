@@ -9,7 +9,7 @@ use dandelion_core::{
     simplex::Config,
     Result,
 };
-use rune::{Any, Module};
+use rune::{runtime::Ref, Any, Module};
 use std::{fmt::Debug, net::IpAddr};
 
 use crate::{engine::resolver::ResolverWrapper, rune::create_wrapper};
@@ -27,64 +27,78 @@ impl ConnectRequest {
     }
 }
 
-pub async fn new_tcp(endpoint: &str, resolver: ResolverWrapper) -> Result<IoWrapper> {
+#[rune::function]
+pub async fn new_tcp(endpoint: Ref<str>, resolver: ResolverWrapper) -> Result<IoWrapper> {
     Ok(tcp_connect(&endpoint.parse()?, resolver.into_inner())
         .await?
         .into())
 }
 
-pub async fn new_tls(endpoint: &str, nexthop: IoWrapper) -> Result<IoWrapper> {
+#[rune::function]
+pub async fn new_tls(endpoint: Ref<str>, nexthop: IoWrapper) -> Result<IoWrapper> {
     Ok(tls_connect(&endpoint.parse()?, nexthop.0).await?.into())
 }
 
-pub async fn new_block(endpoint: &str) -> Result<IoWrapper> {
+#[rune::function]
+pub async fn new_block(endpoint: Ref<str>) -> Result<IoWrapper> {
     match block_connect(&endpoint.parse()?).await {
         Ok(_) => unreachable!(),
         Err(e) => Err(e),
     }
 }
 
-pub async fn new_http(endpoint: &str, nexthop: IoWrapper) -> Result<IoWrapper> {
+#[rune::function]
+pub async fn new_http(endpoint: Ref<str>, nexthop: IoWrapper) -> Result<IoWrapper> {
     Ok(http_connect(&endpoint.parse()?, nexthop.0).await?.into())
 }
 
+#[derive(Any)]
+pub struct SimplexConfig {
+    pub host: String,
+    pub path: String,
+    pub header_name: String,
+    pub header_value: String,
+}
+
+#[rune::function]
 pub async fn new_simplex(
-    endpoint: &str,
-    host: &str,
-    path: &str,
-    header_name: &str,
-    header_value: &str,
+    endpoint: Ref<str>,
+    config: SimplexConfig,
     nexthop: IoWrapper,
 ) -> Result<IoWrapper> {
     let config = Config::new(
-        path.to_owned(),
-        (header_name.to_owned(), header_value.to_owned()),
+        config.host,
+        config.path,
+        (config.header_name, config.header_value),
     );
 
-    Ok(
-        simplex_connect(&endpoint.parse()?, host, &config, nexthop.0)
-            .await?
-            .into(),
-    )
+    Ok(simplex_connect(&endpoint.parse()?, &config, nexthop.0)
+        .await?
+        .into())
 }
 
-pub async fn new_socks5(endpoint: &str, nexthop: IoWrapper) -> Result<IoWrapper> {
+#[rune::function]
+pub async fn new_socks5(endpoint: Ref<str>, nexthop: IoWrapper) -> Result<IoWrapper> {
     Ok(socks5_connect(&endpoint.parse()?, nexthop.0).await?.into())
 }
 
 impl ConnectRequest {
+    #[rune::function]
     pub fn port(&self) -> u16 {
         self.endpoint.port()
     }
 
+    #[rune::function]
     pub fn hostname(&self) -> String {
         self.endpoint.hostname()
     }
 
+    #[rune::function]
     pub fn endpoint(&self) -> String {
         self.endpoint.to_string()
     }
 
+    #[rune::function]
     pub fn hostname_is_ip(&self) -> bool {
         self.hostname_as_ip().is_some()
     }
@@ -103,18 +117,19 @@ impl ConnectRequest {
 
         module.ty::<Self>()?;
         module.ty::<IoWrapper>()?;
+        module.ty::<SimplexConfig>()?;
 
-        module.async_function(["try_new_tcp_async"], new_tcp)?;
-        module.async_function(["try_new_tls_async"], new_tls)?;
-        module.async_function(["try_new_block_async"], new_block)?;
-        module.async_function(["try_new_http_async"], new_http)?;
-        module.async_function(["try_new_simplex_async"], new_simplex)?;
-        module.async_function(["try_new_socks5_async"], new_socks5)?;
+        module.function_meta(new_tcp)?;
+        module.function_meta(new_tls)?;
+        module.function_meta(new_block)?;
+        module.function_meta(new_http)?;
+        module.function_meta(new_simplex)?;
+        module.function_meta(new_socks5)?;
 
-        module.inst_fn("port", Self::port)?;
-        module.inst_fn("hostname", Self::hostname)?;
-        module.inst_fn("endpoint", Self::endpoint)?;
-        module.inst_fn("hostname_is_ip", Self::hostname_is_ip)?;
+        module.function_meta(Self::port)?;
+        module.function_meta(Self::hostname)?;
+        module.function_meta(Self::endpoint)?;
+        module.function_meta(Self::hostname_is_ip)?;
 
         Ok(module)
     }

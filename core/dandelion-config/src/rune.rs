@@ -49,9 +49,9 @@ pub(crate) use create_wrapper;
 pub fn value_to_result<T: FromValue>(value: Shared<Result<Value, Value>>) -> Result<T> {
     value
         .take()?
-        .map_err(|v| match anyhow::Error::from_value(v) {
+        .map_err(|v| match anyhow::Error::from_value(v).into_result() {
             Ok(err) => err,
             Err(err) => anyhow::anyhow!(err),
         })
-        .and_then(|v| Ok(T::from_value(v)?))
+        .and_then(|v| Ok(T::from_value(v).into_result()?))
 }

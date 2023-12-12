@@ -2,7 +2,7 @@ use dandelion_core::Result;
 use flate2::read::GzDecoder;
 use maxminddb::{geoip2::Country, Mmap, Reader};
 use reqwest::ClientBuilder;
-use rune::Any;
+use rune::{runtime::Ref, Any};
 use std::{
     env,
     fs::{create_dir_all, read_dir},
@@ -19,6 +19,7 @@ pub struct GeoIp {
 }
 
 impl GeoIp {
+    #[rune::function(path = Self::from_absolute_path)]
     pub fn from_absolute_path(path: &str) -> Result<Self> {
         let reader = Reader::open_mmap(path)?;
         Ok(Self {
@@ -26,7 +27,8 @@ impl GeoIp {
         })
     }
 
-    pub async fn from_license(license: &str) -> Result<Self> {
+    #[rune::function(path = Self::from_license)]
+    pub async fn from_license(license: Ref<str>) -> Result<Self> {
         let temp_dir = env::temp_dir().join("dandelion/geoip");
         let db_path = temp_dir.join("GeoLite2-Country.mmdb");
 
@@ -47,7 +49,7 @@ impl GeoIp {
             "Downloading GeoLite2 database from remote to temp folder {} ...",
             dir.path().to_str().unwrap()
         );
-        let url = format!("https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key={}&suffix=tar.gz", license);
+        let url = format!("https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key={}&suffix=tar.gz", license.as_ref());
         let response = ClientBuilder::new()
             .no_proxy()
             .build()?
@@ -86,6 +88,7 @@ impl GeoIp {
 
     // We don't differentiate any error here, just return an empty string.
     // User should not care about the internal implementation of maxminddb.
+    #[rune::function]
     pub fn lookup(&self, ip: &str) -> String {
         let ip: IpAddr = match ip.parse() {
             Ok(ip) => ip,
@@ -103,10 +106,10 @@ impl GeoIp {
         let mut module = rune::Module::new();
 
         module.ty::<Self>()?;
-        module.inst_fn("lookup", Self::lookup)?;
 
-        module.async_function(["try_geoip_from_license_async"], Self::from_license)?;
-        module.function(["try_geoip_from_absolute_path"], Self::from_absolute_path)?;
+        module.function_meta(Self::lookup)?;
+        module.function_meta(Self::from_absolute_path)?;
+        module.function_meta(Self::from_license)?;
 
         Ok(module)
     }

@@ -1,6 +1,7 @@
-use anyhow::{Context, Ok};
+use anyhow::Context;
 use dandelion_config::Engine;
 use dandelion_core::Result;
+use fdlimit::Outcome;
 use std::{
     env,
     fs::read_to_string,
@@ -28,8 +29,9 @@ async fn main() -> Result<()> {
         use tracing::{info, warn};
 
         match raise_fd_limit() {
-            Some(limit) => info!("Raised fd limit to {}", limit),
-            None => warn!("Failed to raise fd limit, this may cause \"Too many files error\" when there is too many connections"),
+            Ok(Outcome::LimitRaised { to, from: _ }) => info!("Raised fd limit to {}", to),
+            Ok(Outcome::Unsupported) => {},
+            Err(err) => warn!("Failed to raise fd limit due to {}, this may cause \"Too many files error\" when there are too many connections", err),
         }
     }
 

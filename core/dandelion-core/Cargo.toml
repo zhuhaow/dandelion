@@ -7,16 +7,16 @@ license = "MIT"
 [dependencies]
 tokio = { version = "1.34.0", features = ["io-util", "net", "macros", "rt"] }
 async-trait = "0.1.74"
-tokio-tungstenite = "0.19.0"
+tokio-tungstenite = "0.20.1"
 futures = "0.3.29"
 async-compat = "0.2.3"
 http = "0.2.11"
 pin-project = "1.1.3"
 chrono = "0.4.31"
-hyper-tungstenite = "0.10.0"
+hyper-tungstenite = "0.11.1"
 hyper = { version = "0.14.27", features = ["http1", "server"] }
 bytes = "1.5.0"
-tungstenite = "0.19.0"
+tungstenite = "0.20.1"
 serde = { version = "1.0.192", features = ["derive"] }
 anyhow = { version = "1.0.75", features = ["backtrace"] }
 tokio-native-tls = "0.3.1"
@@ -32,15 +32,15 @@ serde_regex = "1.1.0"
 tempfile = "3.8.1"
 tower = { version = "0.4.13", features = ["util"] }
 dns-lookup = "2.0.4"
-itertools = "0.11.0"
+itertools = "0.12.0"
 libc = "0.2.150"
 os_socketaddr = "0.2.5"
-nix = "0.26.4"
+nix = "0.27.1"
 rand = "0.8.5"
 scopeguard = "1.2.0"
-trust-dns-proto = "0.22.0"
+hickory-proto = "0.24.0"
 tokio-util = { version = "0.7.10", features = ["codec"] }
-pnet_packet = "0.33.0"
+pnet_packet = "0.34.0"
 as-dyn-trait = "0.2.0"
 byteorder = "1.5.0"
 async-stream = "0.3.5"
@@ -48,9 +48,9 @@ cfg-if = "1.0.0"
 tracing = { version = "0.1.40", features = ["log"] }
 socket2 = { version = "0.5.5", features = ["all"] }
 multi-map = "1.3.0"
-lru = "0.11.1"
+lru = "0.12.0"
 rustc-hash = "1.1.0"
-trust-dns-resolver = "0.22.0"
+hickory-resolver = "0.24.0"
 quinn = "0.10.2"
 rustls = "0.21.8"
 httparse = "1.8.0"
@@ -62,4 +62,4 @@ rstest = "0.18.2"
 test-log = "0.2.13"
 
 [target.'cfg(unix)'.dependencies]
-tun = { version = "0.5.5", features = ["async"] }
+tun = { version = "0.6.1", features = ["async"] }
