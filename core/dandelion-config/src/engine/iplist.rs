@@ -8,19 +8,20 @@ use crate::rune::create_wrapper;
 
 create_wrapper!(IpNetworkSetWrapper, Arc<Vec<IpNetwork>>);
 
-impl IpNetworkSetWrapper {
-    pub fn new(ips: RuneVec) -> Result<Self> {
-        Ok(Arc::new(
-            ips.into_iter()
-                .map(|ip| anyhow::Ok(String::from_value(ip).into_result()?.parse()?))
-                .try_fold(Vec::new(), |mut ips, ip| {
-                    ips.push(ip?);
-                    anyhow::Ok(ips)
-                })?,
-        )
-        .into())
-    }
+#[rune::function]
+pub fn new_iplist(ips: RuneVec) -> Result<IpNetworkSetWrapper> {
+    Ok(Arc::new(
+        ips.into_iter()
+            .map(|ip| anyhow::Ok(String::from_value(ip).into_result()?.parse()?))
+            .try_fold(Vec::new(), |mut ips, ip| {
+                ips.push(ip?);
+                anyhow::Ok(ips)
+            })?,
+    )
+    .into())
+}
 
+impl IpNetworkSetWrapper {
     fn contains_impl(&self, ip: &str) -> Result<bool> {
         let ip: IpAddr = ip.parse()?;
 
@@ -52,7 +53,7 @@ impl IpNetworkSetWrapper {
         let mut module = Module::new();
 
         module.ty::<Self>()?;
-        // module.function(&["try_create_iplist"], Self::new)?;
+        module.function_meta(new_iplist)?;
         module.function_meta(Self::contains)?;
         module.function_meta(Self::contains_any)?;
 
