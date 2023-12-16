@@ -4,12 +4,14 @@ use anyhow::{anyhow, bail, ensure, Context};
 use bytes::{Buf, Bytes};
 use chrono::Utc;
 use futures::{Future, FutureExt};
-use hyper::{server::conn::Http, service::service_fn, Body, Request, Response};
+use http_body_util::Full;
+use hyper::{body::Incoming, server::conn::http1::Builder, service::service_fn, Request, Response};
 use hyper_tungstenite::{
     is_upgrade_request,
     tungstenite::{error::ProtocolError, handshake::derive_accept_key, protocol::Role},
     WebSocketStream,
 };
+use hyper_util::rt::TokioIo;
 use std::sync::Arc;
 use tokio::{
     io::{AsyncRead, AsyncWrite},
@@ -21,10 +23,10 @@ use tokio::{
 use tracing::info;
 
 async fn hide_error_handler(
-    request: Request<Body>,
+    request: Request<Incoming>,
     config: Config,
     signal: Arc<Mutex<Option<UpgradeSignal>>>,
-) -> Result<Response<Body>> {
+) -> Result<Response<Full<Bytes>>> {
     let result = handler(request, config, signal).await;
 
     match result {
@@ -37,19 +39,20 @@ async fn hide_error_handler(
                    Hiding the error for security reasons. Error: {}",
                 err
             );
-            Ok(Response::new(Body::from(format!(
+
+            Ok(Response::new(Full::new(Bytes::from(format!(
                 "Now is {}",
                 Utc::now().to_rfc3339()
-            ))))
+            )))))
         }
     }
 }
 
 async fn handler(
-    request: Request<Body>,
+    request: Request<Incoming>,
     config: Config,
     signal: Arc<Mutex<Option<UpgradeSignal>>>,
-) -> Result<Response<Body>> {
+) -> Result<Response<Full<Bytes>>> {
     // Check if the request is requesting the right path
     ensure!(
         request.uri().path() == config.path,
@@ -101,7 +104,7 @@ async fn handler(
 }
 
 // From hyper_tungstenite
-fn upgrade_response(request: &Request<Body>) -> Result<Response<Body>> {
+fn upgrade_response(request: &Request<Incoming>) -> Result<Response<Full<Bytes>>> {
     let key = request
         .headers()
         .get("Sec-WebSocket-Key")
@@ -121,7 +124,7 @@ fn upgrade_response(request: &Request<Body>) -> Result<Response<Body>> {
         .header(hyper::header::CONNECTION, "upgrade")
         .header(hyper::header::UPGRADE, "websocket")
         .header("Sec-WebSocket-Accept", &derive_accept_key(key.as_bytes()))
-        .body(Body::from("switching to websocket protocol"))
+        .body(Full::new(Bytes::from("switching to websocket protocol")))
         .expect("bug: failed to build response"))
 }
 
@@ -142,12 +145,12 @@ pub async fn handshake(
         done_rx,
     })));
 
-    let conn = Http::new().serve_connection(
-        io,
+    let conn = Builder::new().serve_connection(
+        TokioIo::new(io),
         service_fn(move |req| {
             let config = config.clone();
             let signal = signal.clone();
-            // We need to pin the future here so the `conn` can be unpinned.
+            // We need to pin the future here so the `conn` is `Unpin`able.
             hide_error_handler(req, config, signal).boxed()
         }),
     );
@@ -156,7 +159,7 @@ pub async fn handshake(
 
     let endpoint = tokio::select! {
         _ = &mut conn_fut => {
-            // There is no upgrade happens. The client is not a
+            // No upgrade happens. The client isn't a
             // simplex client;
             bail!("The client is not a valid simplex client");
         }
@@ -181,7 +184,7 @@ pub async fn handshake(
         let ws_stream = WebSocketStream::from_raw_socket(
             ChainReadBufAndIo {
                 read_buf: part.read_buf,
-                io: part.io,
+                io: part.io.into_inner(),
             },
             Role::Server,
             None,

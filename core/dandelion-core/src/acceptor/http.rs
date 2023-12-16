@@ -1,11 +1,17 @@
 use crate::{endpoint::Endpoint, io::Io};
 use anyhow::{bail, ensure, Result};
+use bytes::Bytes;
 use futures::{Future, FutureExt};
 use http::{
     header::{CONNECTION, HOST, PROXY_AUTHENTICATE, PROXY_AUTHORIZATION},
     Method, Request, Response,
 };
-use hyper::{client::conn::SendRequest, server::conn::Http, service::service_fn, Body};
+use http_body_util::{Either, Empty};
+use hyper::{
+    body::Incoming, client::conn::http1::SendRequest, server::conn::http1::Builder,
+    service::service_fn,
+};
+use hyper_util::rt::TokioIo;
 use std::{str::FromStr, sync::Arc};
 use tokio::{
     io::duplex,
@@ -14,19 +20,18 @@ use tokio::{
         Mutex,
     },
 };
-use tower::ServiceExt;
 
 enum State {
     NotConnected(Option<ConnectSignal>),
-    Connected((Endpoint, SendRequest<Body>)),
+    Connected((Endpoint, SendRequest<Incoming>)),
 }
 
 struct ConnectSignal {
     endpoint_tx: Sender<(bool, Endpoint)>,
-    done_rx: Receiver<Option<SendRequest<Body>>>,
+    done_rx: Receiver<Option<SendRequest<Incoming>>>,
 }
 
-fn transform_proxy_request(mut request: Request<Body>) -> Option<Request<Body>> {
+fn transform_proxy_request(mut request: Request<Incoming>) -> Option<Request<Incoming>> {
     if !request.headers().contains_key(HOST) {
         let host = request.uri().authority()?.host().parse().ok()?;
         request.headers_mut().insert(HOST, host);
@@ -45,7 +50,10 @@ fn transform_proxy_request(mut request: Request<Body>) -> Option<Request<Body>> 
     Some(request)
 }
 
-async fn handler(request: Request<Body>, state: Arc<Mutex<State>>) -> Result<Response<Body>> {
+async fn handler(
+    request: Request<Incoming>,
+    state: Arc<Mutex<State>>,
+) -> Result<Response<Either<Incoming, Empty<Bytes>>>> {
     let mut state = state.lock().await;
 
     if matches!(request.method(), &Method::CONNECT) {
@@ -61,7 +69,7 @@ async fn handler(request: Request<Body>, state: Arc<Mutex<State>>) -> Result<Res
                     .await
                     .expect("the done signal should be sent before polling the connection");
 
-                return Ok(Response::new(Body::empty()));
+                return Ok(Response::new(Either::Right(Empty::new())));
             }
         }
         bail!("The CONNECT method can only be send in the first header")
@@ -93,7 +101,9 @@ async fn handler(request: Request<Body>, state: Arc<Mutex<State>>) -> Result<Res
 
                     *state = State::Connected((endpoint, send_request));
 
-                    Ok(response_fut.await?)
+                    let (parts, body) = response_fut.await?.into_parts();
+
+                    Ok(Response::from_parts(parts, Either::Left(body)))
                 }
                 None => {
                     unreachable!()
@@ -116,7 +126,11 @@ async fn handler(request: Request<Body>, state: Arc<Mutex<State>>) -> Result<Res
                 let request = transform_proxy_request(request)
                     .ok_or_else(|| anyhow::anyhow!("Not a valid proxy request"))?;
 
-                Ok(send_request.ready().await?.send_request(request).await?)
+                send_request.ready().await?;
+
+                let (parts, body) = send_request.send_request(request).await?.into_parts();
+
+                Ok(Response::from_parts(parts, Either::Left(body)))
             }
         }
     }
@@ -133,9 +147,9 @@ pub async fn handshake(
         done_rx,
     }))));
 
-    let mut conn = Http::new()
+    let mut conn = Builder::new()
         .serve_connection(
-            io,
+            TokioIo::new(io),
             service_fn(move |req| {
                 {
                     let state = state.clone();
@@ -147,8 +161,8 @@ pub async fn handshake(
         .without_shutdown();
 
     let endpoint = tokio::select! {
-        _ = &mut conn=> {
-            // The client is closed before we get first header. Simple close it.
+        _ = &mut conn => {
+            // Connection terminated before getting first header. Close it.
             bail!("No HTTP request received.");
         }
         result = endpoint_rx => {
@@ -169,7 +183,7 @@ pub async fn handshake(
 
                 let part = conn.await?;
 
-                let io: Box<dyn Io> = Box::new(part.io);
+                let io: Box<dyn Io> = Box::new(part.io.into_inner());
                 Ok(io)
             }
             .boxed(),
@@ -181,7 +195,8 @@ pub async fn handshake(
                 // 64KB
                 let (s1, s2) = duplex(65536);
 
-                let (request_sender, connection) = hyper::client::conn::handshake(s1).await?;
+                let (request_sender, connection) =
+                    hyper::client::conn::http1::handshake(TokioIo::new(s1)).await?;
 
                 done_tx
                     .send(Some(request_sender))
