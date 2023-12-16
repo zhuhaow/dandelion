@@ -1,7 +1,6 @@
 use anyhow::Context;
 use dandelion_config::Engine;
 use dandelion_core::Result;
-use fdlimit::Outcome;
 use std::{
     env,
     fs::read_to_string,
@@ -25,7 +24,7 @@ async fn main() -> Result<()> {
 
     #[cfg(not(target_os = "windows"))]
     {
-        use fdlimit::raise_fd_limit;
+        use fdlimit::{raise_fd_limit, Outcome};
         use tracing::{info, warn};
 
         match raise_fd_limit() {
