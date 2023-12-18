@@ -9,7 +9,7 @@ jobs:
     name: Create a new Github release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: taiki-e/create-gh-release-action@v1
         with:
           changelog: CHANGELOG.md
@@ -22,7 +22,7 @@ jobs:
     runs-on: macos-11
     needs: [create_release]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -103,7 +103,7 @@ jobs:
             os: windows-latest
     runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: |
           cp -r core ..
           rm -rf ./*
