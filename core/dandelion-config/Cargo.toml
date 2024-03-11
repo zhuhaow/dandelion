@@ -20,7 +20,7 @@ ipnetwork = "0.20.0"
 flate2 = "1.0.28"
 maxminddb = "0.23.0"
 tar = "0.4.40"
-reqwest = { version = "0.11.22" }
+reqwest = { version = "0.11.25" }
 tempfile = "3.8.1"
 
 [dev-dependencies]
