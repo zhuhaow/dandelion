@@ -12,7 +12,7 @@ async-trait = "0.1.74"
 structopt = "0.3.26"
 futures = "0.3.29"
 flexi_logger = "0.27.3"
-anyhow = { version = "1.0.75", features = ["backtrace"] }
+anyhow = { version = "1.0.81", features = ["backtrace"] }
 fdlimit = "0.3.0"
 ipnetwork = "0.20.0"
 maxminddb = { version = "0.23.0", features = ["mmap"] }
