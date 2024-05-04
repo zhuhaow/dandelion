@@ -23,6 +23,7 @@ tracing = { version = "0.1.40", features = ["log"] }
 tracing-futures = "0.2.5"
 rand = "0.8.5"
 trust-dns-resolver = "0.23.2"
+rune = { version = "0.13.1", features = ["cli"] }
 
 [dev-dependencies]
 rstest = "0.18.2"
