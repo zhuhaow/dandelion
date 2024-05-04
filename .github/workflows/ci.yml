@@ -1,4 +1,4 @@
-name: CI
+name: ci
 on: [push]
 
 jobs:
@@ -9,6 +9,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      # Rustls on windows depends on aws-lc, which depends on nasm.
+      - uses: ilammy/setup-nasm@v1
+        if: runner.os == 'Windows'
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
