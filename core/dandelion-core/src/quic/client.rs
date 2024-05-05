@@ -20,9 +20,9 @@ pub async fn create_quic_connection<R: Resolver>(
         Endpoint::Domain(host, port) => {
             let addrs = resolver.lookup_ip(&host).await?;
             let host_ref = &host;
-            let connection = select_ok(addrs.into_iter().map(|a| {
+            let connection = select_ok(addrs.into_iter().map(|addr| {
                 async move {
-                    match a {
+                    match addr {
                         std::net::IpAddr::V4(addr_v4) => Ok::<_, anyhow::Error>(
                             QuicEndpoint::client("0.0.0.0:0".parse().unwrap())?
                                 .connect_with(
@@ -48,6 +48,8 @@ pub async fn create_quic_connection<R: Resolver>(
             .await?
             .0;
 
+            // The server should expect the first stream is always
+            // for authentication only.
             let (send, recv) = connection.open_bi().await?;
 
             let mut stream = QuicStream { send, recv };
