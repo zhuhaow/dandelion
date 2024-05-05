@@ -7,7 +7,6 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 pub async fn create_quic_connection<R: Resolver>(
     server: Endpoint,
-    token: &str,
     resolver: R,
 ) -> Result<Connection> {
     match server {
@@ -47,17 +46,6 @@ pub async fn create_quic_connection<R: Resolver>(
             }))
             .await?
             .0;
-
-            // The server should expect the first stream is always
-            // for authentication only.
-            let (send, recv) = connection.open_bi().await?;
-
-            let mut stream = QuicStream { send, recv };
-
-            stream.write_all(token.as_bytes()).await?;
-            if stream.read_u8().await? != QuicMessage::Ok as u8 {
-                bail!("Authentication failed")
-            }
 
             Ok(connection)
         }
