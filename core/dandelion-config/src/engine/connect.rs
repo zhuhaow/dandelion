@@ -1,8 +1,12 @@
 use dandelion_core::{
     connector::{
-        block::connect as block_connect, http::connect as http_connect,
-        simplex::connect as simplex_connect, socks5::connect as socks5_connect,
-        tcp::connect as tcp_connect, tls::connect as tls_connect,
+        block::connect as block_connect,
+        http::connect as http_connect,
+        quic::{connect as quic_connect, QuicConnection},
+        simplex::connect as simplex_connect,
+        socks5::connect as socks5_connect,
+        tcp::connect as tcp_connect,
+        tls::connect as tls_connect,
     },
     endpoint::Endpoint,
     io::Io,
@@ -10,11 +14,12 @@ use dandelion_core::{
     Result,
 };
 use rune::{runtime::Ref, Any, Module};
-use std::{fmt::Debug, net::IpAddr};
+use std::{fmt::Debug, net::IpAddr, sync::Arc};
 
 use crate::{engine::resolver::ResolverWrapper, rune::create_wrapper};
 
 create_wrapper!(IoWrapper, Io, Box);
+create_wrapper!(QuicConnectionWrapper, Arc<QuicConnection>);
 
 #[derive(Debug, Any)]
 pub struct ConnectRequest {
@@ -32,6 +37,11 @@ pub async fn new_tcp(endpoint: Ref<str>, resolver: ResolverWrapper) -> Result<Io
     Ok(tcp_connect(&endpoint.parse()?, resolver.into_inner())
         .await?
         .into())
+}
+
+#[rune::function]
+pub async fn new_quic(connection: QuicConnectionWrapper) -> Result<IoWrapper> {
+    Ok(quic_connect(connection.inner()).await?.into())
 }
 
 #[rune::function]

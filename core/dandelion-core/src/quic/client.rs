@@ -1,9 +1,7 @@
-use super::{QuicMessage, QuicStream};
 use crate::{endpoint::Endpoint, resolver::Resolver, Result};
 use anyhow::bail;
 use futures::{future::select_ok, FutureExt};
 use quinn::{ClientConfig, Connection, Endpoint as QuicEndpoint};
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 pub async fn create_quic_connection<R: Resolver>(
     server: Endpoint,

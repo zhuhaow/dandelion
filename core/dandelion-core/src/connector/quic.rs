@@ -1,13 +1,12 @@
 use crate::{
     endpoint::Endpoint,
-    quic::{client::create_quic_connection as client_connect, QuicMessage, QuicStream},
+    quic::{client::create_quic_connection as client_connect, QuicStream},
     resolver::Resolver,
     Result,
 };
-use anyhow::{bail, ensure};
 use quinn::Connection;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
+#[derive(Debug)]
 pub struct QuicConnection {
     inner: Connection,
 }
@@ -21,8 +20,8 @@ pub async fn create_quic_connection<R: Resolver>(
     })
 }
 
-pub async fn connect(endpoint: &Endpoint, connection: &QuicConnection) -> Result<QuicStream> {
-    let (mut send, mut recv) = connection.inner.open_bi().await?;
+pub async fn connect(connection: &QuicConnection) -> Result<QuicStream> {
+    let (send, recv) = connection.inner.open_bi().await?;
 
     Ok(QuicStream::new(send, recv))
 }

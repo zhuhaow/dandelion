@@ -3,13 +3,7 @@ pub mod client;
 use quinn::{RecvStream, SendStream};
 use tokio::io::{AsyncRead, AsyncWrite};
 
-#[repr(u8)]
-pub enum QuicMessage {
-    Ok,
-    AuthenticationFailed,
-    ConnectFailed,
-}
-
+#[derive(Debug)]
 #[pin_project::pin_project]
 pub struct QuicStream {
     #[pin]

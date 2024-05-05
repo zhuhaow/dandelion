@@ -26,7 +26,7 @@ use tokio::{
 use crate::rune::value_to_result;
 
 use self::{
-    connect::{ConnectRequest, IoWrapper},
+    connect::{ConnectRequest, IoWrapper, QuicConnectionWrapper},
     geoip::GeoIp,
     iplist::IpNetworkSetWrapper,
     resolver::ResolverWrapper,
@@ -45,6 +45,7 @@ struct Cache {
     resolvers: HashMap<String, ResolverWrapper>,
     iplist: HashMap<String, IpNetworkSetWrapper>,
     geoip: Option<GeoIp>,
+    quic_connections: HashMap<String, QuicConnectionWrapper>,
 }
 
 impl Cache {
@@ -53,6 +54,7 @@ impl Cache {
             resolvers: HashMap::new(),
             iplist: HashMap::new(),
             geoip: None,
+            quic_connections: HashMap::new(),
         }
     }
 
@@ -75,6 +77,13 @@ impl Cache {
             .clone()
             .ok_or_else(|| anyhow::anyhow!("geoip db not found"))
     }
+
+    pub fn get_quic_connection(&self, name: &str) -> Result<QuicConnectionWrapper> {
+        self.quic_connections
+            .get(name)
+            .cloned()
+            .ok_or_else(|| anyhow::anyhow!("quic connection {} not found", name))
+    }
 }
 
 impl Default for Cache {
@@ -91,6 +100,7 @@ impl Cache {
         module.associated_function("try_get_resolver", Self::get_resolver)?;
         module.associated_function("try_get_iplist", Self::get_iplist)?;
         module.associated_function("try_get_geoip_db", Self::get_geoip_db)?;
+        module.associated_function("try_get_quic_connection", Self::get_quic_connection)?;
 
         Ok(module)
     }
@@ -143,6 +153,13 @@ impl Config {
     pub fn cache_geoip_db(&mut self, db: GeoIp) {
         self.cache.geoip = Some(db);
     }
+
+    #[rune::function]
+    pub fn cache_quic_connection(&mut self, name: &str, connection: QuicConnectionWrapper) {
+        self.cache
+            .quic_connections
+            .insert(name.to_owned(), connection);
+    }
 }
 
 impl Config {
@@ -156,6 +173,7 @@ impl Config {
         module.function_meta(Self::cache_resolver)?;
         module.function_meta(Self::cache_iplist)?;
         module.function_meta(Self::cache_geoip_db)?;
+        module.function_meta(Self::cache_quic_connection)?;
 
         Ok(module)
     }
