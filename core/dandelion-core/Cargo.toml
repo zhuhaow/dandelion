@@ -27,7 +27,7 @@ maxminddb = { version = "0.24.0", features = ["mmap"] }
 iso3166-1 = "1.0.1"
 flate2 = "1.0.30"
 tar = "0.4.40"
-reqwest = "0.12.4"
+reqwest = "0.12.5"
 serde_regex = "1.1.0"
 tempfile = "3.10.1"
 dns-lookup = "2.0.4"
