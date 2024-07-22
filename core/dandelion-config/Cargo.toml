@@ -11,7 +11,7 @@ futures = "0.3.30"
 tokio-stream = { version = "0.1.15", features = ["net"] }
 tracing = { version = "0.1.40", features = ["log"] }
 tracing-futures = "0.2.5"
-tokio = { version = "1.38.0", features = ["rt", "macros"] }
+tokio = { version = "1.38.1", features = ["rt", "macros"] }
 rand = "0.8.5"
 rune = "0.13.2"
 anyhow = { version = "1.0.82", features = ["backtrace"] }
