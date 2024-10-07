@@ -10,7 +10,7 @@ dandelion-config = { path = "../dandelion-config" }
 tokio = { version = "1.38.0", features = ["io-util", "net"] }
 async-trait = "0.1.80"
 structopt = "0.3.26"
-futures = "0.3.30"
+futures = "0.3.31"
 flexi_logger = "0.28.0"
 anyhow = { version = "1.0.82", features = ["backtrace"] }
 fdlimit = "0.3.0"
