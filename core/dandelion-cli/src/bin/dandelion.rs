@@ -34,6 +34,8 @@ async fn main() -> Result<()> {
         }
     }
 
+    rustls::crypto::aws_lc_rs::default_provider().install_default().or_else(|_| Err(anyhow::anyhow!("Failed to install aws lc provider")))?;
+
     let opt: Opt = Opt::from_args();
 
     fn load_config_from_env(env: &str, path: &str) -> Result<String> {

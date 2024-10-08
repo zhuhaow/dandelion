@@ -215,12 +215,15 @@ impl Engine {
 
         let mut vm = Vm::new(context.clone(), unit.clone());
 
+        log::info!("Configuring rule engine...");
+
         let config: Config = value_to_result(
             vm.async_call(["config"], ())
                 .await?
                 .into_result()
                 .into_result()?,
         )?;
+        log::info!("Done");
 
         Ok(Self {
             context,

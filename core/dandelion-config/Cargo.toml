@@ -5,7 +5,7 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-serde = "1.0.200"
+serde = "1.0.201"
 dandelion-core = { path = "../dandelion-core" }
 futures = "0.3.30"
 tokio-stream = { version = "0.1.15", features = ["net"] }
@@ -13,8 +13,8 @@ tracing = { version = "0.1.40", features = ["log"] }
 tracing-futures = "0.2.5"
 tokio = { version = "1.37.0", features = ["rt", "macros"] }
 rand = "0.8.5"
-rune = "0.13.2"
-anyhow = { version = "1.0.82", features = ["backtrace"] }
+rune = "0.13.4"
+anyhow = { version = "1.0.83", features = ["backtrace"] }
 hickory-resolver = "0.24.1"
 ipnetwork = "0.20.0"
 flate2 = "1.0.30"
@@ -22,6 +22,7 @@ maxminddb = "0.24.0"
 tar = "0.4.40"
 reqwest = { version = "0.12.4" }
 tempfile = "3.10.1"
+log = "0.4.21"
 
 [dev-dependencies]
 rstest = "0.19.0"

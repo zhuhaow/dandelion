@@ -14,9 +14,10 @@ pub struct QuicConnection {
 pub async fn create_quic_connection<R: Resolver>(
     server: Endpoint,
     resolver: R,
+    apln_protocols: Vec<Vec<u8>>,
 ) -> Result<QuicConnection> {
     Ok(QuicConnection {
-        inner: client_connect(server, resolver).await?,
+        inner: client_connect(server, resolver, apln_protocols).await?,
     })
 }
 

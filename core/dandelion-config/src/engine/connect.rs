@@ -2,7 +2,7 @@ use dandelion_core::{
     connector::{
         block::connect as block_connect,
         http::connect as http_connect,
-        quic::{connect as quic_connect, QuicConnection},
+        quic::{connect as quic_connect, create_quic_connection, QuicConnection},
         simplex::connect as simplex_connect,
         socks5::connect as socks5_connect,
         tcp::connect as tcp_connect,
@@ -10,6 +10,7 @@ use dandelion_core::{
     },
     endpoint::Endpoint,
     io::Io,
+    quic::client::ALPN_QUIC_HTTP,
     simplex::Config,
     Result,
 };
@@ -40,6 +41,22 @@ pub async fn new_tcp(endpoint: Ref<str>, resolver: ResolverWrapper) -> Result<Io
 }
 
 #[rune::function]
+pub async fn new_quic_connection(
+    server: Ref<str>,
+    resolver: ResolverWrapper,
+) -> Result<QuicConnectionWrapper> {
+    Ok(Arc::new(
+        create_quic_connection(
+            server.parse()?,
+            resolver.into_inner(),
+            ALPN_QUIC_HTTP.iter().map(|&x| x.into()).collect(),
+        )
+        .await?,
+    )
+    .into())
+}
+
+#[rune::function]
 pub async fn new_quic(connection: QuicConnectionWrapper) -> Result<IoWrapper> {
     Ok(quic_connect(connection.inner()).await?.into())
 }
@@ -63,6 +80,7 @@ pub async fn new_http(endpoint: Ref<str>, nexthop: IoWrapper) -> Result<IoWrappe
 }
 
 #[derive(Any)]
+#[rune(constructor)]
 pub struct SimplexConfig {
     pub host: String,
     pub path: String,
@@ -135,6 +153,9 @@ impl ConnectRequest {
         module.function_meta(new_http)?;
         module.function_meta(new_simplex)?;
         module.function_meta(new_socks5)?;
+
+        module.function_meta(new_quic_connection)?;
+        module.function_meta(new_quic)?;
 
         module.function_meta(Self::port)?;
         module.function_meta(Self::hostname)?;
