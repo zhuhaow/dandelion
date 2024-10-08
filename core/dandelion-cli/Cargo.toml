@@ -7,24 +7,24 @@ license = "MIT"
 [dependencies]
 dandelion-core = { path = "../dandelion-core" }
 dandelion-config = { path = "../dandelion-config" }
-tokio = { version = "1.37.0", features = ["io-util", "net"] }
-async-trait = "0.1.80"
+tokio = { version = "1.40.0", features = ["io-util", "net"] }
+async-trait = "0.1.83"
 structopt = "0.3.26"
-futures = "0.3.30"
-flexi_logger = "0.28.0"
-anyhow = { version = "1.0.83", features = ["backtrace"] }
+futures = "0.3.31"
+flexi_logger = "0.29.2"
+anyhow = { version = "1.0.89", features = ["backtrace"] }
 fdlimit = "0.3.0"
 ipnetwork = "0.20.0"
 maxminddb = { version = "0.24.0", features = ["mmap"] }
 iso3166-1 = "1.0.1"
 async-recursion = "1.1.1"
-tokio-stream = { version = "0.1.15", features = ["net"] }
+tokio-stream = { version = "0.1.16", features = ["net"] }
 tracing = { version = "0.1.40", features = ["log"] }
 tracing-futures = "0.2.5"
 rand = "0.8.5"
 trust-dns-resolver = "0.23.2"
-rune = { version = "0.13.2", features = ["cli"] }
-rustls = "0.23.8"
+rune = { version = "0.13.4", features = ["cli"] }
+rustls = "0.23.14"
 
 [dev-dependencies]
-rstest = "0.19.0"
+rstest = "0.23.0"
