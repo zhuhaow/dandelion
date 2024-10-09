@@ -5,9 +5,6 @@ use anyhow::bail;
 use futures::{future::select_ok, FutureExt};
 use quinn::{crypto::rustls::QuicClientConfig, ClientConfig, Connection, Endpoint as QuicEndpoint};
 
-#[allow(unused)]
-pub const ALPN_QUIC_HTTP: &[&[u8]] = &[b"h3"];
-
 pub async fn create_quic_connection<R: Resolver>(
     server: Endpoint,
     resolver: R,

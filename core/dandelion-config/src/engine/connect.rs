@@ -10,11 +10,10 @@ use dandelion_core::{
     },
     endpoint::Endpoint,
     io::Io,
-    quic::client::ALPN_QUIC_HTTP,
     simplex::Config,
     Result,
 };
-use rune::{runtime::Ref, Any, Module};
+use rune::{runtime::Ref, Any, Module, Value};
 use std::{fmt::Debug, net::IpAddr, sync::Arc};
 
 use crate::{engine::resolver::ResolverWrapper, rune::create_wrapper};
@@ -44,12 +43,15 @@ pub async fn new_tcp(endpoint: Ref<str>, resolver: ResolverWrapper) -> Result<Io
 pub async fn new_quic_connection(
     server: Ref<str>,
     resolver: ResolverWrapper,
+    alpn: Value,
 ) -> Result<QuicConnectionWrapper> {
+    let alpn_vec: Vec<String> = rune::from_value(alpn)?;
+
     Ok(Arc::new(
         create_quic_connection(
             server.parse()?,
             resolver.into_inner(),
-            ALPN_QUIC_HTTP.iter().map(|&x| x.into()).collect(),
+            alpn_vec.into_iter().map(|x| x.into_bytes()).collect(),
         )
         .await?,
     )
