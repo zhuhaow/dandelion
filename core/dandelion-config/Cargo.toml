@@ -8,9 +8,7 @@ license = "MIT"
 serde = "1.0.210"
 dandelion-core = { path = "../dandelion-core" }
 futures = "0.3.31"
-tokio-stream = { version = "0.1.16", features = ["net"] }
 tracing = { version = "0.1.40", features = ["log"] }
-tracing-futures = "0.2.5"
 tokio = { version = "1.40.0", features = ["rt", "macros"] }
 rand = "0.8.5"
 rune = "0.13.4"
