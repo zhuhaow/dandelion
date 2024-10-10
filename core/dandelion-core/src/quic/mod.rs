@@ -34,8 +34,7 @@ impl AsyncWrite for QuicStream {
         cx: &mut std::task::Context<'_>,
         buf: &[u8],
     ) -> std::task::Poll<std::io::Result<usize>> {
-        // QuicStream has it's own poll_write method, which is different from the one in AsyncWrite
-        AsyncWrite::poll_write(self.project().send, cx, buf)
+        self.project().send.poll_write(cx, buf).map_err(Into::into)
     }
 
     fn poll_flush(
