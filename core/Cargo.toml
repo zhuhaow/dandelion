@@ -1,3 +1,59 @@
-[workspace]
-members = ["dandelion-core", "dandelion-config", "dandelion-cli"]
-resolver = "2"
+[package]
+name = "dandelion"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Zhuhao Wang <zhuhaow@gmail.com>"]
+
+[dependencies]
+tokio = { version = "1.40.0", features = ["io-util", "net", "macros", "rt"] }
+async-trait = "0.1.83"
+tokio-tungstenite = "0.24.0"
+futures = "0.3.31"
+http = "1.1.0"
+pin-project = "1.1.6"
+chrono = "0.4.38"
+hyper-tungstenite = "0.15.0"
+hyper = { version = "1.4.1", features = ["http1", "server", "client"] }
+bytes = "1.7.2"
+tungstenite = "0.24.0"
+serde = { version = "1.0.210", features = ["derive"] }
+anyhow = { version = "1.0.89", features = ["backtrace"] }
+tokio-native-tls = "0.3.1"
+lazy_static = "1.5.0"
+tempfile = "3.13.0"
+dns-lookup = "2.0.4"
+itertools = "0.13.0"
+libc = "0.2.159"
+rand = "0.8.5"
+scopeguard = "1.2.0"
+hickory-proto = "0.24.1"
+tokio-util = { version = "0.7.12", features = ["codec"] }
+byteorder = "1.5.0"
+cfg-if = "1.0.0"
+tracing = { version = "0.1.40", features = ["log"] }
+socket2 = { version = "0.5.7", features = ["all"] }
+rustc-hash = "2.0.0"
+hickory-resolver = "0.24.1"
+quinn = { version = "0.11.5", features = ["ring", "runtime-tokio"] }
+rustls = "0.23.14"
+httparse = "1.9.5"
+auto_impl = "1.2.0"
+http-body-util = "0.1.2"
+hyper-util = { version = "0.1.9" }
+rustls-platform-verifier = "0.3.4"
+rune = "0.13.4"
+ipnetwork = "0.20.0"
+flate2 = "1.0.34"
+maxminddb = { version = "0.24.0", features = ["mmap"] }
+tar = "0.4.42"
+reqwest = { version = "0.12.8" }
+log = "0.4.22"
+structopt = "0.3.26"
+flexi_logger = "0.29.2"
+fdlimit = "0.3.0"
+
+[dev-dependencies]
+env_logger = "0.11.5"
+rstest = "0.23.0"
+test-log = "0.2.16"
