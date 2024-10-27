@@ -11,7 +11,7 @@ WORKDIR /app
 COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release
 COPY ./core ./
-RUN cargo build --release && cargo install --path dandelion-cli --locked
+RUN cargo build --release && cargo install --path . --locked
 
 FROM debian:buster-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
