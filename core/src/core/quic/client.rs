@@ -7,6 +7,7 @@ use crate::{
 use anyhow::bail;
 use futures::{future::select_ok, FutureExt};
 use quinn::{crypto::rustls::QuicClientConfig, ClientConfig, Connection, Endpoint as QuicEndpoint};
+use rustls_platform_verifier::ConfigVerifierExt;
 
 pub async fn create_quic_connection<R: Resolver>(
     server: Endpoint,
@@ -25,7 +26,7 @@ pub async fn create_quic_connection<R: Resolver>(
             let host_ref = &host;
 
             let crypto_config = {
-                let mut config = rustls_platform_verifier::tls_config();
+                let mut config = rustls::ClientConfig::with_platform_verifier();
                 config.alpn_protocols = alpn_protocols;
                 Arc::new(QuicClientConfig::try_from(config)?)
             };

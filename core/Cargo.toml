@@ -35,7 +35,7 @@ tracing = { version = "0.1.41", features = ["log"] }
 socket2 = { version = "0.5.8", features = ["all"] }
 rustc-hash = "2.1.0"
 hickory-resolver = "0.24.1"
-quinn = { version = "0.11.6", features = ["ring", "runtime-tokio"] }
+quinn = { version = "0.11.6", features = ["ring", "runtime-tokio", "platform-verifier"] }
 rustls = "0.23.19"
 httparse = "1.9.5"
 auto_impl = "1.2.0"
