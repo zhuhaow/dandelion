@@ -79,7 +79,7 @@ impl<'a> HappyEyeballConnector<'a> {
 
 const CONNECTION_ATTEMP_DELAY: Duration = Duration::from_millis(250);
 
-impl<'a> Future for HappyEyeballConnector<'a> {
+impl Future for HappyEyeballConnector<'_> {
     type Output = Result<TcpStream>;
 
     fn poll(
