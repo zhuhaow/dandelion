@@ -6,7 +6,7 @@ license = "MIT"
 authors = ["Zhuhao Wang <zhuhaow@gmail.com>"]
 
 [dependencies]
-tokio = { version = "1.41.1", features = ["io-util", "net", "macros", "rt"] }
+tokio = { version = "1.42.0", features = ["io-util", "net", "macros", "rt"] }
 async-trait = "0.1.83"
 tokio-tungstenite = "0.24.0"
 futures = "0.3.31"
