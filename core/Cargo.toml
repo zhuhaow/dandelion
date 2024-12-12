@@ -12,7 +12,7 @@ tokio-tungstenite = "0.24.0"
 futures = "0.3.31"
 http = "1.2.0"
 pin-project = "1.1.7"
-chrono = "0.4.38"
+chrono = "0.4.39"
 hyper-tungstenite = "0.15.0"
 hyper = { version = "1.5.1", features = ["http1", "server", "client"] }
 bytes = "1.9.0"
