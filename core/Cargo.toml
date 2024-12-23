@@ -50,7 +50,7 @@ tar = "0.4.43"
 reqwest = { version = "0.12.9" }
 log = "0.4.22"
 structopt = "0.3.26"
-flexi_logger = "0.29.6"
+flexi_logger = "0.29.8"
 fdlimit = "0.3.0"
 
 [dev-dependencies]
