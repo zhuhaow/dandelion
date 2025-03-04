@@ -9,7 +9,7 @@ use tokio_tungstenite::{
 };
 
 lazy_static::lazy_static! {
-    static ref EOF_MESSAGE: Message = Message::Text("EOF".to_string());
+    static ref EOF_MESSAGE: Message = Message::Text("EOF".into());
 }
 
 pub fn into_io<C: Io>(stream: WebSocketStream<C>) -> impl Io {
@@ -62,7 +62,7 @@ impl<C: Io> tokio::io::AsyncWrite for WebSocketStreamToAsyncWrite<C> {
             result
                 .and_then(|_| {
                     stream
-                        .start_send_unpin(Message::Binary(buf.to_owned()))
+                        .start_send_unpin(Message::Binary(buf.to_owned().into()))
                         .map(|_| buf.len())
                 })
                 .map_err(ws_to_io_error),
