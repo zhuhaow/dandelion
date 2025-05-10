@@ -4,7 +4,8 @@ use crate::{
     core::resolver::{hickory::HickoryResolver, system::SystemResolver, Resolver},
     Result,
 };
-use hickory_resolver::config::{NameServerConfig, Protocol};
+use hickory_proto::xfer::Protocol;
+use hickory_resolver::config::NameServerConfig;
 use rune::{
     runtime::{Ref, Vec as RuneVec},
     Any, FromValue, Module, ToValue, Value,
@@ -30,13 +31,7 @@ fn create_udp_resolver(addrs: RuneVec) -> Result<ResolverWrapper> {
     Ok(Arc::new(HickoryResolver::new(
         addrs
             .into_iter()
-            .map(|addr| {
-                anyhow::Ok(
-                    String::from_value(addr)
-                        .into_result()?
-                        .parse::<SocketAddr>()?,
-                )
-            })
+            .map(|addr| anyhow::Ok(String::from_value(addr)?.parse::<SocketAddr>()?))
             .try_fold(Vec::new(), |mut addrs, addr| {
                 addrs.push(addr?);
                 anyhow::Ok(addrs)
@@ -74,7 +69,7 @@ impl ResolverWrapper {
             .lookup_ip(hostname.as_ref())
             .await?
             .into_iter()
-            .map(|ip| ip.to_string().to_value().into_result())
+            .map(|ip| ip.to_string().to_value())
             .collect::<Result<Vec<Value>, _>>()?
             .try_into()?)
     }
@@ -86,7 +81,7 @@ impl ResolverWrapper {
             .lookup_ipv4(hostname.as_ref())
             .await?
             .into_iter()
-            .map(|ip| ip.to_string().to_value().into_result())
+            .map(|ip| ip.to_string().to_value())
             .collect::<Result<Vec<Value>, _>>()?
             .try_into()?)
     }
@@ -98,7 +93,7 @@ impl ResolverWrapper {
             .lookup_ipv6(hostname.as_ref())
             .await?
             .into_iter()
-            .map(|ip| ip.to_string().to_value().into_result())
+            .map(|ip| ip.to_string().to_value())
             .collect::<Result<Vec<Value>, _>>()?
             .try_into()?)
     }

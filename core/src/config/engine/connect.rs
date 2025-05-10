@@ -219,7 +219,7 @@ mod tests {
 
         let request = ConnectRequest::new(endpoint);
 
-        let output = T::from_value(vm.call(["main"], (request,))?).into_result()?;
+        let output = rune::from_value(vm.call(["main"], (request,))?)?;
 
         Ok(output)
     }

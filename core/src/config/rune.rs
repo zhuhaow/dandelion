@@ -1,6 +1,3 @@
-use crate::Result;
-use rune::{runtime::Shared, FromValue, Value};
-
 macro_rules! create_wrapper {
     ($name:ident, $inner:ty) => {
         #[derive(Any, Clone, Debug)]
@@ -45,13 +42,3 @@ macro_rules! create_wrapper {
 }
 
 pub(crate) use create_wrapper;
-
-pub fn value_to_result<T: FromValue>(value: Shared<Result<Value, Value>>) -> Result<T> {
-    value
-        .take()?
-        .map_err(|v| match anyhow::Error::from_value(v).into_result() {
-            Ok(err) => err,
-            Err(err) => anyhow::anyhow!(err),
-        })
-        .and_then(|v| Ok(T::from_value(v).into_result()?))
-}

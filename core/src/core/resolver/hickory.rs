@@ -4,7 +4,8 @@ use anyhow::bail;
 use hickory_proto::op::{Message, MessageType};
 use hickory_resolver::{
     config::{NameServerConfig, ResolverConfig, ResolverOpts},
-    TokioAsyncResolver,
+    name_server::TokioConnectionProvider,
+    TokioResolver,
 };
 use std::{
     net::{IpAddr, Ipv4Addr, Ipv6Addr},
@@ -13,7 +14,7 @@ use std::{
 
 #[derive(Debug)]
 pub struct HickoryResolver {
-    client: TokioAsyncResolver,
+    client: TokioResolver,
 }
 
 impl HickoryResolver {
@@ -27,7 +28,9 @@ impl HickoryResolver {
         }
 
         Ok(Self {
-            client: TokioAsyncResolver::tokio(config, options),
+            client: TokioResolver::builder_with_config(config, TokioConnectionProvider::default())
+                .with_options(options)
+                .build(),
         })
     }
 }
@@ -108,11 +111,12 @@ impl Resolver for HickoryResolver {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use hickory_proto::xfer::Protocol;
     use hickory_proto::{
         op::{MessageType, OpCode, Query},
         rr::RecordType,
     };
-    use hickory_resolver::{config::Protocol, Name};
+    use hickory_resolver::Name;
     use std::str::FromStr;
 
     #[tokio::test]
@@ -122,6 +126,7 @@ mod tests {
                 socket_addr: "8.8.8.8:53".parse().unwrap(),
                 protocol: Protocol::Udp,
                 tls_dns_name: None,
+                http_endpoint: None,
                 trust_negative_responses: true,
                 bind_addr: None,
             }],

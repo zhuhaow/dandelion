@@ -96,7 +96,10 @@ impl GeoIp {
         };
 
         match self.reader.lookup::<Country>(ip) {
-            Ok(country) => country.country.and_then(|c| c.iso_code).unwrap_or(""),
+            Ok(country) => country
+                .and_then(|c| c.country)
+                .and_then(|c| c.iso_code)
+                .unwrap_or(""),
             Err(_) => "",
         }
         .to_owned()

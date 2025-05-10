@@ -25,8 +25,6 @@ use tokio::{
     net::{TcpListener, TcpStream},
 };
 
-use crate::config::rune::value_to_result;
-
 use self::{
     connect::{ConnectRequest, IoWrapper, QuicConnectionWrapper},
     geoip::GeoIp,
@@ -219,12 +217,8 @@ impl Engine {
 
         log::info!("Configuring rule engine...");
 
-        let config: Config = value_to_result(
-            vm.async_call(["config"], ())
-                .await?
-                .into_result()
-                .into_result()?,
-        )?;
+        let config: Config =
+            rune::from_value::<Result<Config>>(vm.async_call(["config"], ()).await?)??;
         log::info!("Done");
 
         Ok(Self {
@@ -299,18 +293,14 @@ pub async fn handle_acceptors<
                 async move {
                     let execution = engine.create_handler_execution(eval_fn, endpoint)?;
 
-                    let mut remote = value_to_result::<IoWrapper>(
+                    let mut remote = rune::from_value::<Result<IoWrapper>>(
                         execution
                             .async_complete()
                             .await
                             // a VmResult here
-                            .into_result()?
-                            // Unwrap it gives return value of the call,
-                            // the return value is of type `Value`, but it's actually a `Result`.
-                            .into_result()
-                            // a VmResult here
-                            .into_result()?,
-                    )?
+                            .into_result()?, // Unwrap it gives return value of the call,
+                                             // the return value is of type `Value`, but it's actually a `Result`.
+                    )??
                     .into_inner();
 
                     let mut local = fut.await?;
