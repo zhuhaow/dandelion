@@ -38,14 +38,7 @@ impl HickoryResolver {
 #[async_trait::async_trait]
 impl Resolver for HickoryResolver {
     async fn lookup_ip(&self, name: &str) -> Result<Vec<IpAddr>> {
-        Ok(self
-            .client
-            .lookup_ip(name)
-            .await?
-            .into_iter()
-            .map(Into::into)
-            .collect())
-        .and_then(|r: Vec<IpAddr>| {
+        Ok(self.client.lookup_ip(name).await?.into_iter().collect()).and_then(|r: Vec<IpAddr>| {
             if r.is_empty() {
                 bail!("Failed to find result for domain {}", name)
             } else {

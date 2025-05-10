@@ -18,14 +18,9 @@ pub async fn connect(endpoint: &Endpoint, mut nexthop: impl Io) -> Result<impl I
         buf[1]
     );
 
-    let len = endpoint
-        .hostname()
-        .as_bytes()
-        .len()
-        .try_into()
-        .with_context(|| {
-            "The socks5 protocol cannot support domain longer than 255 bytenexthop."
-        })?;
+    let len = endpoint.hostname().len().try_into().with_context(|| {
+        "The socks5 protocol cannot support domain longer than 255 bytenexthop."
+    })?;
     nexthop.write_all(&[5, 1, 0, 3, len]).await?;
     nexthop.write_all(endpoint.hostname().as_bytes()).await?;
     nexthop.write_all(&endpoint.port().to_be_bytes()).await?;

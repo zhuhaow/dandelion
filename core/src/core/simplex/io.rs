@@ -145,7 +145,7 @@ impl<C: Io> AsyncBufRead for WebSocketStreamToAsyncWrite<C> {
                             }
                             Poll::Ready(Ok(&[]))
                         } else {
-                            *this.chunk = Some(Bytes::from(m.into_data()));
+                            *this.chunk = Some(m.into_data());
                             let chunk = this.chunk.as_ref().unwrap();
                             Poll::Ready(Ok(chunk))
                         }
