@@ -4,7 +4,7 @@ use crate::{
     core::resolver::{hickory::HickoryResolver, system::SystemResolver, Resolver},
     Result,
 };
-use cached::proc_macro::cached;
+use cached::{proc_macro::cached, Cached};
 use hickory_proto::xfer::Protocol;
 use hickory_resolver::config::NameServerConfig;
 use itertools::Itertools;
@@ -69,6 +69,17 @@ impl ResolverWrapper {
         module.function_meta(Self::lookup_ipv6)?;
 
         Ok(module)
+    }
+
+    pub fn clear_cache() {
+        UDP_RESOLVER
+            .lock()
+            .expect("Failed to clear cache for udp resolver")
+            .cache_clear();
+        SYSTEM_RESOLVER
+            .lock()
+            .expect("Failed to clear cache for system resolver")
+            .cache_clear();
     }
 
     // See https://docs.rs/rune/latest/rune/struct.Module.html#method.function_meta
