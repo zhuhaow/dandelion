@@ -42,7 +42,6 @@ pub enum AcceptorConfig {
 
 #[derive(Debug, Any, Clone)]
 struct Cache {
-    resolvers: HashMap<String, ResolverWrapper>,
     iplist: HashMap<String, IpNetworkSetWrapper>,
     geoip: Option<GeoIp>,
     quic_connections: HashMap<String, QuicConnectionWrapper>,
@@ -51,18 +50,10 @@ struct Cache {
 impl Cache {
     pub fn new() -> Self {
         Self {
-            resolvers: HashMap::new(),
             iplist: HashMap::new(),
             geoip: None,
             quic_connections: HashMap::new(),
         }
-    }
-
-    pub fn get_resolver(&self, name: &str) -> Result<ResolverWrapper> {
-        self.resolvers
-            .get(name)
-            .cloned()
-            .ok_or_else(|| anyhow::anyhow!("resolver {} not found", name))
     }
 
     pub fn get_iplist(&self, name: &str) -> Result<IpNetworkSetWrapper> {
@@ -97,7 +88,6 @@ impl Cache {
         let mut module = Module::new();
 
         module.ty::<Self>()?;
-        module.associated_function("try_get_resolver", Self::get_resolver)?;
         module.associated_function("try_get_iplist", Self::get_iplist)?;
         module.associated_function("try_get_geoip_db", Self::get_geoip_db)?;
         module.associated_function("try_get_quic_connection", Self::get_quic_connection)?;
@@ -140,11 +130,6 @@ impl Config {
     }
 
     #[rune::function]
-    pub fn cache_resolver(&mut self, name: &str, resolver: ResolverWrapper) {
-        self.cache.resolvers.insert(name.to_owned(), resolver);
-    }
-
-    #[rune::function]
     pub fn cache_iplist(&mut self, name: &str, iplist: IpNetworkSetWrapper) {
         self.cache.iplist.insert(name.to_owned(), iplist);
     }
@@ -170,7 +155,6 @@ impl Config {
         module.function_meta(Self::new)?;
         module.function_meta(Self::add_socks5_acceptor)?;
         module.function_meta(Self::add_http_acceptor)?;
-        module.function_meta(Self::cache_resolver)?;
         module.function_meta(Self::cache_iplist)?;
         module.function_meta(Self::cache_geoip_db)?;
         module.function_meta(Self::cache_quic_connection)?;
@@ -337,9 +321,6 @@ mod tests {
 
                 config.add_socks5_acceptor("127.0.0.1:8080", "handler")?;
                 config.add_http_acceptor("127.0.0.1:8081", "handler")?;
-
-                config.cache_resolver("system", create_system_resolver()?);
-                config.cache_resolver("google_dns", create_udp_resolver(["8.8.8.8:53"])?);
 
                 Ok(config)
             }
