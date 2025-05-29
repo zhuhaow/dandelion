@@ -52,6 +52,7 @@ log = "0.4.27"
 structopt = "0.3.26"
 flexi_logger = "0.30.1"
 fdlimit = "0.3.0"
+cached = "0.55.1"
 
 [dev-dependencies]
 env_logger = "0.11.8"

@@ -4,8 +4,10 @@ use crate::{
     core::resolver::{hickory::HickoryResolver, system::SystemResolver, Resolver},
     Result,
 };
+use cached::proc_macro::cached;
 use hickory_proto::xfer::Protocol;
 use hickory_resolver::config::NameServerConfig;
+use itertools::Itertools;
 use rune::{
     runtime::{Ref, Vec as RuneVec},
     Any, FromValue, Module, ToValue, Value,
@@ -23,25 +25,34 @@ impl Clone for ResolverWrapper {
 
 #[rune::function]
 fn create_system_resolver() -> Result<ResolverWrapper> {
-    Ok(Arc::new(SystemResolver::default()).into())
+    Ok(create_system_resolver_impl()?.into())
+}
+
+#[cached(name = "SYSTEM_RESOLVER", result = true)]
+fn create_system_resolver_impl() -> Result<Arc<SystemResolver>> {
+    Ok(Arc::new(SystemResolver::default()))
 }
 
 #[rune::function]
 fn create_udp_resolver(addrs: RuneVec) -> Result<ResolverWrapper> {
-    Ok(Arc::new(HickoryResolver::new(
+    Ok(create_udp_resolver_impl(
         addrs
             .into_iter()
             .map(|addr| anyhow::Ok(String::from_value(addr)?.parse::<SocketAddr>()?))
-            .try_fold(Vec::new(), |mut addrs, addr| {
-                addrs.push(addr?);
-                anyhow::Ok(addrs)
-            })?
+            .try_collect()?,
+    )?
+    .into())
+}
+
+#[cached(name = "UDP_RESOLVER", result = true)]
+fn create_udp_resolver_impl(addrs: Vec<SocketAddr>) -> Result<Arc<HickoryResolver>> {
+    Ok(Arc::new(HickoryResolver::new(
+        addrs
             .into_iter()
             .map(|s| NameServerConfig::new(s, Protocol::Udp))
             .collect(),
         Duration::from_secs(5),
-    )?)
-    .into())
+    )?))
 }
 
 impl ResolverWrapper {
