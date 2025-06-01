@@ -27,7 +27,7 @@ pub async fn handshake(
 
     // Check if there is no auth requested since that's the only one we support
     ensure!(
-        buf.iter().any(|x| *x == 0),
+        buf.contains(0),
         "Only no auth is supported, but it's not requested in handshake"
     );
 

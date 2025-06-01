@@ -39,7 +39,7 @@ impl<C: Io> WebSocketStreamToAsyncWrite<C> {
 }
 
 fn ws_to_io_error(error: WsError) -> std::io::Error {
-    std::io::Error::new(std::io::ErrorKind::Other, error)
+    std::io::Error::other(error)
 }
 
 fn is_eof(message: &Message) -> bool {
