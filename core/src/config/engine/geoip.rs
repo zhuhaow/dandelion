@@ -1,8 +1,14 @@
-use crate::Result;
+use crate::{config::engine::connect::IoWrapper, Result};
+use cached::proc_macro::cached;
 use flate2::read::GzDecoder;
+use http_body_util::{BodyExt, Empty};
+use hyper::{Method, Request};
+use hyper_util::rt::TokioIo;
 use maxminddb::{geoip2::Country, Mmap, Reader};
-use reqwest::ClientBuilder;
-use rune::{runtime::Ref, Any};
+use rune::{
+    runtime::{Function, Ref},
+    Any,
+};
 use std::{
     env,
     fs::{create_dir_all, read_dir},
@@ -18,29 +24,45 @@ pub struct GeoIp {
     reader: Arc<Reader<Mmap>>,
 }
 
+#[cached(name = "GEOIP_FROM_ABSOLUTE_PATH", result = true)]
+fn from_absolute_path_impl(path: String) -> Result<GeoIp> {
+    let reader = Reader::open_mmap(path)?;
+    Ok(GeoIp {
+        reader: Arc::new(reader),
+    })
+}
+
 impl GeoIp {
     #[rune::function(path = Self::from_absolute_path)]
-    pub fn from_absolute_path(path: &str) -> Result<Self> {
-        let reader = Reader::open_mmap(path)?;
-        Ok(Self {
-            reader: Arc::new(reader),
+    pub fn from_absolute_path(path: Ref<str>) -> Result<Self> {
+        from_absolute_path_impl(path.to_owned()).map_err(|e| {
+            e.context(format!(
+                "Failed to load GeoIP database from {}",
+                path.as_ref()
+            ))
         })
     }
 
     #[rune::function(path = Self::from_license)]
-    pub async fn from_license(license: Ref<str>) -> Result<Self> {
+    pub async fn from_license(
+        license: Ref<str>,
+        handler: Function,
+        force_update: bool,
+    ) -> Result<Self> {
         let temp_dir = env::temp_dir().join("dandelion/geoip");
         let db_path = temp_dir.join("GeoLite2-Country.mmdb");
 
-        // first try to load the file
-        if let Ok(reader) = Reader::open_mmap(&db_path) {
-            debug!(
-                "Found existing GeoList2 database from {}",
-                db_path.to_str().unwrap()
-            );
-            return Ok(Self {
-                reader: Arc::new(reader),
-            });
+        if !force_update {
+            // first try to load the file
+            if let Ok(reader) = Reader::open_mmap(&db_path) {
+                debug!(
+                    "Found existing GeoList2 database from {}",
+                    db_path.to_str().unwrap()
+                );
+                return Ok(Self {
+                    reader: Arc::new(reader),
+                });
+            }
         }
 
         let dir = tempdir()?;
@@ -49,21 +71,55 @@ impl GeoIp {
             "Downloading GeoLite2 database from remote to temp folder {} ...",
             dir.path().to_str().unwrap()
         );
-        let url = format!("https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key={}&suffix=tar.gz", license.as_ref());
-        let response = ClientBuilder::new()
-            .no_proxy()
-            .build()?
-            .get(url)
-            .send()
-            .await?;
-        let slice = &response.bytes().await?[..];
 
-        let tar = GzDecoder::new(slice);
+        let io = handler
+            .async_send_call::<(String,), IoWrapper>(("download.maxmind.com:443".to_owned(),))
+            .await
+            .into_result()?
+            .into_inner();
+
+        let path = format!(
+            "/app/geoip_download?edition_id=GeoLite2-Country&license_key={}&suffix=tar.gz",
+            license.as_ref()
+        );
+
+        let (mut request_sender, connection) =
+            hyper::client::conn::http1::handshake(TokioIo::new(io)).await?;
+
+        let connection_task = tokio::task::spawn(async move {
+            if let Err(err) = connection.await {
+                debug!("Connection failed: {:?}", err);
+            }
+        });
+
+        let req = Request::builder()
+            .method(Method::GET)
+            .uri(format!("https://download.maxmind.com{}", path))
+            .header("Host", "download.maxmind.com")
+            .header("User-Agent", "dandelion/1.0")
+            .header("Connection", "close")
+            .body(Empty::<hyper::body::Bytes>::new())?;
+
+        let response = request_sender.send_request(req).await?;
+
+        if response.status() != 200 {
+            return Err(anyhow::anyhow!(
+                "HTTP request failed: {}",
+                response.status()
+            ));
+        }
+
+        let body = response.collect().await?.to_bytes();
+
+        // Force abort the connection task since we're done with the response
+        connection_task.abort();
+
+        let tar = GzDecoder::new(body.as_ref());
         let mut archive = Archive::new(tar);
         archive.unpack(&dir)?;
 
         // The file is extracted to a folder with the release data of
-        // the database, so it's super tedious to use.
+        // the database
 
         // We first try to find the folder
         let db_temp_dir = read_dir(&dir)?
