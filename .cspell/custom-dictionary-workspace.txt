@@ -1,0 +1,9 @@
+# Custom Dictionary Words
+flate
+GEOIP
+Itertools
+Keepalive
+maxmind
+maxminddb
+mmap
+mmdb
