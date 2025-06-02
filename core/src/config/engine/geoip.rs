@@ -88,7 +88,11 @@ impl GeoIp {
 
         let connection_task = tokio::task::spawn(async move {
             if let Err(err) = connection.await {
-                debug!("Connection failed: {:?}", err);
+                if err.is_canceled() {
+                    return;
+                }
+
+                debug!("Connection to download GeoIP failed: {:?}", err);
             }
         });
 
