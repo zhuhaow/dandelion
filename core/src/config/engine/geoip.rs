@@ -1,5 +1,5 @@
 use crate::{config::engine::connect::IoWrapper, Result};
-use cached::proc_macro::cached;
+use anyhow::Context;
 use flate2::read::GzDecoder;
 use http_body_util::{BodyExt, Empty};
 use hyper::{Method, Request};
@@ -24,22 +24,16 @@ pub struct GeoIp {
     reader: Arc<Reader<Mmap>>,
 }
 
-#[cached(name = "GEOIP_FROM_ABSOLUTE_PATH", result = true)]
-fn from_absolute_path_impl(path: String) -> Result<GeoIp> {
-    let reader = Reader::open_mmap(path)?;
-    Ok(GeoIp {
-        reader: Arc::new(reader),
-    })
-}
-
 impl GeoIp {
     #[rune::function(path = Self::from_absolute_path)]
     pub fn from_absolute_path(path: Ref<str>) -> Result<Self> {
-        from_absolute_path_impl(path.to_owned()).map_err(|e| {
-            e.context(format!(
-                "Failed to load GeoIP database from {}",
-                path.as_ref()
-            ))
+        let reader = Reader::open_mmap(path.as_ref()).context(format!(
+            "Failed to load GeoIP database from {}",
+            path.as_ref()
+        ))?;
+
+        Ok(GeoIp {
+            reader: Arc::new(reader),
         })
     }
 
