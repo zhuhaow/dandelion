@@ -27,10 +27,8 @@ pub struct GeoIp {
 impl GeoIp {
     #[rune::function(path = Self::from_absolute_path)]
     pub fn from_absolute_path(path: Ref<str>) -> Result<Self> {
-        let reader = Reader::open_mmap(path.as_ref()).context(format!(
-            "Failed to load GeoIP database from {}",
-            path.as_ref()
-        ))?;
+        let reader = Reader::open_mmap(path.as_ref())
+            .with_context(|| format!("Failed to load GeoIP database from {}", path.as_ref()))?;
 
         Ok(GeoIp {
             reader: Arc::new(reader),
