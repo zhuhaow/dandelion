@@ -1,4 +1,4 @@
-use std::{net::IpAddr, sync::Arc};
+use std::{net::IpAddr, rc::Rc};
 
 use crate::Result;
 use ipnetwork::IpNetwork;
@@ -6,11 +6,11 @@ use rune::{runtime::Vec as RuneVec, Any, FromValue, Module};
 
 use crate::config::rune::create_wrapper;
 
-create_wrapper!(IpNetworkSetWrapper, Arc<Vec<IpNetwork>>);
+create_wrapper!(IpNetworkSetWrapper, Rc<Vec<IpNetwork>>);
 
 #[rune::function]
 pub fn new_iplist(ips: RuneVec) -> Result<IpNetworkSetWrapper> {
-    Ok(Arc::new(
+    Ok(Rc::new(
         ips.into_iter()
             .map(|ip| anyhow::Ok(String::from_value(ip)?.parse()?))
             .try_fold(Vec::new(), |mut ips, ip| {

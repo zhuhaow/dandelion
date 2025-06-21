@@ -1,5 +1,6 @@
 # Custom Dictionary Words
 clonable
+cloneable
 flate
 GEOIP
 Itertools

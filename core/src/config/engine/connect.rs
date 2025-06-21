@@ -16,12 +16,12 @@ use crate::{
     Result,
 };
 use rune::{runtime::Ref, Any, Module, Value};
-use std::{fmt::Debug, net::IpAddr, sync::Arc};
+use std::{fmt::Debug, net::IpAddr, rc::Rc};
 
 use crate::config::{engine::resolver::ResolverWrapper, rune::create_wrapper};
 
 create_wrapper!(IoWrapper, Io, Box);
-create_wrapper!(QuicConnectionWrapper, Arc<QuicConnection>);
+create_wrapper!(QuicConnectionWrapper, Rc<QuicConnection>);
 
 #[derive(Debug, Any)]
 pub struct ConnectRequest {
@@ -49,7 +49,7 @@ pub async fn new_quic_connection(
 ) -> Result<QuicConnectionWrapper> {
     let alpn_vec: Vec<String> = rune::from_value(alpn)?;
 
-    Ok(Arc::new(
+    Ok(Rc::new(
         create_quic_connection(
             server.parse()?,
             resolver.into_inner(),

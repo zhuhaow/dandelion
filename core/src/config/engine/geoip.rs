@@ -13,7 +13,7 @@ use std::{
     env,
     fs::{create_dir_all, read_dir},
     net::IpAddr,
-    sync::Arc,
+    rc::Rc,
 };
 use tar::Archive;
 use tempfile::tempdir;
@@ -21,7 +21,7 @@ use tracing::{debug, info};
 
 #[derive(Any, Debug, Clone)]
 pub struct GeoIp {
-    reader: Arc<Reader<Mmap>>,
+    reader: Rc<Reader<Mmap>>,
 }
 
 impl GeoIp {
@@ -31,7 +31,7 @@ impl GeoIp {
             .with_context(|| format!("Failed to load GeoIP database from {}", path.as_ref()))?;
 
         Ok(GeoIp {
-            reader: Arc::new(reader),
+            reader: Rc::new(reader),
         })
     }
 
@@ -52,7 +52,7 @@ impl GeoIp {
                     db_path.to_str().unwrap()
                 );
                 return Ok(Self {
-                    reader: Arc::new(reader),
+                    reader: Rc::new(reader),
                 });
             }
         }
@@ -134,7 +134,7 @@ impl GeoIp {
         info!("Downloaded GeoLite2 database");
 
         Ok(Self {
-            reader: Arc::new(Reader::open_mmap(&db_path)?),
+            reader: Rc::new(Reader::open_mmap(&db_path)?),
         })
     }
 

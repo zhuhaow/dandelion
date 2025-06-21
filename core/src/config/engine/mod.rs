@@ -3,7 +3,7 @@ mod geoip;
 mod iplist;
 mod resolver;
 
-use std::{collections::HashMap, net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, sync::Arc};
 
 use crate::{
     core::{
@@ -16,7 +16,8 @@ use crate::{
 use anyhow::Context as AnyhowContext;
 use futures::{future::select_all, Future, FutureExt};
 use rune::{
-    runtime::{RuntimeContext, VmSendExecution},
+    alloc::clone::TryClone,
+    runtime::{Object, RuntimeContext},
     termcolor::{ColorChoice, StandardStream},
     Any, Context, Diagnostics, Module, Source, Sources, Unit, Vm,
 };
@@ -26,7 +27,7 @@ use tokio::{
 };
 
 use self::{
-    connect::{ConnectRequest, IoWrapper, QuicConnectionWrapper},
+    connect::{ConnectRequest, IoWrapper},
     geoip::GeoIp,
     iplist::IpNetworkSetWrapper,
     resolver::ResolverWrapper,
@@ -40,66 +41,10 @@ pub enum AcceptorConfig {
     Http(SocketAddr, HandlerName),
 }
 
-#[derive(Debug, Any, Clone)]
-struct Cache {
-    iplist: HashMap<String, IpNetworkSetWrapper>,
-    geoip: Option<GeoIp>,
-    quic_connections: HashMap<String, QuicConnectionWrapper>,
-}
-
-impl Cache {
-    pub fn new() -> Self {
-        Self {
-            iplist: HashMap::new(),
-            geoip: None,
-            quic_connections: HashMap::new(),
-        }
-    }
-
-    pub fn get_iplist(&self, name: &str) -> Result<IpNetworkSetWrapper> {
-        self.iplist
-            .get(name)
-            .cloned()
-            .ok_or_else(|| anyhow::anyhow!("iplist {} not found", name))
-    }
-
-    pub fn get_geoip_db(&self) -> Result<GeoIp> {
-        self.geoip
-            .clone()
-            .ok_or_else(|| anyhow::anyhow!("geoip db not found"))
-    }
-
-    pub fn get_quic_connection(&self, name: &str) -> Result<QuicConnectionWrapper> {
-        self.quic_connections
-            .get(name)
-            .cloned()
-            .ok_or_else(|| anyhow::anyhow!("quic connection {} not found", name))
-    }
-}
-
-impl Default for Cache {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl Cache {
-    pub fn module() -> Result<Module> {
-        let mut module = Module::new();
-
-        module.ty::<Self>()?;
-        module.associated_function("try_get_iplist", Self::get_iplist)?;
-        module.associated_function("try_get_geoip_db", Self::get_geoip_db)?;
-        module.associated_function("try_get_quic_connection", Self::get_quic_connection)?;
-
-        Ok(module)
-    }
-}
-
 #[derive(Debug, Any)]
 struct Config {
     acceptors: Vec<AcceptorConfig>,
-    cache: Cache,
+    cache: Object,
 }
 
 impl Config {
@@ -107,7 +52,7 @@ impl Config {
     pub fn new() -> Self {
         Self {
             acceptors: Vec::new(),
-            cache: Cache::new(),
+            cache: Object::new(),
         }
     }
 
@@ -128,23 +73,6 @@ impl Config {
 
         Ok(())
     }
-
-    #[rune::function]
-    pub fn cache_iplist(&mut self, name: &str, iplist: IpNetworkSetWrapper) {
-        self.cache.iplist.insert(name.to_owned(), iplist);
-    }
-
-    #[rune::function]
-    pub fn cache_geoip_db(&mut self, db: GeoIp) {
-        self.cache.geoip = Some(db);
-    }
-
-    #[rune::function]
-    pub fn cache_quic_connection(&mut self, name: &str, connection: QuicConnectionWrapper) {
-        self.cache
-            .quic_connections
-            .insert(name.to_owned(), connection);
-    }
 }
 
 impl Config {
@@ -155,9 +83,6 @@ impl Config {
         module.function_meta(Self::new)?;
         module.function_meta(Self::add_socks5_acceptor)?;
         module.function_meta(Self::add_http_acceptor)?;
-        module.function_meta(Self::cache_iplist)?;
-        module.function_meta(Self::cache_geoip_db)?;
-        module.function_meta(Self::cache_quic_connection)?;
 
         Ok(module)
     }
@@ -167,7 +92,7 @@ pub struct Engine {
     context: Arc<RuntimeContext>,
     unit: Arc<Unit>,
     acceptors: Vec<AcceptorConfig>,
-    cache: Cache,
+    cache: Object,
 }
 
 impl Engine {
@@ -180,7 +105,6 @@ impl Engine {
         context.install(ConnectRequest::module()?)?;
         context.install(ResolverWrapper::module()?)?;
         context.install(IpNetworkSetWrapper::module()?)?;
-        context.install(Cache::module()?)?;
         context.install(GeoIp::module()?)?;
 
         let mut diagnostics = Diagnostics::new();
@@ -203,6 +127,12 @@ impl Engine {
 
         let config: Config =
             rune::from_value::<Result<Config>>(vm.async_call(["config"], ()).await?)??;
+
+        config
+            .cache
+            .try_clone()
+            .context("Cache can only contain cloneable objects")?;
+
         log::info!("Done");
 
         Ok(Self {
@@ -217,15 +147,56 @@ impl Engine {
         Vm::new(self.context.clone(), self.unit.clone())
     }
 
-    pub fn create_handler_execution(
-        &self,
-        name: impl AsRef<str>,
-        endpoint: Endpoint,
-    ) -> Result<VmSendExecution> {
-        Ok(self.vm().send_execute(
-            [name.as_ref()],
-            (ConnectRequest::new(endpoint), self.cache.clone()),
-        )?)
+    pub async fn handle_acceptors<
+        F: Future<Output = Result<(Endpoint, impl Future<Output = Result<impl Io>>)>> + 'static,
+    >(
+        self: Arc<Self>,
+        addr: &SocketAddr,
+        handshake: fn(TcpStream) -> F,
+        eval_fn: String,
+    ) -> Result<()> {
+        let listener = TcpListener::bind(addr).await?;
+
+        loop {
+            let io = listener.accept().await?.0;
+
+            let engine = self.clone();
+            let eval_fn = eval_fn.clone();
+
+            tokio::task::spawn_local(async move {
+                if let Err(e) = async move {
+                    let (endpoint, fut) = handshake(io).await?;
+
+                    let endpoint_cloned = endpoint.clone();
+                    async move {
+                        let mut remote = rune::from_value::<Result<IoWrapper>>(
+                            engine
+                                .vm()
+                                .async_call(
+                                    [eval_fn.as_str()],
+                                    (ConnectRequest::new(endpoint), engine.cache.try_clone()?),
+                                )
+                                .await?,
+                        )??
+                        .into_inner();
+
+                        let mut local = fut.await?;
+
+                        copy_bidirectional(&mut local, &mut remote)
+                            .await
+                            .context("Error happened when forwarding data")?;
+
+                        anyhow::Ok(())
+                    }
+                    .await
+                    .with_context(|| format!("target endpoint {}", endpoint_cloned))
+                }
+                .await
+                {
+                    tracing::error!("{:?}", e)
+                }
+            });
+        }
     }
 
     pub async fn run(self) -> Result<()> {
@@ -233,76 +204,18 @@ impl Engine {
 
         select_all(self_ptr.clone().acceptors.iter().map(|c| {
             match c {
-                AcceptorConfig::Socks5(addr, handler) => handle_acceptors(
-                    addr,
-                    socks5::handshake,
-                    self_ptr.clone(),
-                    handler.to_owned(),
-                )
-                .boxed(),
-                AcceptorConfig::Http(addr, handler) => {
-                    handle_acceptors(addr, http::handshake, self_ptr.clone(), handler.to_owned())
-                        .boxed()
-                }
+                AcceptorConfig::Socks5(addr, handler) => self_ptr
+                    .clone()
+                    .handle_acceptors(addr, socks5::handshake, handler.to_owned())
+                    .boxed_local(),
+                AcceptorConfig::Http(addr, handler) => self_ptr
+                    .clone()
+                    .handle_acceptors(addr, http::handshake, handler.to_owned())
+                    .boxed_local(),
             }
         }))
         .await
         .0
-    }
-}
-
-pub async fn handle_acceptors<
-    F: Future<Output = Result<(Endpoint, impl Future<Output = Result<impl Io>> + Send)>>
-        + 'static
-        + Send,
->(
-    addr: &SocketAddr,
-    handshake: fn(TcpStream) -> F,
-    engine: Arc<Engine>,
-    eval_fn: String,
-) -> Result<()> {
-    let listener = TcpListener::bind(addr).await?;
-
-    loop {
-        let io = listener.accept().await?.0;
-
-        let engine = engine.clone();
-        let eval_fn = eval_fn.clone();
-
-        tokio::task::spawn(async move {
-            if let Err(e) = async move {
-                let (endpoint, fut) = handshake(io).await?;
-
-                let endpoint_cloned = endpoint.clone();
-                async move {
-                    let execution = engine.create_handler_execution(eval_fn, endpoint)?;
-
-                    let mut remote = rune::from_value::<Result<IoWrapper>>(
-                        execution
-                            .async_complete()
-                            .await
-                            // a VmResult here
-                            .into_result()?, // Unwrap it gives return value of the call,
-                                             // the return value is of type `Value`, but it's actually a `Result`.
-                    )??
-                    .into_inner();
-
-                    let mut local = fut.await?;
-
-                    copy_bidirectional(&mut local, &mut remote)
-                        .await
-                        .context("Error happened when forwarding data")?;
-
-                    anyhow::Ok(())
-                }
-                .await
-                .with_context(|| format!("target endpoint {}", endpoint_cloned))
-            }
-            .await
-            {
-                tracing::error!("{:?}", e)
-            }
-        });
     }
 }
 
