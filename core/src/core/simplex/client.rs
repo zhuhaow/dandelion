@@ -38,7 +38,7 @@ pub async fn connect<I: Io>(io: I, endpoint: &Endpoint, config: &Config) -> Resu
 
     let (stream, _response) = client_async(request, io)
         .await
-        .context("Websocket handshaked failed when establishing simplex connection")?;
+        .context("Websocket handshake failed when establishing simplex connection")?;
 
     Ok(into_io(stream))
 }

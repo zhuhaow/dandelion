@@ -1,4 +1,6 @@
 # Custom Dictionary Words
+addrs
+chrono
 clonable
 cloneable
 flate
@@ -9,3 +11,4 @@ maxmind
 maxminddb
 mmap
 mmdb
+rsplit

@@ -7,5 +7,20 @@
       "scope": "workspace"
     }
   },
-  "cSpell.ignoreWords": ["alpn", "iplist", "ipnetwork", "nexthop", "termcolor"]
+  "cSpell.ignoreWords": [
+    "alpn",
+    "apln",
+    "getaddrinfo",
+    "httparse",
+    "iplist",
+    "ipnetwork",
+    "nexthop",
+    "oneshot",
+    "rustls",
+    "sockaddr",
+    "socktype",
+    "termcolor",
+    "tungstenite",
+    "xfer"
+  ]
 }

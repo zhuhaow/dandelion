@@ -77,7 +77,7 @@ impl<'a> HappyEyeballConnector<'a> {
     }
 }
 
-const CONNECTION_ATTEMP_DELAY: Duration = Duration::from_millis(250);
+const CONNECTION_ATTEMPT_DELAY: Duration = Duration::from_millis(250);
 
 impl Future for HappyEyeballConnector<'_> {
     type Output = Result<TcpStream>;
@@ -174,7 +174,7 @@ impl Future for HappyEyeballConnector<'_> {
                             std::task::Poll::Pending => {
                                 self.next_connection_timer
                                     .as_mut()
-                                    .reset(Instant::now().add(CONNECTION_ATTEMP_DELAY).into());
+                                    .reset(Instant::now().add(CONNECTION_ATTEMPT_DELAY).into());
                                 // The result should always be pending.
                                 assert_eq!(
                                     self.next_connection_timer.poll_unpin(cx),
