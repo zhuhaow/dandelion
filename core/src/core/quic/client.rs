@@ -26,7 +26,7 @@ pub async fn create_quic_connection<R: Resolver>(
             let host_ref = &host;
 
             let crypto_config = {
-                let mut config = rustls::ClientConfig::with_platform_verifier();
+                let mut config = rustls::ClientConfig::with_platform_verifier()?;
                 config.alpn_protocols = alpn_protocols;
                 Arc::new(QuicClientConfig::try_from(config)?)
             };
