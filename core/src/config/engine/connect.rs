@@ -34,14 +34,14 @@ impl ConnectRequest {
     }
 }
 
-#[rune::function]
+#[rune::function(path = new_tcp_async)]
 pub async fn new_tcp(endpoint: Ref<str>, resolver: ResolverWrapper) -> Result<IoWrapper> {
     Ok(tcp_connect(&endpoint.parse()?, resolver.into_inner())
         .await?
         .into())
 }
 
-#[rune::function]
+#[rune::function(path = new_quic_connection_async)]
 pub async fn new_quic_connection(
     server: Ref<str>,
     resolver: ResolverWrapper,
@@ -60,17 +60,17 @@ pub async fn new_quic_connection(
     .into())
 }
 
-#[rune::function]
+#[rune::function(path = new_quic_async)]
 pub async fn new_quic(connection: QuicConnectionWrapper) -> Result<IoWrapper> {
     Ok(quic_connect(connection.inner()).await?.into())
 }
 
-#[rune::function]
+#[rune::function(path = new_tls_async)]
 pub async fn new_tls(endpoint: Ref<str>, nexthop: IoWrapper) -> Result<IoWrapper> {
     Ok(tls_connect(&endpoint.parse()?, nexthop.0).await?.into())
 }
 
-#[rune::function]
+#[rune::function(path = new_block_async)]
 pub async fn new_block(endpoint: Ref<str>) -> Result<IoWrapper> {
     match block_connect(&endpoint.parse()?).await {
         Ok(_) => unreachable!(),
@@ -78,7 +78,7 @@ pub async fn new_block(endpoint: Ref<str>) -> Result<IoWrapper> {
     }
 }
 
-#[rune::function]
+#[rune::function(path = new_http_async)]
 pub async fn new_http(endpoint: Ref<str>, nexthop: IoWrapper) -> Result<IoWrapper> {
     Ok(http_connect(&endpoint.parse()?, nexthop.0).await?.into())
 }
@@ -92,7 +92,7 @@ pub struct SimplexConfig {
     pub header_value: String,
 }
 
-#[rune::function]
+#[rune::function(path = new_simplex_async)]
 pub async fn new_simplex(
     endpoint: Ref<str>,
     config: SimplexConfig,
@@ -109,7 +109,7 @@ pub async fn new_simplex(
         .into())
 }
 
-#[rune::function]
+#[rune::function(path = new_socks5_async)]
 pub async fn new_socks5(endpoint: Ref<str>, nexthop: IoWrapper) -> Result<IoWrapper> {
     Ok(socks5_connect(&endpoint.parse()?, nexthop.0).await?.into())
 }
