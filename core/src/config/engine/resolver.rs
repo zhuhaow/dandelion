@@ -1,10 +1,8 @@
-use std::{net::SocketAddr, sync::Arc, time::Duration};
-
+use crate::config::rune::create_wrapper;
 use crate::{
     core::resolver::{hickory::HickoryResolver, system::SystemResolver, Resolver},
     Result,
 };
-use cached::{proc_macro::cached, Cached};
 use hickory_proto::xfer::Protocol;
 use hickory_resolver::config::NameServerConfig;
 use itertools::Itertools;
@@ -12,10 +10,9 @@ use rune::{
     runtime::{Ref, Vec as RuneVec},
     Any, FromValue, Module, ToValue, Value,
 };
+use std::{net::SocketAddr, rc::Rc, time::Duration};
 
-use crate::config::rune::create_wrapper;
-
-create_wrapper!(ResolverWrapper, Resolver, Arc);
+create_wrapper!(ResolverWrapper, Resolver, Rc);
 
 impl Clone for ResolverWrapper {
     fn clone(&self) -> Self {
@@ -25,34 +22,24 @@ impl Clone for ResolverWrapper {
 
 #[rune::function]
 fn create_system_resolver() -> Result<ResolverWrapper> {
-    Ok(create_system_resolver_impl()?.into())
-}
-
-#[cached(name = "SYSTEM_RESOLVER", result = true)]
-fn create_system_resolver_impl() -> Result<Arc<SystemResolver>> {
-    Ok(Arc::new(SystemResolver::default()))
+    Ok(SystemResolver::default().into())
 }
 
 #[rune::function]
-fn create_udp_resolver(addrs: RuneVec) -> Result<ResolverWrapper> {
-    Ok(create_udp_resolver_impl(
+fn create_udp_resolver(addrs: RuneVec, timeout: u64) -> Result<ResolverWrapper> {
+    Ok(HickoryResolver::new(
         addrs
             .into_iter()
-            .map(|addr| anyhow::Ok(String::from_value(addr)?.parse::<SocketAddr>()?))
+            .map(|addr| {
+                anyhow::Ok(NameServerConfig::new(
+                    String::from_value(addr)?.parse::<SocketAddr>()?,
+                    Protocol::Udp,
+                ))
+            })
             .try_collect()?,
+        Duration::from_millis(timeout),
     )?
     .into())
-}
-
-#[cached(name = "UDP_RESOLVER", result = true)]
-fn create_udp_resolver_impl(addrs: Vec<SocketAddr>) -> Result<Arc<HickoryResolver>> {
-    Ok(Arc::new(HickoryResolver::new(
-        addrs
-            .into_iter()
-            .map(|s| NameServerConfig::new(s, Protocol::Udp))
-            .collect(),
-        Duration::from_secs(5),
-    )?))
 }
 
 impl ResolverWrapper {
@@ -69,17 +56,6 @@ impl ResolverWrapper {
         module.function_meta(Self::lookup_ipv6)?;
 
         Ok(module)
-    }
-
-    pub fn clear_cache() {
-        UDP_RESOLVER
-            .lock()
-            .expect("Failed to clear cache for udp resolver")
-            .cache_clear();
-        SYSTEM_RESOLVER
-            .lock()
-            .expect("Failed to clear cache for system resolver")
-            .cache_clear();
     }
 
     // See https://docs.rs/rune/latest/rune/struct.Module.html#method.function_meta
