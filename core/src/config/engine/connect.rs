@@ -172,66 +172,31 @@ impl ConnectRequest {
 
 #[cfg(test)]
 mod tests {
-    use std::{str::FromStr, sync::Arc};
+    use std::str::FromStr;
 
     use rstest::rstest;
-    use rune::{
-        termcolor::{ColorChoice, StandardStream},
-        Context, Diagnostics, FromValue, Source, Sources, Vm,
-    };
+    use rune::FromValue;
+
+    use crate::config::engine::testing;
 
     use super::*;
 
-    fn get_vm(sources: &mut Sources) -> Result<Vm> {
-        let mut context = Context::with_default_modules()?;
-        context.install(ConnectRequest::module()?)?;
-
-        let mut diagnostics = Diagnostics::new();
-        let result = rune::prepare(sources)
-            .with_context(&context)
-            .with_diagnostics(&mut diagnostics)
-            .build();
-
-        if !diagnostics.is_empty() {
-            let mut writer = StandardStream::stderr(ColorChoice::Always);
-            diagnostics.emit(&mut writer, sources)?;
-        }
-
-        Ok(Vm::new(Arc::new(context.runtime()?), Arc::new(result?)))
-    }
-
-    fn test_request<T: FromValue>(method_name: &str, endpoint: Endpoint) -> Result<T> {
-        let mut sources = Sources::new();
-
-        sources.insert(Source::new(
-            "entry",
-            format!(
-                "
-        pub fn main(request) {{
-            request.{}()
-        }}
-        ",
-                method_name,
-            ),
-        )?)?;
-
-        let mut vm = get_vm(&mut sources)?;
-
+    async fn test_request<T: FromValue>(method_name: &str, endpoint: Endpoint) -> Result<T> {
+        let code = format!("value.{}()", method_name);
         let request = ConnectRequest::new(endpoint);
 
-        let output = rune::from_value(vm.call(["main"], (request,))?)?;
-
-        Ok(output)
+        testing::run(vec![ConnectRequest::module()?], &code, (request,)).await
     }
 
     #[rstest]
     #[case("127.0.0.1:80", 80)]
     #[case("[::1]:80", 80)]
     #[case("example.com:80", 80)]
-    fn test_connect_request_port(#[case] endpoint: &str, #[case] port: u16) -> Result<()> {
+    #[tokio::test]
+    async fn test_connect_request_port(#[case] endpoint: &str, #[case] port: u16) -> Result<()> {
         let request = Endpoint::from_str(endpoint)?;
 
-        assert_eq!(test_request::<u16>("port", request)?, port);
+        assert_eq!(test_request::<u16>("port", request).await?, port);
 
         Ok(())
     }
@@ -240,10 +205,14 @@ mod tests {
     #[case("127.0.0.1:80", "127.0.0.1")]
     #[case("[::1]:80", "::1")]
     #[case("example.com:80", "example.com")]
-    fn test_connect_request_hostname(#[case] endpoint: &str, #[case] hostname: &str) -> Result<()> {
+    #[tokio::test]
+    async fn test_connect_request_hostname(
+        #[case] endpoint: &str,
+        #[case] hostname: &str,
+    ) -> Result<()> {
         let request = Endpoint::from_str(endpoint)?;
 
-        assert_eq!(test_request::<String>("hostname", request)?, hostname);
+        assert_eq!(test_request::<String>("hostname", request).await?, hostname);
 
         Ok(())
     }
@@ -252,14 +221,15 @@ mod tests {
     #[case("127.0.0.1:80", "127.0.0.1:80")]
     #[case("[::1]:80", "[::1]:80")]
     #[case("example.com:80", "example.com:80")]
-    fn test_connect_request_endpoint(
+    #[tokio::test]
+    async fn test_connect_request_endpoint(
         #[case] endpoint: &str,
         #[case] expect_endpoint: &str,
     ) -> Result<()> {
         let request = Endpoint::from_str(endpoint)?;
 
         assert_eq!(
-            test_request::<String>("endpoint", request)?,
+            test_request::<String>("endpoint", request).await?,
             expect_endpoint
         );
 
@@ -270,10 +240,17 @@ mod tests {
     #[case("127.0.0.1:80", true)]
     #[case("[::1]:80", true)]
     #[case("example.com:80", false)]
-    fn test_connect_request_host_is_ip(#[case] endpoint: &str, #[case] is_ip: bool) -> Result<()> {
+    #[tokio::test]
+    async fn test_connect_request_host_is_ip(
+        #[case] endpoint: &str,
+        #[case] is_ip: bool,
+    ) -> Result<()> {
         let request = Endpoint::from_str(endpoint)?;
 
-        assert_eq!(test_request::<bool>("hostname_is_ip", request)?, is_ip);
+        assert_eq!(
+            test_request::<bool>("hostname_is_ip", request).await?,
+            is_ip
+        );
 
         Ok(())
     }
