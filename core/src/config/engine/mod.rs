@@ -2,6 +2,7 @@ mod connect;
 mod geoip;
 mod iplist;
 mod resolver;
+mod testing;
 
 use self::{
     connect::{ConnectRequest, IoWrapper},
@@ -95,9 +96,9 @@ pub struct Engine {
 }
 
 impl Engine {
-    pub async fn load_config(name: impl AsRef<str>, code: impl AsRef<str>) -> Result<Engine> {
+    pub async fn load_config(code: impl AsRef<str>) -> Result<Engine> {
         let mut sources = Sources::new();
-        sources.insert(Source::new(name, code)?)?;
+        sources.insert(Source::memory(code)?)?;
 
         let mut context = Context::with_default_modules()?;
         context.install(Config::module()?)?;
@@ -227,7 +228,6 @@ mod tests {
     #[tokio::test]
     async fn test_add_acceptor() -> Result<()> {
         let engine = Engine::load_config(
-            "config",
             r#"
             pub async fn config() {
                 let config = Config::new();
@@ -255,7 +255,6 @@ mod tests {
     #[tokio::test]
     async fn test_add_cache() -> Result<()> {
         let engine = Engine::load_config(
-            "config",
             r#"
             pub async fn config() {
                 let config = Config::new();
