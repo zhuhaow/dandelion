@@ -53,7 +53,7 @@ async fn main() -> Result<()> {
             )?,
     };
 
-    let engine = Engine::load_config("config", code).await?;
+    let engine = Engine::load_config(code).await?;
 
     engine.run().await
 }
