@@ -25,7 +25,7 @@ use rune::{
     termcolor::{ColorChoice, StandardStream},
     Any, Context, Diagnostics, Module, Source, Sources, Unit, Vm,
 };
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, rc::Rc, sync::Arc};
 use tokio::{
     io::copy_bidirectional,
     net::{TcpListener, TcpStream},
@@ -150,7 +150,7 @@ impl Engine {
     pub async fn handle_acceptors<
         F: Future<Output = Result<(Endpoint, impl Future<Output = Result<impl Io>>)>> + 'static,
     >(
-        self: Arc<Self>,
+        self: Rc<Self>,
         addr: &SocketAddr,
         handshake: fn(TcpStream) -> F,
         eval_fn: String,
@@ -200,7 +200,7 @@ impl Engine {
     }
 
     pub async fn run(self) -> Result<()> {
-        let self_ptr = Arc::new(self);
+        let self_ptr = Rc::new(self);
 
         select_all(self_ptr.clone().acceptors.iter().map(|c| {
             match c {
