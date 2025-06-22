@@ -3,8 +3,12 @@ mod geoip;
 mod iplist;
 mod resolver;
 
-use std::{net::SocketAddr, sync::Arc};
-
+use self::{
+    connect::{ConnectRequest, IoWrapper},
+    geoip::GeoIp,
+    iplist::IpNetworkSetWrapper,
+    resolver::ResolverWrapper,
+};
 use crate::{
     core::{
         acceptor::{http, socks5},
@@ -21,16 +25,10 @@ use rune::{
     termcolor::{ColorChoice, StandardStream},
     Any, Context, Diagnostics, Module, Source, Sources, Unit, Vm,
 };
+use std::{net::SocketAddr, sync::Arc};
 use tokio::{
     io::copy_bidirectional,
     net::{TcpListener, TcpStream},
-};
-
-use self::{
-    connect::{ConnectRequest, IoWrapper},
-    geoip::GeoIp,
-    iplist::IpNetworkSetWrapper,
-    resolver::ResolverWrapper,
 };
 
 type HandlerName = String;
@@ -44,7 +42,8 @@ pub enum AcceptorConfig {
 #[derive(Debug, Any)]
 struct Config {
     acceptors: Vec<AcceptorConfig>,
-    cache: Object,
+    #[rune(get, set)]
+    cache: Option<Object>,
 }
 
 impl Config {
@@ -52,7 +51,7 @@ impl Config {
     pub fn new() -> Self {
         Self {
             acceptors: Vec::new(),
-            cache: Object::new(),
+            cache: None,
         }
     }
 
@@ -92,7 +91,7 @@ pub struct Engine {
     context: Arc<RuntimeContext>,
     unit: Arc<Unit>,
     acceptors: Vec<AcceptorConfig>,
-    cache: Object,
+    cache: Option<Object>,
 }
 
 impl Engine {
@@ -128,10 +127,11 @@ impl Engine {
         let config: Config =
             rune::from_value::<Result<Config>>(vm.async_call(["config"], ()).await?)??;
 
-        config
-            .cache
-            .try_clone()
-            .context("Cache can only contain cloneable objects")?;
+        // Everything should be clonable, but we check it here to ensure
+        if let Some(c) = config.cache.as_ref() {
+            c.try_clone()
+                .context("Cache can only contain cloneable objects")?;
+        }
 
         log::info!("Done");
 
@@ -247,6 +247,35 @@ mod tests {
                 AcceptorConfig::Socks5("127.0.0.1:8080".parse().unwrap(), "handler".to_owned()),
                 AcceptorConfig::Http("127.0.0.1:8081".parse().unwrap(), "handler".to_owned())
             ]
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_add_cache() -> Result<()> {
+        let engine = Engine::load_config(
+            "config",
+            r#"
+            pub async fn config() {
+                let config = Config::new();
+                config.cache = Some(#{
+                    "key": "value"
+                });
+                Ok(config)
+            }
+        "#,
+        )
+        .await?;
+
+        assert!(engine.cache.is_some());
+
+        let cache = engine.cache.unwrap();
+
+        assert!(cache.get("key").is_some());
+        assert_eq!(
+            rune::from_value::<String>(cache.get("key").unwrap())?,
+            "value"
         );
 
         Ok(())
