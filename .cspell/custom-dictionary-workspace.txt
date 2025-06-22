@@ -12,3 +12,4 @@ maxminddb
 mmap
 mmdb
 rsplit
+rustc
