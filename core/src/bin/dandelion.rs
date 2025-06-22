@@ -14,7 +14,7 @@ struct Opt {
     input: Option<PathBuf>,
 }
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<()> {
     flexi_logger::Logger::try_with_env_or_str("warn,dandelion_core=info,dandelion_config=info")
         .unwrap()
