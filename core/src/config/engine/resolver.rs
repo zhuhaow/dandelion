@@ -96,3 +96,41 @@ impl ResolverWrapper {
             .try_into()?)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::config::engine::testing;
+
+    use super::*;
+
+    #[tokio::test]
+    async fn test_create_system_resolver() -> Result<()> {
+        let _: () = testing::run(
+            vec![ResolverWrapper::module()?],
+            r#"
+                let resolver = create_system_resolver()?;
+
+                ()
+            "#,
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_create_udp_resolver() -> Result<()> {
+        let _: () = testing::run(
+            vec![ResolverWrapper::module()?],
+            r#"
+                let resolver = create_udp_resolver([
+                    "8.8.8.8:53",
+                    "1.1.1.1:53"
+                ], 5000)?;
+            "#,
+        )
+        .await?;
+
+        Ok(())
+    }
+}
