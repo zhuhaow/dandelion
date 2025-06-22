@@ -1,13 +1,18 @@
 use crate::Result;
 use rune::{
     prepare,
+    runtime::GuardedArgs,
     termcolor::{ColorChoice, StandardStream},
     Diagnostics, FromValue, Module, Source, Sources, Vm,
 };
 use std::sync::Arc;
 
 #[allow(dead_code)]
-pub async fn run<T: FromValue>(modules: Vec<Module>, code: &str) -> Result<T> {
+pub async fn run<T: FromValue, A: GuardedArgs>(
+    modules: Vec<Module>,
+    code: &str,
+    args: A,
+) -> Result<T> {
     let mut context = rune::Context::with_default_modules()?;
 
     for module in modules {
@@ -17,7 +22,7 @@ pub async fn run<T: FromValue>(modules: Vec<Module>, code: &str) -> Result<T> {
     let mut sources = Sources::new();
     sources.insert(Source::memory(format!(
         "
-        pub async fn main() {{
+        pub async fn main(value) {{
             {code}
         }}
         ",
@@ -37,7 +42,7 @@ pub async fn run<T: FromValue>(modules: Vec<Module>, code: &str) -> Result<T> {
 
     let mut vm = Vm::new(Arc::new(context.runtime()?), Arc::new(result?));
 
-    let value = vm.async_call(["main"], ()).await?;
+    let value = vm.async_call(["main"], args).await?;
 
     Ok(rune::from_value::<T>(value)?)
 }

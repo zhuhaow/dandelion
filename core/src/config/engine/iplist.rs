@@ -86,6 +86,7 @@ mod tests {
                 iplist.contains("{ip_str}")?
                 "#,
             ),
+            ((),),
         )
         .await?;
 

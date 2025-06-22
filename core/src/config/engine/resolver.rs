@@ -112,6 +112,7 @@ mod tests {
 
                 ()
             "#,
+            ((),),
         )
         .await?;
 
@@ -128,6 +129,7 @@ mod tests {
                     "1.1.1.1:53"
                 ], 5000)?;
             "#,
+            ((),),
         )
         .await?;
 
@@ -143,6 +145,7 @@ mod tests {
 
                 resolver.lookup_async("example.com").await?
             "#,
+            ((),),
         )
         .await?;
 
