@@ -60,7 +60,7 @@ impl ResolverWrapper {
 
     // See https://docs.rs/rune/latest/rune/struct.Module.html#method.function_meta
     // for why use `this` instead of `self`
-    #[rune::function(instance, path = Self::lookup)]
+    #[rune::function(instance, path = Self::lookup_async)]
     async fn lookup(this: Ref<Self>, hostname: Ref<str>) -> Result<RuneVec> {
         Ok(this
             .inner()
@@ -72,7 +72,7 @@ impl ResolverWrapper {
             .try_into()?)
     }
 
-    #[rune::function(instance, path = Self::lookup_ipv4)]
+    #[rune::function(instance, path = Self::lookup_ipv4_async)]
     async fn lookup_ipv4(this: Ref<Self>, hostname: Ref<str>) -> Result<RuneVec> {
         Ok(this
             .inner()
@@ -84,7 +84,7 @@ impl ResolverWrapper {
             .try_into()?)
     }
 
-    #[rune::function(instance, path = Self::lookup_ipv6)]
+    #[rune::function(instance, path = Self::lookup_ipv6_async)]
     async fn lookup_ipv6(this: Ref<Self>, hostname: Ref<str>) -> Result<RuneVec> {
         Ok(this
             .inner()
@@ -130,6 +130,23 @@ mod tests {
             "#,
         )
         .await?;
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_resolver() -> Result<()> {
+        let ips: Vec<String> = testing::run(
+            vec![ResolverWrapper::module()?],
+            r#"
+                let resolver = create_system_resolver()?;
+
+                resolver.lookup_async("example.com").await?
+            "#,
+        )
+        .await?;
+
+        assert!(!ips.is_empty());
 
         Ok(())
     }
