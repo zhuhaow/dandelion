@@ -83,7 +83,7 @@ mod tests {
             &format!(
                 r#"
                 let iplist = new_iplist(["{ipnetwork_str}"])?;
-                iplist.contains("{ip_str}")?
+                Ok(iplist.contains("{ip_str}")?)
                 "#,
             ),
             ((),),

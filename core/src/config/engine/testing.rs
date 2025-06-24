@@ -44,5 +44,5 @@ pub async fn run<T: FromValue, A: GuardedArgs>(
 
     let value = vm.async_call(["main"], args).await?;
 
-    Ok(rune::from_value::<T>(value)?)
+    rune::from_value::<Result<T>>(value)?
 }

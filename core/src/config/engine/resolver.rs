@@ -110,7 +110,7 @@ mod tests {
             r#"
                 let resolver = create_system_resolver()?;
 
-                ()
+                Ok(())
             "#,
             ((),),
         )
@@ -128,6 +128,8 @@ mod tests {
                     "8.8.8.8:53",
                     "1.1.1.1:53"
                 ], 5000)?;
+
+                Ok(())
             "#,
             ((),),
         )
@@ -143,7 +145,7 @@ mod tests {
             r#"
                 let resolver = create_system_resolver()?;
 
-                resolver.lookup_async("example.com").await?
+                Ok(resolver.lookup_async("example.com").await?)
             "#,
             ((),),
         )

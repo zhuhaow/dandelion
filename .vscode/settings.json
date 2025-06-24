@@ -18,6 +18,7 @@
     "ipnetwork",
     "nexthop",
     "oneshot",
+    "reqwest",
     "rustls",
     "sockaddr",
     "socktype",

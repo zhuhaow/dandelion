@@ -182,7 +182,7 @@ mod tests {
     use super::*;
 
     async fn test_request<T: FromValue>(method_name: &str, endpoint: Endpoint) -> Result<T> {
-        let code = format!("value.{}()", method_name);
+        let code = format!("Ok(value.{}())", method_name);
         let request = ConnectRequest::new(endpoint);
 
         testing::run(vec![ConnectRequest::module()?], &code, (request,)).await
