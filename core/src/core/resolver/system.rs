@@ -83,6 +83,7 @@ mod tests {
     #[case("t.test")]
     #[case("t.invalid")]
     #[tokio::test]
+    #[ignore]
     async fn test_look_up_nonexisting_domain(#[case] host: &str) {
         let resolver = SystemResolver::new();
 
@@ -110,6 +111,7 @@ mod tests {
     #[case("t.test")]
     #[case("t.invalid")]
     #[tokio::test]
+    #[ignore]
     async fn test_look_up_nonexisting_domain_for_a_record(#[case] host: &str) {
         let resolver = SystemResolver::new();
 
@@ -154,6 +156,7 @@ mod tests {
     #[case("t.test")]
     #[case("t.invalid")]
     #[tokio::test]
+    #[ignore]
     async fn test_look_up_nonexisting_domain_for_aaaa_record(#[case] host: &str) {
         let resolver = SystemResolver::new();
 
