@@ -1,4 +1,3 @@
-use ipnetwork::{Ipv4NetworkIterator, Ipv6NetworkIterator};
 use lru::LruCache;
 use std::{
     borrow::Borrow,
@@ -160,10 +159,8 @@ mod tests {
     fn test_pool_with_bidirectional_mapping() {
         let network = Ipv4Network::try_from("10.0.0.1/24").unwrap();
 
-        let mut resolver = FakeDnsResolver::new(
-            LinkedList::from_iter(network.iter().map(Ipv4Addr::from)),
-            LinkedList::new(),
-        );
+        let mut resolver =
+            FakeDnsResolver::new(LinkedList::from_iter(network.iter()), LinkedList::new());
 
         let mut set = HashSet::new();
         let mut addrs = Vec::new();
@@ -176,7 +173,7 @@ mod tests {
 
             let ip = result.unwrap();
 
-            assert_eq!(resolver.reverse_lookup(&ip.into()), Some(name));
+            assert_eq!(resolver.reverse_lookup(ip), Some(name));
 
             assert!(!set.contains(&ip));
 
@@ -197,7 +194,7 @@ mod tests {
             assert_eq!(ip, addrs[i as usize]);
 
             // reverse lookup should still work
-            assert_eq!(resolver.reverse_lookup(&ip.into()), Some(name));
+            assert_eq!(resolver.reverse_lookup(ip), Some(name));
         }
     }
 }
