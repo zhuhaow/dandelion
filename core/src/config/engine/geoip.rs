@@ -180,19 +180,22 @@ impl GeoIp {
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
     use super::*;
     use crate::config::engine::{connect::ConnectRequest, resolver::ResolverWrapper, testing};
 
     #[tokio::test]
     async fn test_geoip_from_absolute_path() -> Result<()> {
+        let mut path_buf = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        path_buf.push("fixtures");
+        path_buf.push("asn-country.mmdb");
+
         let _: GeoIp = testing::run(
             vec![GeoIp::module()?],
             &format!(
-                "Ok(create_geoip_from_absolute_path(\"{}\")?)",
-                // join the path to the current directory
-                std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-                    .join("fixtures/asn-country.mmdb")
-                    .to_string_lossy()
+                "Ok(create_geoip_from_absolute_path({:?})?)",
+                path_buf.to_string_lossy()
             ),
             ((),),
         )
