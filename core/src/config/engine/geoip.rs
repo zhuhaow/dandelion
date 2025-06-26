@@ -188,8 +188,11 @@ mod tests {
         let _: GeoIp = testing::run(
             vec![GeoIp::module()?],
             &format!(
-                "Ok(create_geoip_from_absolute_path(\"{}/fixtures/asn-country.mmdb\")?)",
-                env!("CARGO_MANIFEST_DIR")
+                "Ok(create_geoip_from_absolute_path(\"{}\")?)",
+                // join the path to the current directory
+                std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join("fixtures/asn-country.mmdb")
+                    .to_string_lossy()
             ),
             ((),),
         )
