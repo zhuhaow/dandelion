@@ -81,6 +81,10 @@ impl Resolver for HickoryResolver {
         })
     }
 
+    fn support_raw(&self) -> bool {
+        true
+    }
+
     async fn lookup_raw(&self, mut message: Message) -> Result<Message> {
         let query = message
             .queries()

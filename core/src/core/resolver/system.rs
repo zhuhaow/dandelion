@@ -37,6 +37,10 @@ impl Resolver for SystemResolver {
             })
             .collect::<Vec<_>>())
     }
+
+    fn support_raw(&self) -> bool {
+        false
+    }
 }
 
 impl SystemResolver {

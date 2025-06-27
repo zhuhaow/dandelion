@@ -16,7 +16,9 @@ pub trait Resolver: Debug {
     async fn lookup_ip(&self, name: &str) -> Result<Vec<IpAddr>>;
     async fn lookup_ipv4(&self, name: &str) -> Result<Vec<Ipv4Addr>>;
     async fn lookup_ipv6(&self, name: &str) -> Result<Vec<Ipv6Addr>>;
+
+    fn support_raw(&self) -> bool;
     async fn lookup_raw(&self, _message: Message) -> Result<Message> {
-        bail!("Not implemented")
+        bail!("Raw queries are not supported by this resolver")
     }
 }
