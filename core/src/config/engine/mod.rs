@@ -3,6 +3,7 @@ mod geoip;
 mod iplist;
 mod resolver;
 mod testing;
+mod tun;
 
 use self::{
     connect::{ConnectRequest, IoWrapper},

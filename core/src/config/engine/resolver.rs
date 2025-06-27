@@ -6,6 +6,7 @@ use crate::{
 use hickory_proto::xfer::Protocol;
 use hickory_resolver::config::NameServerConfig;
 use itertools::Itertools;
+use rune::alloc::clone::TryClone;
 use rune::{
     runtime::{Ref, Vec as RuneVec},
     Any, FromValue, Module, ToValue, Value,
@@ -17,6 +18,12 @@ create_wrapper!(ResolverWrapper, Resolver, Rc);
 impl Clone for ResolverWrapper {
     fn clone(&self) -> Self {
         Self(self.0.clone())
+    }
+}
+
+impl TryClone for ResolverWrapper {
+    fn try_clone(&self) -> Result<Self, rune::alloc::Error> {
+        Ok(Self(self.0.clone()))
     }
 }
 
