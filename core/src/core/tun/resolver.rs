@@ -124,7 +124,7 @@ impl FakeDnsResolver {
         })
     }
 
-    pub fn reverse_lookup<T: Into<IpAddr>>(&mut self, addr: T) -> Option<String> {
+    pub fn lookup_ptr<T: Into<IpAddr>>(&mut self, addr: T) -> Option<String> {
         match addr.into() {
             IpAddr::V4(addr) => self.ipv4_mapping.get_reverse(&addr),
             IpAddr::V6(addr) => self.ipv6_mapping.get_reverse(&addr),
@@ -173,7 +173,7 @@ mod tests {
 
             let ip = result.unwrap();
 
-            assert_eq!(resolver.reverse_lookup(ip), Some(name));
+            assert_eq!(resolver.lookup_ptr(ip), Some(name));
 
             assert!(!set.contains(&ip));
 
@@ -194,7 +194,7 @@ mod tests {
             assert_eq!(ip, addrs[i as usize]);
 
             // reverse lookup should still work
-            assert_eq!(resolver.reverse_lookup(ip), Some(name));
+            assert_eq!(resolver.lookup_ptr(ip), Some(name));
         }
     }
 }
