@@ -50,7 +50,7 @@ tar = "0.4.44"
 reqwest = { version = "0.12.20" }
 log = "0.4.27"
 structopt = "0.3.26"
-flexi_logger = "0.31.1"
+flexi_logger = "0.31.2"
 fdlimit = "0.3.0"
 cached = "0.55.1"
 sha2 = "0.10.9"
