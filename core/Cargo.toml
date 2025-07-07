@@ -54,7 +54,7 @@ flexi_logger = "0.31.1"
 fdlimit = "0.3.0"
 cached = "0.55.1"
 sha2 = "0.10.9"
-tun = "0.8.2"
+tun = "0.8.3"
 trust-dns-proto = "0.23.2"
 lru = "0.14.0"
 
