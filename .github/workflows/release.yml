@@ -19,18 +19,17 @@ jobs:
 
   release_app:
     name: Release GUI app
-    runs-on: macos-11
+    runs-on: macos-latest
     needs: [create_release]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          override: true
-          target: aarch64-apple-darwin
-      - uses: Swatinem/rust-cache@v1
+          targets: aarch64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
         with:
-          working-directory: core/
+          workspaces: |
+            core
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.0"
@@ -83,9 +82,9 @@ jobs:
           # We don't build docker image for other archs because it's toooooo slow.
           # You can build it yourself or use snap to install it.
           platforms: "linux/amd64"
-          tags: ghcr.io/zhuhaow/specht2:${{ github.ref_name }}
-          cache-from: type=registry,ref=ghcr.io/zhuhaow/specht2:buildcache
-          cache-to: type=registry,ref=ghcr.io/zhuhaow/specht2:buildcache,mode=max
+          tags: ghcr.io/zhuhaow/dandelion:${{ github.ref_name }}
+          cache-from: type=registry,ref=ghcr.io/zhuhaow/dandelion:buildcache
+          cache-to: type=registry,ref=ghcr.io/zhuhaow/dandelion:buildcache,mode=max
 
   release_bin:
     name: Release CLI binary
@@ -96,9 +95,9 @@ jobs:
           - target: x86_64-unknown-linux-gnu
           - target: aarch64-unknown-linux-gnu
           - target: x86_64-apple-darwin
-            os: macos-11
+            os: macos-latest
           - target: aarch64-apple-darwin
-            os: macos-11
+            os: macos-latest
           - target: x86_64-pc-windows-msvc
             os: windows-latest
     runs-on: ${{ matrix.os || 'ubuntu-latest' }}
@@ -110,23 +109,18 @@ jobs:
           cp -r ../core/* .
         shell: bash
       - if: ${{ matrix.target != 'aarch64-apple-darwin' }}
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+        uses: dtolnay/rust-toolchain@stable
       - if: ${{ matrix.target == 'aarch64-apple-darwin' }}
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          override: true
-          target: aarch64-apple-darwin
-      - uses: Swatinem/rust-cache@v1
+          targets: aarch64-apple-darwin
+      - uses: Swatinem/rust-cache@v2
       - if: ${{ matrix.target == 'aarch64-unknown-linux-gnu' }}
         run: |
           docker build -t arm64_with_openssl -f cross/Dockerfile-arm64 .
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
-          bin: specht2
+          bin: dandelion
           tar: unix
           zip: windows
           target: ${{ matrix.target }}

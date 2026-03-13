@@ -13,10 +13,10 @@ RUN cargo chef cook --release
 COPY ./core ./
 RUN cargo build --release && cargo install --path . --locked
 
-FROM debian:buster-slim
+FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
             ca-certificates \
-            libssl1.1 \
+            libssl3 \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /usr/local/cargo/bin/dandelion /usr/local/bin/dandelion
 ENTRYPOINT ["/usr/local/bin/dandelion"]
