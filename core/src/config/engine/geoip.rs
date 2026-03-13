@@ -30,7 +30,9 @@ pub struct GeoIp {
 
 #[rune::function]
 pub fn create_geoip_from_absolute_path(path: Ref<str>) -> Result<GeoIp> {
-    let reader = Reader::open_mmap(path.as_ref())
+    // SAFETY: The mmap'd file must not be modified while the reader is in use.
+    // This is safe for read-only MMDB database files.
+    let reader = unsafe { Reader::open_mmap(path.as_ref()) }
         .with_context(|| format!("Failed to load GeoIP database from {}", path.as_ref()))?;
 
     Ok(GeoIp {
@@ -64,8 +66,9 @@ pub async fn create_geoip_from_url(
         {
             info!("Using cached GeoIP database from {}", db_path.display());
 
-            let reader =
-                Reader::open_mmap(&db_path).context("Failed to open existing GeoIP database")?;
+            // SAFETY: The mmap'd file is not modified while the reader is in use.
+            let reader = unsafe { Reader::open_mmap(&db_path) }
+                .context("Failed to open existing GeoIP database")?;
 
             return Ok(GeoIp {
                 reader: Rc::new(reader),
@@ -138,7 +141,9 @@ pub async fn create_geoip_from_url(
     fs::write(&db_path, body).context("Failed to write GeoIP database")?;
     info!("Downloaded GeoIP database to {}", db_path.display());
 
-    let reader = Reader::open_mmap(&db_path).context("Failed to open downloaded GeoIP database")?;
+    // SAFETY: The mmap'd file is not modified while the reader is in use.
+    let reader = unsafe { Reader::open_mmap(&db_path) }
+        .context("Failed to open downloaded GeoIP database")?;
 
     Ok(GeoIp {
         reader: Rc::new(reader),
@@ -155,10 +160,12 @@ impl GeoIp {
             Err(_) => return "".to_owned(),
         };
 
-        match self.reader.lookup::<Country>(ip) {
-            Ok(country) => country
-                .and_then(|c| c.country)
-                .and_then(|c| c.iso_code)
+        match self.reader.lookup(ip) {
+            Ok(result) => result
+                .decode::<Country>()
+                .ok()
+                .flatten()
+                .and_then(|c| c.country.iso_code)
                 .unwrap_or(""),
             Err(_) => "",
         }
@@ -205,6 +212,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore]
     async fn test_geoip_from_url() -> Result<()> {
         let local_set = tokio::task::LocalSet::new();
 

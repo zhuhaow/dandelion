@@ -10,7 +10,9 @@ pub struct SystemResolver {}
 impl Resolver for SystemResolver {
     async fn lookup_ip(&self, name: &str) -> Result<Vec<IpAddr>> {
         let name = name.to_owned();
-        Ok(tokio::task::spawn_blocking(move || lookup_host(&name)).await??)
+        Ok(tokio::task::spawn_blocking(move || lookup_host(&name))
+            .await??
+            .collect())
     }
 
     async fn lookup_ipv4(&self, name: &str) -> Result<Vec<Ipv4Addr>> {
@@ -91,7 +93,8 @@ mod tests {
     async fn test_look_up_nonexisting_domain(#[case] host: &str) {
         let resolver = SystemResolver::new();
 
-        assert!(resolver.lookup_ip(host).await.is_err());
+        let result = resolver.lookup_ip(host).await;
+        assert!(result.is_err() || result.unwrap().is_empty());
     }
 
     #[rstest]
@@ -119,7 +122,8 @@ mod tests {
     async fn test_look_up_nonexisting_domain_for_a_record(#[case] host: &str) {
         let resolver = SystemResolver::new();
 
-        assert!(resolver.lookup_ipv4(host).await.is_err());
+        let result = resolver.lookup_ipv4(host).await;
+        assert!(result.is_err() || result.unwrap().is_empty());
     }
 
     // Surprisingly, we cannot use getaddrinfo to do AAAA query on Windows! And
@@ -164,6 +168,7 @@ mod tests {
     async fn test_look_up_nonexisting_domain_for_aaaa_record(#[case] host: &str) {
         let resolver = SystemResolver::new();
 
-        assert!(resolver.lookup_ipv6(host).await.is_err());
+        let result = resolver.lookup_ipv6(host).await;
+        assert!(result.is_err() || result.unwrap().is_empty());
     }
 }

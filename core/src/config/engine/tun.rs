@@ -46,6 +46,7 @@ impl FakeResolver {
     }
 }
 
+#[allow(dead_code)]
 pub struct DnsServer<R: Resolver> {
     // Used for handle non A/AAAA queries, such as TXT, CNAME, PTR (should we handle PTR?) etc.
     fallback_server: R,
@@ -63,6 +64,7 @@ pub enum ResolveStrategy {
     NxDomain,
 }
 
+#[allow(dead_code)]
 impl<R: Resolver> DnsServer<R> {
     pub fn new(
         fallback_server: R,
