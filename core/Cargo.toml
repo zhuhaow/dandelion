@@ -16,7 +16,7 @@ chrono = "0.4.44"
 hyper-tungstenite = "0.19.0"
 hyper = { version = "1.8.1", features = ["http1", "server", "client"] }
 bytes = "1.11.1"
-tungstenite = "0.28.0"
+tungstenite = "0.29.0"
 serde = { version = "1.0.228", features = ["derive"] }
 anyhow = { version = "1.0.102", features = ["backtrace"] }
 tokio-native-tls = "0.3.1"
