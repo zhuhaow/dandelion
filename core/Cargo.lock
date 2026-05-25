@@ -2388,9 +2388,9 @@ dependencies = [
 
 [[package]]
 name = "rune"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7b9174512d64882469ea9b12876305680154a541be448dcdc56f58acacbc3e0"
+checksum = "e7a577a0dc4b3e4cfe89247325b14b5f30096ddc82fa51fffb1d823fbc85b410"
 dependencies = [
  "anyhow",
  "codespan-reporting",
@@ -2414,9 +2414,9 @@ dependencies = [
 
 [[package]]
 name = "rune-alloc"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f12484a608c8907b9a4590f11b669263e960d1fd40f3d3c992c6f15eec931ae9"
+checksum = "702abcb136e7e4ff61c29006f018ab535728388b950bfbd50a0a66d7a2db1ff6"
 dependencies = [
  "ahash",
  "pin-project",
@@ -2426,9 +2426,9 @@ dependencies = [
 
 [[package]]
 name = "rune-alloc-macros"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "382b14f6d8e65e9cfec789e85125f3e1d758b2756705739e39ccf06fd249a564"
+checksum = "98fa2ddc4ebb390a257f05659081e5f4a1419ca65f0c7a3f4b02547860dd93f4"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2437,9 +2437,9 @@ dependencies = [
 
 [[package]]
 name = "rune-core"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c424b28fde0f5012680361662145f238f04aeac8a320f352a6e2de863709e7b3"
+checksum = "8fab02420e2189ad2d8d9efceca5319782873eb547c61b68732746cc161547aa"
 dependencies = [
  "musli",
  "rune-alloc",
@@ -2449,9 +2449,9 @@ dependencies = [
 
 [[package]]
 name = "rune-macros"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c86600b36281adeb101c2e4f0be325752fa4c07431e9234e05be5678ad9a97f7"
+checksum = "d314f34d8b30569189d90ac0f96eeedf629492c10d18146b40cfb76bd3fd2d52"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2461,18 +2461,18 @@ dependencies = [
 
 [[package]]
 name = "rune-tracing"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0717a7c726015688a19ebfa4bea03a20d2acdd96eeacb5ef48f4ec780e11ac4b"
+checksum = "f5b903935dfcb0ab9eec395f4c2e04b174448bb8d1fd35ef5181ad67140239a9"
 dependencies = [
  "rune-tracing-macros",
 ]
 
 [[package]]
 name = "rune-tracing-macros"
-version = "0.14.1"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "12387f96a3e131ce5be8c5668e55f1581dbc6635555d77aa07ab509fd13562bb"
+checksum = "75193c702bddd8a5b74b1f9a5a992cef3c6b2df2909d6f0bb0f4b0f3ec8a2f66"
 dependencies = [
  "proc-macro2",
  "quote",
