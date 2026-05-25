@@ -47,7 +47,7 @@ flate2 = "1.1.9"
 maxminddb = { version = "0.28.1", features = ["mmap"] }
 tar = "0.4.46"
 reqwest = { version = "0.13.3" }
-log = "0.4.29"
+log = "0.4.30"
 structopt = "0.3.26"
 flexi_logger = "0.31.8"
 fdlimit = "0.3.0"
