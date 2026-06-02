@@ -31,7 +31,7 @@ tokio-util = { version = "0.7.18", features = ["codec"] }
 byteorder = "1.5.0"
 cfg-if = "1.0.4"
 tracing = { version = "0.1.44", features = ["log"] }
-socket2 = { version = "0.6.3", features = ["all"] }
+socket2 = { version = "0.6.4", features = ["all"] }
 rustc-hash = "2.1.2"
 hickory-resolver = "0.26.1"
 quinn = { version = "0.11.9", features = ["ring", "runtime-tokio", "platform-verifier"] }
