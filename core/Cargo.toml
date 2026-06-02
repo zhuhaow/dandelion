@@ -52,7 +52,7 @@ structopt = "0.3.26"
 flexi_logger = "0.31.9"
 fdlimit = "0.3.0"
 sha2 = "0.11.0"
-tun = "0.8.9"
+tun = "0.8.10"
 lru = "0.18.0"
 
 [dev-dependencies]
