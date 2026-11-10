@@ -526,7 +526,7 @@ dependencies = [
  "test-log",
  "tokio",
  "tokio-native-tls",
- "tokio-tungstenite 0.30.0",
+ "tokio-tungstenite",
  "tokio-util",
  "tracing",
  "tun",
@@ -1148,17 +1148,17 @@ dependencies = [
 
 [[package]]
 name = "hyper-tungstenite"
-version = "0.20.0"
+version = "0.30.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3379993353adfa6a33d226fbe3227c14350aeefef507a0517aea6d73ca5ff8a4"
+checksum = "aee7ba11c4933715ee2c2fea1d8932f19356d31648c0a1bb65223ef5d7962c4c"
 dependencies = [
  "http-body-util",
  "hyper",
  "hyper-util",
  "pin-project-lite",
  "tokio",
- "tokio-tungstenite 0.29.0",
- "tungstenite 0.29.0",
+ "tokio-tungstenite",
+ "tungstenite 0.30.0",
 ]
 
 [[package]]
@@ -2939,18 +2939,6 @@ checksum = "c9cc2678c2cdd569ef8215e2afd7954ada2ae20b4fdd2c5fe6139a3b02d105db"
 dependencies = [
  "rustls",
  "tokio",
-]
-
-[[package]]
-name = "tokio-tungstenite"
-version = "0.29.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f72a05e828585856dacd553fba484c242c46e391fb0e58917c942ee9202915c"
-dependencies = [
- "futures-util",
- "log",
- "tokio",
- "tungstenite 0.29.0",
 ]
 
 [[package]]
