@@ -9,55 +9,13 @@ jobs:
     name: Create a new Github release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: taiki-e/create-gh-release-action@v1
         with:
           changelog: CHANGELOG.md
           branch: main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  release_app:
-    name: Release GUI app
-    runs-on: macos-latest
-    needs: [create_release]
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-darwin
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: |
-            core
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.0"
-          bundler-cache: true
-          working-directory: app
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-      - uses: webfactory/ssh-agent@v0.10.0
-        with:
-          ssh-private-key: ${{ secrets.MATCH_DEPLOY_KEY }}
-      - run: bundler exec fastlane ci_release
-        env:
-          MATCH_READONLY: true
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
-        working-directory: app
-      - name: Upload assets
-        run: |
-          gh release upload "${{ github.ref_name }}" app/Specht2.app.zip --clobber
-          gh release upload "${{ github.ref_name }}" app/Specht2.app.dSYM.zip --clobber
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: update version information for sparkle
-        run: app/bin/publish_appcast.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SPARKLE_KEY: ${{ secrets.SPARKLE_KEY }}
 
   release_docker:
     name: Release Docker image
@@ -102,7 +60,7 @@ jobs:
             os: windows-latest
     runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - run: |
           cp -r core ..
           rm -rf ./*

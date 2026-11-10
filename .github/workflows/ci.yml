@@ -8,7 +8,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       # Rustls on windows depends on aws-lc, which depends on nasm.
       - uses: ilammy/setup-nasm@v1
         if: runner.os == 'Windows'
@@ -22,18 +22,9 @@ jobs:
       - name: cargo fmt
         run: cargo fmt --all --manifest-path core/Cargo.toml -- --check
       - name: cargo clippy
-        run: cargo clippy --all-targets --all-features --manifest-path core/Cargo.toml -- -D warnings
+        run: cargo clippy --locked --all-targets --all-features --manifest-path core/Cargo.toml -- -D warnings
       - name: cargo test
-        if: ${{ env.MAXMINDDB_LICENSE != 0 }}
-        run: cargo test --manifest-path core/Cargo.toml -- --include-ignored
-        env:
-          MAXMINDDB_LICENSE: ${{ secrets.MAXMINDDB_LICENSE }}
-      - name: cargo test (no secrets)
-        if: ${{ env.MAXMINDDB_LICENSE == 0 }}
-        run: cargo test --manifest-path core/Cargo.toml -- --include-ignored
-        env:
-          MAXMINDDB_LICENSE: ${{ secrets.MAXMINDDB_LICENSE }}
-          SKIP_MAXMINDDB_TESTS: 1
+        run: cargo test --locked --manifest-path core/Cargo.toml -- --include-ignored
 
   docker:
     runs-on: ubuntu-latest
