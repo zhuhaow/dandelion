@@ -22,7 +22,7 @@ pub async fn connect<I: Io>(io: I, endpoint: &Endpoint, config: &Config) -> Resu
         .with_context(|| {
             format!(
                 "Failed to create simplex request URI connecting with server: {} and path: {}",
-                &config.host, &config.path
+                config.host, config.path
             )
         })?;
 
