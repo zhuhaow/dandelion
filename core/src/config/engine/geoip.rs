@@ -16,6 +16,7 @@ use rune::{
 use sha2::{Digest, Sha256};
 use std::{
     env,
+    fmt::Write as _,
     fs::{self, create_dir_all},
     net::IpAddr,
     rc::Rc,
@@ -51,9 +52,11 @@ pub async fn create_geoip_from_url(
     create_dir_all(&temp_dir).context("Failed to create temp directory")?;
 
     // now create a filename using the hash of the url
-    let mut hasher = Sha256::new();
-    hasher.update(url.as_ref().as_bytes());
-    let url_hash = format!("{:x}", hasher.finalize());
+    let hash = Sha256::digest(url.as_ref().as_bytes());
+    let mut url_hash = String::with_capacity(hash.len() * 2);
+    for byte in hash {
+        write!(&mut url_hash, "{byte:02x}")?;
+    }
     let db_path = temp_dir.join(format!("{}.mmdb", url_hash));
 
     // If the file already exists, we check if it is older than the update interval

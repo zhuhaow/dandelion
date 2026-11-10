@@ -3,8 +3,6 @@ use crate::{
     core::resolver::{hickory::HickoryResolver, system::SystemResolver, Resolver},
     Result,
 };
-use hickory_proto::xfer::Protocol;
-use hickory_resolver::config::NameServerConfig;
 use itertools::Itertools;
 use rune::alloc::clone::TryClone;
 use rune::{
@@ -34,15 +32,10 @@ fn create_system_resolver() -> Result<ResolverWrapper> {
 
 #[rune::function]
 fn create_udp_resolver(addrs: RuneVec, timeout: u64) -> Result<ResolverWrapper> {
-    Ok(HickoryResolver::new(
+    Ok(HickoryResolver::new_udp(
         addrs
             .into_iter()
-            .map(|addr| {
-                anyhow::Ok(NameServerConfig::new(
-                    String::from_value(addr)?.parse::<SocketAddr>()?,
-                    Protocol::Udp,
-                ))
-            })
+            .map(|addr| anyhow::Ok(String::from_value(addr)?.parse::<SocketAddr>()?))
             .try_collect()?,
         Duration::from_millis(timeout),
     )?

@@ -26,14 +26,14 @@ dns-lookup = "3.0.1"
 itertools = "0.15.0"
 libc = "0.2.186"
 scopeguard = "1.2.0"
-hickory-proto = "0.26.1"
+hickory-proto = "0.26.3"
 tokio-util = { version = "0.7.18", features = ["codec"] }
 byteorder = "1.5.0"
 cfg-if = "1.0.4"
 tracing = { version = "0.1.44", features = ["log"] }
 socket2 = { version = "0.6.4", features = ["all"] }
 rustc-hash = "2.1.2"
-hickory-resolver = "0.26.1"
+hickory-resolver = "0.26.3"
 quinn = { version = "0.11.9", features = ["ring", "runtime-tokio", "platform-verifier"] }
 rustls = "0.23.40"
 httparse = "1.10.1"
@@ -48,7 +48,7 @@ maxminddb = { version = "0.32.0", features = ["mmap"] }
 tar = "0.4.46"
 reqwest = { version = "0.13.4" }
 log = "0.4.31"
-structopt = "0.3.26"
+clap = { version = "4.6.7", features = ["derive"] }
 flexi_logger = "0.31.9"
 fdlimit = "0.3.0"
 sha2 = "0.11.0"

@@ -1,16 +1,19 @@
 use anyhow::Context;
+use clap::Parser;
 use dandelion::{config::Engine, Result};
 use std::{
     env,
     fs::read_to_string,
     path::{Path, PathBuf},
 };
-use structopt::StructOpt;
 
-#[derive(Debug, StructOpt)]
-#[structopt(name = "dandelion", about = "CLI version of the dandelion client")]
+#[derive(Debug, Parser)]
+#[command(
+    name = "dandelion",
+    version,
+    about = "CLI version of the dandelion client"
+)]
 struct Opt {
-    #[structopt(parse(from_os_str))]
     input: Option<PathBuf>,
 }
 
@@ -37,7 +40,7 @@ async fn main() -> Result<()> {
         .install_default()
         .map_err(|_| anyhow::anyhow!("Failed to install aws lc provider"))?;
 
-    let opt: Opt = Opt::from_args();
+    let opt = Opt::parse();
 
     fn load_config_from_env(env: &str, path: &str) -> Result<String> {
         Ok(read_to_string(Path::new(&env::var(env)?).join(path))?)
