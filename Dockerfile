@@ -1,23 +1,23 @@
-FROM rust:1-bookworm as base
-RUN cargo install cargo-chef
+FROM rust:1-trixie AS base
+RUN cargo install cargo-chef --version 0.1.78 --locked
 
-FROM base as planner
+FROM base AS planner
 WORKDIR /app
 COPY ./core ./
 RUN cargo chef prepare
 
-FROM base as builder
+FROM base AS builder
 WORKDIR /app
 COPY --from=planner /app/recipe.json recipe.json
-RUN cargo chef cook --release
+RUN cargo chef cook --release --locked
 COPY ./core ./
-RUN cargo build --release && cargo install --path . --locked
+RUN cargo build --release --locked
 
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
-    libssl3 \
+    libssl3t64 \
     && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /usr/local/cargo/bin/dandelion /usr/local/bin/dandelion
+COPY --from=builder /app/target/release/dandelion /usr/local/bin/dandelion
 ENTRYPOINT ["/usr/local/bin/dandelion"]
 CMD ["/config.rn"]
